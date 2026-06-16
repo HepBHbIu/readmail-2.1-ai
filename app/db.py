@@ -989,7 +989,13 @@ def _apply_quality_gate(
     case_data["evidence_gate"] = evidence_gate
     case_data["payload"] = payload
     case_data["export"] = export
-    if quality.get("case_status") != "accepted" or not evidence_gate.get("passed", True):
+    # AI-only: дословный паттерн-верификатор evidence_gate НЕ переопределяет готовность.
+    # Авторитет — минимум ИИ из overlay (has_min_fields/missing/hard_errors). Поля вида
+    # «*553206*»/«Код:» реально есть в тексте, но дословный матчер их «не находит» и
+    # ошибочно заворачивал полные AI-кейсы обратно в ручной. Доверяем ИИ.
+    _ai_trusted = bool(getattr(settings, "ai_only", False)) or \
+        str((case_data.get("payload") or {}).get("processing_source") or "") == "ai"
+    if (quality.get("case_status") != "accepted" or not evidence_gate.get("passed", True)) and not _ai_trusted:
         if case_data.get("state") == "ready_to_1c" or case_data.get("ready_for_export"):
             case_data["state"] = "needs_review"
             case_data["ready_for_export"] = False
