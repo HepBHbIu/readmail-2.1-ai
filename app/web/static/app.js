@@ -1423,13 +1423,16 @@ async function loadEmails() {
       const followupBadge = isFollowup
         ? `<span class="badge badge-amber" style="font-size:9px" title="Продолжение диалога">${EVENT_LABELS[e.event_type] || e.event_type}</span> `
         : "";
+      const aiBadge = e.ai_processed
+        ? `<span class="badge badge-green" style="font-size:9px" title="Обработано ИИ">ИИ ✓</span> `
+        : `<span class="badge badge-gray" style="font-size:9px" title="ИИ ещё не прогонялся">ИИ —</span> `;
       const tr = document.createElement("tr");
       tr.className = "email-row" + (isFollowup ? " row-followup" : "");
       tr.onclick = () => openEmailDetail(e.id);
       tr.innerHTML = `
         <td>${e.has_attachments ? "📎" : ""}${isFollowup ? "→" : ""}</td>
         <td><b>${esc(e.buyer_name || "—")}</b><br><span style="font-size:11px;color:var(--text-muted)">${esc(e.from_addr || "")}</span></td>
-        <td>${followupBadge}${esc(e.subject || "—")}${detailStr}</td>
+        <td>${aiBadge}${followupBadge}${esc(e.subject || "—")}${detailStr}</td>
         <td>${kind ? badge(kind, "blue") : ""}</td>
         <td>${badge(stateLabel, prColor)}</td>
         <td style="white-space:nowrap">${fmtDate(e.received_at)}</td>
