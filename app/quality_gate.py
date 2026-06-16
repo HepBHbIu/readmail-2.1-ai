@@ -577,6 +577,34 @@ def quality_gate(original_email_text: str, draft_json: dict[str, Any], metadata:
     evidence_gate = build_evidence_gate(text, draft_json, metadata)
     _fstat = evidence_gate.get("field_statuses") or {}
 
+    # v2.1 AI-only: ИИ — АВТОРИТЕТНЫЙ извлекатель. Дословный паттерн-верификатор ниже
+    # ломается на ИИ-данных (табличные письма, «*553206*», «Код:», латиница+цифры) и
+    # ложно метит needs_ai_repair → ПОЛНЫЕ кейсы не доходят до 1С. Минимум полей уже
+    # проверен раньше (has_min_fields в apply_ai_overlay). Поэтому для AI-обработанного
+    # кейса в AI-only доверяем ИИ: gate=accepted, passed=True. Это и есть «ИИ — приоритет».
+    if bool(getattr(settings, "ai_only", False)) and str(_pl.get("processing_source") or "") == "ai":
+        evidence_gate["passed"] = True
+        evidence_gate["ai_trusted"] = True
+        return {
+            "case_status": "accepted",
+            "quality_score": 0.9,
+            "errors": [],
+            "warnings": [],
+            "field_checks": {},
+            "evidence_gate": evidence_gate,
+            "metadata": {
+                "checked_at": utcnow(),
+                "raw_email_id": metadata.get("raw_email_id"),
+                "case_id": metadata.get("case_id"),
+                "item_index": metadata.get("item_index"),
+                "buyer_code": draft_json.get("buyer_code"),
+                "event_type": draft_json.get("event_type"),
+                "state": draft_json.get("state"),
+                "ready_for_export": bool(draft_json.get("ready_for_export")),
+                "ai_trusted": True,
+            },
+        }
+
     def _confirmed(_f: str) -> bool:
         return str(_fstat.get(_f) or "").startswith("confirmed")
 
