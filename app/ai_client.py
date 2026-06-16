@@ -32,13 +32,23 @@ SYSTEM_PROMPT = """Ты извлекаешь структурированные 
 2) Инлайн через тире/двоеточие: «Артикул — HQZ0038LD», «Накладная — 80006 от 04.05.2026».
 3) Последовательность в одну строку: АРТИКУЛ (латиница+цифры) → БРЕНД (КАПС/латиница) → НАИМЕНОВАНИЕ (кириллица). «RF5161S ROCK FORCE Набор ключей» → part_number=RF5161S, brand=ROCK FORCE, product_name=Набор ключей.
 4) Артикул в ТЕМЕ письма: «Расхождения при приемке: KRC1150RC», «Арт. MSSKB4TFKIT» → это part_number.
+5) НОМЕРА В ТЕМЕ — извлекай ОБЯЗАТЕЛЬНО (часто весь ключ только в теме, тело — таблица без номеров):
+   • «Претензия №00000232318», «Рекламация №…» → claim_number (надёжный ключ/strong_key).
+   • «по документу №83124», «при приёмке поступления №…», «поступление №…» → document_number (номер ПОСТАВЩИКА, приоритетнее внутреннего УПД покупателя).
+   • «Запрос на возврат 1467582», «Заявка № 10178179», «Возврат поставщику № АН-3643» → client_request_number.
+   • «Товарная накладная № 83904», «накладная/УПД/реализация № …» → document_number.
+
+ВЛОЖЕНИЯ И ССЫЛКИ (если даны в payload как attachments[]/links[] — РЕАГИРУЙ):
+- По ИМЕНАМ файлов определи тип документа брака: «установк/наряд на установку» → заказ-наряд установки; «снят/демонтаж» → заказ-наряд снятия; «акт/торг-2/заключение/сервис» → акт сервиса. Если имена осмысленные — заполни defect_documents_status сразу, без чтения.
+- mentions_service_document=true, если среди вложений есть акт/заказ-наряд/заключение.
+- Ссылки на возврат/фото (links[] или «фото по ссылке») → mentions_return_link=true.
 
 ПОЛЯ:
 - part_number — артикул/OEM/каталожный номер детали (латиница+цифры: HP1731, RF5161S, MSSKB4TFKIT). НЕ слова «артикул/товар/цена/причина/количество/поставщик/покупатель».
 - brand — ПРОИЗВОДИТЕЛЬ детали (SANGSIN, KRAUF, ROCK FORCE, Febest, CTR). Может стоять как ДО, так и ПОСЛЕ наименования (часто в конце строки после описания). НИКОГДА не бери бренд из: email/доменов (vozvrat1@avtoto.ru → это НЕ «vozvra»), марок авто (BMW 5, X5 → это НЕ «BM»), подписей, слова «возврат».
 - product_name — КОРОТКОЕ название детали (Тяга рулевая, Шкив компрессора, Колодки тормозные). Слова-ТИПЫ детали (Амортизатор, Колодки, Шкив, Тяга, Диск, Фильтр, Насос, Подшипник, Ремень, Сальник, Прокладка, Рычаг, Стойка, Натяжитель) — это product_name, НЕ brand. НЕ бери длинные фразы типа «надлежащего качества по причине отказа…».
 - comment — 1–3 слова причины (пересорт, брак, отказ клиента, недовоз), НЕ перечисление товара и не весь текст.
-- document_number — ТОЛЬКО номер ДОКУМЕНТА реализации: рядом со словами накладная/накл./УПД/реализация/счёт-фактура/с-ф/торг-12 (обычно 5-6 цифр: 80006, 79324, 79416). ЭТО НЕ:
+- document_number — ТОЛЬКО номер ДОКУМЕНТА реализации/поступления: рядом со словами накладная/накл./УПД/реализация/счёт-фактура/с-ф/торг-12, а также «по документу №», «поступление №», «при приёмке поступления по документу №» (обычно 5-6 цифр: 80006, 79324, 83124). ЭТО НЕ:
     • номер ЗАЯВКИ/претензии/обращения («Заявка № 10178179», «Возврат поставщику № АН-3643», «Рекламация №…») → это client_request_number, НЕ document_number;
     • номер АКТА ТОРГ-2 («Акт № А-260611-00265») → это claim_number/return_number;
     • телефон, сумма, количество, артикул, дата.
@@ -58,6 +68,7 @@ shortage_link_event, ready_to_ship, supplier_report, info_only, unknown.
 - Замена артикула/номера производителем → number_replacement.
 - Прайс-лист, остатки, наличие, отчёт поставщика → supplier_report.
 - Товар готов к выдаче/отгрузке → ready_to_ship.
+- Уведомление о приёмке с дефектами с явной пометкой «НЕ является запросом на возврат» / «не требует ответа» (напр. trinity-parts «ТОВАР ПРИНЯТ С ДЕФЕКТАМИ ДО КЛИЕНТА») → event_type=info_only, requires_action=false. Накладную и артикул всё равно извлеки как контекст.
 - Общие вопросы, реорганизация компании, «как удобнее провести» без конкретной детали.
 
 РЕШЕНИЕ:
@@ -84,6 +95,9 @@ shortage_link_event, ready_to_ship, supplier_report, info_only, unknown.
 
 [«Причина возврата – пересорт Покупали: GY1733G Амортизатор подвески | зад прав/лев | CTR По счёт-фактуре № 81068 от 13.05.2026 Кол-во: 2 шт»]
 → {"event_type":"new_return","claim_kind":"wrong_item","fields":{"document_number":"81068","document_date":"13.05.2026","part_number":"GY1733G","brand":"CTR","product_name":"Амортизатор подвески зад прав/лев","quantity":"2","comment":"пересорт"}}  (бренд CTR в конце; «Амортизатор» — это product_name, НЕ brand)
+
+[ТЕМА: «Претензия №00000232318 от 15.06.2026 поставщику ООО "ПИТСТОП" по документу №83124 от 04.06.2026» ТЕЛО: «… создана претензия … | KDN9130YU | Krauf | Клапан компрессора кондиционера управляющий | 1 | 3 090 | … Отказ клиента»]
+→ {"event_type":"new_return","claim_kind":"quality_refusal","fields":{"claim_number":"00000232318","document_number":"83124","document_date":"04.06.2026","part_number":"KDN9130YU","brand":"Krauf","product_name":"Клапан компрессора кондиционера управляющий","quantity":"1","comment":"отказ клиента"}}  (номер претензии и документа — из ТЕМЫ; «по документу №83124» = document_number)
 """
 
 
@@ -195,45 +209,39 @@ def _buyer_ai_prompt(buyer_code: str | None) -> str:
     return ""
 
 
+_PROMPT_URL_RE = re.compile(r"https?://[^\s<>\"')]+", re.I)
+
+
+def _attachments_for_prompt(email_data: dict[str, Any]) -> list[dict[str, Any]]:
+    """Список вложений для первого прогона: имя+тип+размер, чтобы промт сам
+    распознал тип документа брака по имени файла, не гоняя vision."""
+    out: list[dict[str, Any]] = []
+    for a in (email_data.get("attachments") or [])[:30]:
+        out.append({
+            "filename": a.get("filename"),
+            "content_type": a.get("content_type"),
+            "size": a.get("size_bytes") if a.get("size_bytes") is not None else a.get("size"),
+        })
+    return out
+
+
+def _links_for_prompt(email_data: dict[str, Any]) -> list[str]:
+    """Ссылки из тела письма (возвратные порталы, фото) для первого прогона."""
+    text = " ".join(str(email_data.get(k) or "") for k in ("visible_text", "body_text", "snippet", "subject"))
+    seen: list[str] = []
+    for m in _PROMPT_URL_RE.findall(text):
+        u = m.rstrip(".,;)]}\"'")
+        if u not in seen:
+            seen.append(u)
+        if len(seen) >= 20:
+            break
+    return seen
+
+
+# v2.1: компактного промта нет — «запрос дешевле ответа», поэтому всю конкретику
+# (правила, примеры, вложения, ссылки) кладём в полный промт для любого purpose.
 def _chat_payload(email_data: dict[str, Any], case_data: dict[str, Any], purpose: str = "case_extract") -> tuple[list[dict[str, str]], str, int]:
     body = _body_for_ai(email_data)
-
-    # ── Компактный промт для режима «полный ИИ»: вход дорогой, выход дешёвый —
-    #    срезаем гигантскую JSON-спеку и правила, оставляем текст письма + краткую схему.
-    if purpose in {"manual_full_ai", "autopilot_full_ai"}:
-        csys = (
-            "Классифицируй письмо и извлеки поля обращения по автозапчастям. Верни ТОЛЬКО JSON по схеме, без markdown. "
-            "Нет поля → null. Не бери заголовки таблиц/слова-метки ('артикул','цена','товар') как значения. "
-            "В таблице бери строку товара, не названия колонок. "
-            "Прайс/остатки/отчёт → supplier_report; корректировка → correction_request; "
-            "маркировка/ЧЗ/ТНВЭД → marking_request; замена номера → number_replacement; "
-            "ссылка недопоставки без позиций → shortage_link_event; готово к выдаче → ready_to_ship. "
-            "Если есть блок [ТЕКСТ ВЛОЖЕНИЙ/АКТА] — найди в нём СТРОКУ с артикулом из письма и возьми "
-            "из неё наименование детали и бренд (рядом с артикулом в той же строке акта ТОРГ-2)."
-        )
-        cextra = _buyer_ai_prompt(case_data.get("buyer_code"))
-        if cextra:
-            csys += "\nКлиент: " + cextra
-        cuser = json.dumps({
-            "email": {"subject": email_data.get("subject"), "from": email_data.get("from_addr"), "text": body},
-            "guess": {"event_type": case_data.get("event_type"), "claim_kind": case_data.get("claim_kind"), "buyer_code": case_data.get("buyer_code")},
-            "return_json": {
-                "buyer_code": "str|null",
-                "event_type": "new_return|pre_delivery_refusal|followup_reminder|followup_dialog|supplier_decision|correction_request|marking_request|number_replacement|shortage_link_event|ready_to_ship|supplier_report|info_only|unknown",
-                "claim_kind": "defect|nonconforming|wrong_item|shortage|overdelivery|incomplete_set|number_replacement|correction_request|marking_request|quality_refusal|null",
-                "fields": {"claim_number": "·", "client_request_number": "·", "return_number": "·",
-                           "document_number": "·", "document_date": "·", "part_number": "·",
-                           "brand": "·", "product_name": "·", "quantity": "·", "comment": "·"},
-                "evidence": {"mentions_photo": "bool", "mentions_service_document": "bool"},
-                "confidence": "0..1",
-                "requires_action": "bool",
-                "next_action": "str|null",
-                "cannot_export_reason": "str|null",
-                "defect_documents_status": "complete|partial|metadata_only|unknown_not_read|not_applicable",
-            },
-        }, ensure_ascii=False)
-        cph = hashlib.sha256((settings.ai_provider + settings.ai_model + csys + cuser).encode("utf-8")).hexdigest()[:32]
-        return ([{"role": "system", "content": csys}, {"role": "user", "content": cuser}], cph, len(cuser) + len(csys))
 
     prompt = {
         "task": "extract_return_email_fields",
@@ -267,6 +275,8 @@ def _chat_payload(email_data: dict[str, Any], case_data: dict[str, Any], purpose
             "received_at": email_data.get("received_at"),
             "text": body,
             "quote_markers": email_data.get("quote_markers"),
+            "attachments": _attachments_for_prompt(email_data),
+            "links": _links_for_prompt(email_data),
         },
         "required_json_shape": {
             "buyer_code": "string|null, short stable code if obvious, else null",

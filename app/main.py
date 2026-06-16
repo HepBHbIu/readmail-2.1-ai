@@ -5794,7 +5794,7 @@ def _ai_batch_worker(limit: int, target: str, force: bool = False, order: str = 
             try:
                 result = _apply_ai_to_case_id(
                     cid,
-                    purpose="manual_full_ai",  # v2.1: компактный промт (−54% входа) + тег mode=full_ai
+                    purpose="manual_ai_batch",  # v2.1: полный промт (компактного больше нет — вход дешевле выхода)
                     queue_ready=False,
                     manual_review_gate=True,
                 )
