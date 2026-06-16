@@ -4214,7 +4214,8 @@ async function loadProcessedItems() {
       list.innerHTML = res.items.map(it => `
         <div class="loose-card" style="display:flex;flex-direction:column;gap:2px;padding:8px;border-bottom:1px solid var(--border,#3333)">
           <div style="display:flex;justify-content:space-between;gap:8px">
-            <b style="flex:1">${esc(it.subject || "(без темы)")}</b>
+            <b style="flex:1;${it.case_id ? "cursor:pointer" : ""}" ${it.case_id ? `title="Открыть письмо" onclick="openCaseDetail(${it.case_id})"` : ""}>${esc(it.subject || "(без темы)")}</b>
+            ${it.case_id ? `<button class="btn-sm" onclick="openCaseDetail(${it.case_id})">Письмо</button>` : ""}
             <button class="btn-sm" onclick="openProcessedTrace('${it.trace_target}',${it.trace_id})">Trace</button>
           </div>
           <div style="font-size:12px;color:var(--text-muted,#999)">
