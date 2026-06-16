@@ -185,7 +185,7 @@ function onTabActivated(tab) {
     else if (tab === "review") loadReview();
     // v2.1 AI-only: вкладка «Паттерны» удалена.
     else if (tab === "ai_review") loadAiReview();
-    else if (tab === "links") loadLinks();
+    else if (tab === "links") openReviewAs("needs_link", "links");
     else if (tab === "offtopic") openReviewAs("information", "offtopic");
     else if (tab === "problem_notice") openReviewAs("problem_notice", "problem_notice");
     else if (tab === "processed") loadProcessedHidden();
@@ -360,7 +360,8 @@ async function loadReview() {
       </div>`;
     }).join("") || '<div class="split-empty">Нет кейсов для сверки</div>';
 
-    renderPagination("review-pagination", res.total || 0, _reviewPage, 50,
+    const _ps = parseInt($("review-pagesize")?.value || "50", 10) || 50;
+    renderPagination("review-pagination", res.total_count ?? res.total ?? 0, _reviewPage, _ps,
       p => { _reviewPage = p; savePage("review", p); loadReview(); });
 
     if (_reviewSelectedId && _reviewCache.has(_reviewSelectedId)) {
