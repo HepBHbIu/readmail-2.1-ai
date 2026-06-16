@@ -292,6 +292,12 @@
             <select id="review-kind" class="select-sm" onchange="_reviewPage=1;loadReview()" title="Сортировать по причине возврата">
               <option value="">Все причины</option>
             </select>
+            <select id="review-pagesize" class="select-sm" onchange="_reviewPage=1;loadReview()" title="Сколько показывать на странице">
+              <option value="50">50 на стр.</option>
+              <option value="25">25 на стр.</option>
+              <option value="100">100 на стр.</option>
+              <option value="500">всё</option>
+            </select>
             <input type="text" id="review-search" class="input-sm" placeholder="Поиск: номер, тема…"
               style="flex:1;min-width:100px" oninput="clearTimeout(_rt); _rt=setTimeout(loadReview,350)">
           </div>

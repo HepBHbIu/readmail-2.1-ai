@@ -186,11 +186,11 @@ function onTabActivated(tab) {
     // v2.1 AI-only: вкладка «Паттерны» удалена.
     else if (tab === "ai_review") loadAiReview();
     else if (tab === "links") loadLinks();
-    else if (tab === "offtopic") loadOfftopic();
-    else if (tab === "problem_notice") loadProblemNotice();
+    else if (tab === "offtopic") openReviewAs("information", "offtopic");
+    else if (tab === "problem_notice") openReviewAs("problem_notice", "problem_notice");
     else if (tab === "processed") loadProcessedHidden();
     else if (tab === "pipeline") loadPipeline();
-    else if (tab === "unprocessed") loadUnprocessed();
+    else if (tab === "unprocessed") openReviewAs("manual", "unprocessed");
     else if (tab === "clients") loadClients();
     else if (tab === "onec") loadOnec();
     else if (tab === "inbox_sorter") loadInboxSorter();
@@ -203,6 +203,19 @@ function onTabActivated(tab) {
     else if (tab === "outbox_staging") loadOutboxStaging();
     else if (tab === "settings") { loadSettings(); loadTokenStats(); loadTokenReport(); loadTrafficStats(); initSettingsCategories(); loadTokenTimeline("day"); }
   } catch (e) { console.warn("Tab error:", tab, e); }
+}
+
+// Открыть 3-панельный экран Сверки под видом другой вкладки (список+детали+обработка
+// + ручной перенос — всё на виду). Контент = tab-review, но подсвечена исходная кнопка.
+function openReviewAs(folder, sourceTab) {
+  const sel = $("review-folder");
+  if (sel) sel.value = folder;
+  _reviewPage = 1;
+  document.querySelectorAll(".tab-content").forEach(t => t.classList.remove("active"));
+  $("tab-review")?.classList.add("active");
+  document.querySelectorAll(".tab").forEach(b => b.classList.remove("active"));
+  document.querySelector(`.tab[data-tab="${sourceTab}"]`)?.classList.add("active");
+  loadReview();
 }
 
 /* ── Категории Настроек: под-навигация вместо стены групп ── */
@@ -261,7 +274,7 @@ async function loadReview() {
     const kind   = $("review-kind")?.value   || "";
     const q      = $("review-search")?.value || "";
     const miss = Array.from(document.querySelectorAll(".review-miss:checked")).map(el => el.value);
-    const res = await api(`/api/review/cases?source=${filter}&buyer=${encodeURIComponent(buyer)}&folder=${encodeURIComponent(folder)}&kind=${encodeURIComponent(kind)}&q=${encodeURIComponent(q)}&missing=${encodeURIComponent(miss.join(","))}&page=${_reviewPage}&limit=50`);
+    const res = await api(`/api/review/cases?source=${filter}&buyer=${encodeURIComponent(buyer)}&folder=${encodeURIComponent(folder)}&kind=${encodeURIComponent(kind)}&q=${encodeURIComponent(q)}&missing=${encodeURIComponent(miss.join(","))}&page=${_reviewPage}&limit=${$("review-pagesize")?.value || 50}`);
     if (!res.ok) return;
     // Счётчики пустых ячеек на галочках
     const ec = res.empty_counts || {};
@@ -427,7 +440,31 @@ function renderReviewDetail(c) {
       <div style="margin-top:10px;padding:8px;border:1px solid var(--border);border-radius:6px;color:var(--text-muted)">
         Папка: <strong>${esc(c.folder_name || "Служебные")}</strong>. Кейс виден для сверки, экспорт в 1С для этого типа отключён.
       </div>`}
+    <div style="margin-top:12px;padding:8px;border:1px dashed var(--border);border-radius:6px">
+      <div style="font-size:12px;font-weight:600;margin-bottom:6px">↪ Переместить вручную (со статусом)</div>
+      <input id="route-reason-${c.id}" class="search-input" style="width:100%;margin-bottom:6px" placeholder="Причина/комментарий оператора (необязательно)">
+      <div style="display:flex;gap:5px;flex-wrap:wrap">
+        <button class="btn-sm success" onclick="routeCase(${c.id},'ready_1c')">✅ В 1С</button>
+        <button class="btn-sm" onclick="routeCase(${c.id},'problem_notice')">⚠️ Уведомление</button>
+        <button class="btn-sm" onclick="routeCase(${c.id},'needs_link')">🔗 В связки</button>
+        <button class="btn-sm danger" onclick="routeCase(${c.id},'junk')">🗑 В мусор</button>
+        <button class="btn-sm" onclick="routeCase(${c.id},'manual')">✋ Оставить в ручном</button>
+      </div>
+    </div>
   `;
+}
+
+async function routeCase(caseId, dest) {
+  const reason = ($(`route-reason-${caseId}`)?.value || "").trim();
+  const labels = { ready_1c: "1С", junk: "мусор", needs_link: "связки", problem_notice: "уведомления о проблеме", manual: "ручной разбор" };
+  const res = await api(`/api/cases/${caseId}/route`, { method: "POST", body: JSON.stringify({ destination: dest, reason }) });
+  if (res && res.ok) {
+    toast(`Кейс #${caseId} → ${labels[dest] || dest}${reason ? " ("+reason+")" : ""}`, "success");
+    loadReview();
+    if (typeof loadPipelineStatus === "function") loadPipelineStatus();
+  } else {
+    toast("Не удалось переместить: " + (res?.error || "ошибка"), "error");
+  }
 }
 
 const DOC_LABELS = { install_order: "заказ-наряд установка", removal_order: "заказ-наряд снятие", service_act: "акт/заключение сервиса" };

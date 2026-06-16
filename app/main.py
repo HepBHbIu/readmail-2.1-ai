@@ -4397,6 +4397,55 @@ def api_case_ai_apply(case_id: int) -> dict[str, Any]:
     return {"ok": True, "applied": True, "suggestion": suggestion, "learning": learning_result, "case": get_case(case_id)}
 
 
+class RouteCaseReq(BaseModel):
+    destination: str
+    reason: str | None = None
+
+
+@app.post("/api/cases/{case_id}/route")
+def api_case_route(case_id: int, req: RouteCaseReq) -> dict[str, Any]:
+    """Ручной перенос кейса оператором в нужное назначение со статусом/причиной."""
+    DEST = {
+        "ready_1c":       {"state": "ready_to_1c", "ready_for_export": 1, "needs_review": 0},
+        "junk":           {"state": "ignored_info_only", "event_type": "info_only", "ready_for_export": 0, "needs_review": 0},
+        "needs_link":     {"state": "needs_link", "ready_for_export": 0, "needs_review": 0},
+        "problem_notice": {"state": "problem_notice", "event_type": "problem_notice", "ready_for_export": 0, "needs_review": 0},
+        "manual":         {"state": "needs_review", "ready_for_export": 0, "needs_review": 1},
+    }
+    spec = DEST.get(req.destination)
+    if not spec:
+        return {"ok": False, "error": f"неизвестное назначение: {req.destination}"}
+    reason = (req.reason or "").strip() or None
+    with connect() as con:
+        row = con.execute("SELECT id, payload_json FROM cases WHERE id=?", (case_id,)).fetchone()
+        if not row:
+            return {"ok": False, "error": "кейс не найден"}
+        try:
+            payload = json.loads(row["payload_json"] or "{}")
+        except Exception:
+            payload = {}
+        payload["operator_route"] = {"to": req.destination, "reason": reason, "at": utcnow()}
+        payload["processing_mode"] = "manual"
+        sets = ["payload_json=?", "updated_at=?"]
+        vals: list[Any] = [json.dumps(payload, ensure_ascii=False), utcnow()]
+        for col in ("state", "event_type", "ready_for_export", "needs_review"):
+            if col in spec:
+                sets.append(f"{col}=?")
+                vals.append(spec[col])
+        vals.append(case_id)
+        con.execute(f"UPDATE cases SET {', '.join(sets)} WHERE id=?", vals)
+        if req.destination == "ready_1c":
+            try:
+                queue_case_event(con, case_id)
+            except Exception:
+                pass
+        record_process_event(con, stage="operator", level="info",
+            message=f"Оператор переместил #{case_id} → {req.destination}" + (f": {reason}" if reason else ""),
+            case_id=case_id)
+        con.commit()
+    return {"ok": True, "case_id": case_id, "destination": req.destination, "state": spec["state"]}
+
+
 @app.post("/api/ai/test")
 def api_ai_test() -> dict[str, Any]:
     apply_runtime_settings()
