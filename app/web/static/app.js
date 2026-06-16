@@ -573,7 +573,7 @@ function updateTabBadges(res) {
   // Обновляем счётчики на вкладках
   const badges = {
     "patterns": res.pattern_ready || 0,
-    "ai_review": (res.needs_ai || 0) + (res.ai_ready || 0),
+    "ai_review": res.needs_ai || 0,
     "links": res.links_count || 0,
     "review": res.review_count || 0,
     "offtopic": res.offtopic || 0,
