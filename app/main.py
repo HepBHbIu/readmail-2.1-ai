@@ -2159,8 +2159,10 @@ def api_review_cases(
         "quantity":        "(json_extract(c.fields_json,'$.quantity') IS NULL OR json_extract(c.fields_json,'$.quantity')='')",
         "claim_kind":      "(c.claim_kind IS NULL OR c.claim_kind='')",
     }
+    # Папки явно по НАЗНАЧЕНИЮ (порядок = порядок чипов в UI).
     FOLDER_SQL = {
-        "returns": "c.event_type IN ('new_return','pre_delivery_refusal') AND c.state IN ('ready_to_1c','needs_review')",
+        "ready_1c": "c.event_type IN ('new_return','pre_delivery_refusal') AND c.state='ready_to_1c'",
+        "manual": "c.state='needs_review'",
         "needs_link": "c.state='needs_link'",
         "corrections": "c.event_type='correction_request' AND c.state!='needs_link'",
         "ready_to_ship": "c.event_type='ready_to_ship' AND c.state!='needs_link'",
@@ -2173,24 +2175,27 @@ def api_review_cases(
         "unknown": "c.event_type='unknown' OR c.state IS NULL OR c.state='unknown'",
     }
     FOLDER_NAMES = {
-        "returns": "Возвраты / проверка",
-        "needs_link": "Связки требуют привязки",
-        "corrections": "Корректировки / ЭДО",
-        "ready_to_ship": "Готово к выдаче",
-        "followups": "Продолжения диалогов",
-        "reminders": "Напоминания",
-        "supplier_decisions": "Решения поставщика",
-        "marking": "Маркировка / ТНВЭД",
-        "problem_notice": "Уведомления о проблеме",
-        "information": "Прайсы / отчёты / информация",
-        "unknown": "Неизвестные",
+        "ready_1c": "✅ Готово в 1С",
+        "manual": "✋ Ручной разбор",
+        "needs_link": "🔗 Связки: ждут привязки",
+        "corrections": "📝 Корректировки / ЭДО",
+        "ready_to_ship": "📦 Готово к выдаче",
+        "followups": "💬 Диалоги (продолжения)",
+        "reminders": "⏰ Напоминания",
+        "supplier_decisions": "✔️ Решения поставщика",
+        "marking": "🏷 Маркировка / ТНВЭД",
+        "problem_notice": "⚠️ Уведомления о проблеме",
+        "information": "🗑 Прайсы / отчёты / мусор",
+        "unknown": "❓ Неизвестные",
     }
 
     def review_folder(case: dict[str, Any]) -> tuple[str, str]:
         event_type = str(case.get("event_type") or "")
         state = str(case.get("state") or "")
-        if event_type in {"new_return", "pre_delivery_refusal"} and state in {"ready_to_1c", "needs_review"}:
-            key = "returns"
+        if state == "needs_review":
+            key = "manual"  # ручной разбор — всё, что требует глаз оператора
+        elif event_type in {"new_return", "pre_delivery_refusal"} and state == "ready_to_1c":
+            key = "ready_1c"
         elif state == "needs_link":
             key = "needs_link"
         elif event_type == "correction_request":

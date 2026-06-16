@@ -353,6 +353,22 @@ body {
 .btn-sm:disabled { opacity: 0.5; cursor: not-allowed; }
 .btn-sm.danger { border-color: var(--red); color: var(--red); }
 .btn-sm.danger:hover { background: var(--red-light); }
+
+/* Чипы-папки в Сверке (видимое меню групп вместо дропдауна) */
+.folder-chips { display: flex; gap: 5px; flex-wrap: wrap; align-items: center; }
+.folder-chip {
+  height: 26px; padding: 0 9px; border: 1px solid var(--border); background: var(--surface);
+  border-radius: 13px; font-size: 12px; cursor: pointer; transition: all 0.12s;
+  display: inline-flex; align-items: center; gap: 5px; white-space: nowrap; color: var(--text);
+}
+.folder-chip:hover { border-color: var(--accent); color: var(--accent); }
+.folder-chip.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+.folder-chip.chip-empty { opacity: 0.45; }
+.folder-chip .chip-count {
+  font-size: 11px; font-weight: 600; background: var(--bg); color: var(--text-muted);
+  border-radius: 9px; padding: 0 6px; min-width: 16px; text-align: center;
+}
+.folder-chip.active .chip-count { background: rgba(255,255,255,0.25); color: #fff; }
 .btn-sm.success { border-color: var(--green); color: var(--green); }
 .btn-sm.success:hover { background: var(--green-light); }
 .btn-primary {

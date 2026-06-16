@@ -265,20 +265,7 @@
             <button class="btn-sm" onclick="loadReview()">Обновить</button>
           </div>
           <div style="padding:6px 8px;display:flex;gap:5px;flex-wrap:wrap;border-bottom:1px solid var(--border)">
-            <select id="review-folder" class="select-sm" onchange="_reviewPage=1;loadReview()" title="Папка писем">
-              <option value="all">Все папки</option>
-              <option value="returns">Возвраты / проверка</option>
-              <option value="needs_link">Связки требуют привязки</option>
-              <option value="corrections">Корректировки / ЭДО</option>
-              <option value="ready_to_ship">Готово к выдаче</option>
-              <option value="followups">Продолжения диалогов</option>
-              <option value="reminders">Напоминания</option>
-              <option value="supplier_decisions">Решения поставщика</option>
-              <option value="marking">Маркировка / ТНВЭД</option>
-              <option value="problem_notice">Уведомления о проблеме</option>
-              <option value="information">Прайсы / отчёты / информация</option>
-              <option value="unknown">Неизвестные</option>
-            </select>
+            <div id="review-folder-chips" class="folder-chips" title="Группы писем по назначению"></div>
             <select id="review-filter" class="select-sm" onchange="_reviewPage=1;loadReview()">
               <option value="all">Все</option>
               <option value="pattern">Паттерн</option>

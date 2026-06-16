@@ -247,7 +247,18 @@ function filterSettingsCat(cat) {
 ══════════════════════════════════════════════════════ */
 
 let _reviewPage = loadSavedPage("review");
+let _reviewFolder = localStorage.getItem("readmail.reviewFolder") || "all";
 let _reviewSelectedId = null;
+// Порядок и подписи чипов-папок (имена приходят с бэка folder_names, тут — запасной порядок).
+const REVIEW_FOLDER_ORDER = ["all","ready_1c","manual","needs_link","corrections","ready_to_ship",
+  "followups","reminders","supplier_decisions","marking","problem_notice","information","unknown"];
+
+function selectReviewFolder(key) {
+  _reviewFolder = key;
+  _reviewPage = 1;
+  localStorage.setItem("readmail.reviewFolder", key);
+  loadReview();
+}
 const _reviewCache = new Map();
 
 let _rt, _pt, _at; // debounce timers for review / patterns / ai search
@@ -256,7 +267,7 @@ async function loadReview() {
   try {
     const filter = $("review-filter")?.value || "all";
     const buyer  = $("review-buyer")?.value  || "";
-    const folder = $("review-folder")?.value || "all";
+    const folder = _reviewFolder || "all";
     const kind   = $("review-kind")?.value   || "";
     const q      = $("review-search")?.value || "";
     const miss = Array.from(document.querySelectorAll(".review-miss:checked")).map(el => el.value);
@@ -284,16 +295,22 @@ async function loadReview() {
     }
     const cnt = $("review-count");
     if (cnt) cnt.textContent = `Показано ${res.shown_count ?? (res.cases || []).length} из ${res.total_count ?? res.total ?? 0}`;
-    const folderSel = $("review-folder");
-    if (folderSel) {
-      const currentFolder = folderSel.value;
-      Array.from(folderSel.options).forEach(option => {
-        const key = option.value;
-        const baseName = key === "all" ? "Все папки" : (res.folder_names?.[key] || option.textContent.replace(/\s+\(\d+\)$/, ""));
-        const count = res.folder_counts?.[key];
-        option.textContent = count == null ? baseName : `${baseName} (${count})`;
-        option.selected = key === currentFolder;
-      });
+    // Чипы-папки (видимое меню вместо дропдауна): явные имена + счётчики.
+    const chips = $("review-folder-chips");
+    if (chips) {
+      const names = res.folder_names || {};
+      const counts = res.folder_counts || {};
+      const totalAll = Object.values(counts).reduce((a, b) => a + (b || 0), 0);
+      const keys = REVIEW_FOLDER_ORDER.filter(k => k === "all" || k in names || k in counts);
+      Object.keys(names).forEach(k => { if (!keys.includes(k)) keys.push(k); });
+      chips.innerHTML = keys.map(key => {
+        const label = key === "all" ? "Все" : (names[key] || key);
+        const count = key === "all" ? totalAll : (counts[key] ?? 0);
+        const active = key === _reviewFolder;
+        const dim = key !== "all" && !count ? " chip-empty" : "";
+        return `<button class="folder-chip${active ? " active" : ""}${dim}" onclick="selectReviewFolder('${key}')">` +
+               `${esc(label)}<span class="chip-count">${count}</span></button>`;
+      }).join("");
     }
     // Badge on tab
     const tabBadge = $("badge-review");
