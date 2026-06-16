@@ -427,6 +427,72 @@ def _auto_link_followup(con: Any, case_id: int, case_data: dict[str, Any]) -> No
             pass
 
 
+def _set_payload_ref(con: Any, case_id: int, key: str, ref: dict[str, Any]) -> None:
+    """Записать перекрёстную ссылку в payload_json кейса (не меняя состояний)."""
+    row = con.execute("SELECT payload_json FROM cases WHERE id=?", (case_id,)).fetchone()
+    if not row:
+        return
+    try:
+        payload = json.loads(row["payload_json"] or "{}")
+    except Exception:
+        payload = {}
+    payload[key] = ref
+    con.execute("UPDATE cases SET payload_json=?, updated_at=? WHERE id=?",
+                (json.dumps(payload, ensure_ascii=False), utcnow(), case_id))
+
+
+def _link_problem_notice(con: Any, case_id: int, case_data: dict[str, Any]) -> None:
+    """Мягкая связка «уведомление о проблеме» ↔ «возврат» по документ+артикул.
+
+    problem_notice — пред-претензия (товар принят с дефектом, видеофиксация). Когда по той
+    же позиции (накладная+артикул) появляется реальный возврат — связываем их перекрёстно,
+    НЕ меняя состояний: возврат остаётся в 1С, уведомление — на своей полке. Оператор видит
+    связь с обеих сторон. Срабатывает в любом порядке (notice раньше или возврат раньше)."""
+    try:
+        et = case_data.get("event_type")
+        fields = case_data.get("fields") or {}
+        doc = str(fields.get("document_number") or "").strip()
+        part = str(fields.get("part_number") or "").strip()
+        strong = case_data.get("strong_key")
+        if et == "problem_notice":
+            target_types = ("new_return", "pre_delivery_refusal")
+        elif et in ("new_return", "pre_delivery_refusal"):
+            target_types = ("problem_notice",)
+        else:
+            return
+        if not ((doc and part) or strong):
+            return
+        ph = ",".join("?" for _ in target_types)
+        other = None
+        if doc and part:
+            other = con.execute(
+                f"""SELECT id FROM cases WHERE event_type IN ({ph}) AND id<>?
+                    AND json_extract(fields_json,'$.document_number')=?
+                    AND json_extract(fields_json,'$.part_number')=? ORDER BY id ASC LIMIT 1""",
+                (*target_types, case_id, doc, part),
+            ).fetchone()
+        if not other and strong:
+            other = con.execute(
+                f"SELECT id FROM cases WHERE event_type IN ({ph}) AND id<>? AND strong_key=? ORDER BY id ASC LIMIT 1",
+                (*target_types, case_id, strong),
+            ).fetchone()
+        if not other:
+            return
+        other_id = int(other["id"])
+        notice_id, return_id = (case_id, other_id) if et == "problem_notice" else (other_id, case_id)
+        _set_payload_ref(con, notice_id, "realized_by_return",
+                         {"case_id": return_id, "doc": doc, "part": part})
+        _set_payload_ref(con, return_id, "preceding_problem_notice",
+                         {"case_id": notice_id, "doc": doc, "part": part})
+        record_process_event(
+            con, stage="classifier", level="info",
+            message=f"Связь: уведомление о проблеме #{notice_id} ↔ возврат #{return_id} (накладная {doc}, арт. {part})",
+            case_id=case_id,
+        )
+    except Exception:
+        pass
+
+
 def _auto_queue_ready_if_enabled() -> dict[str, Any] | None:
     apply_runtime_settings()
     result: dict[str, Any] = {"ok": True}
@@ -524,6 +590,7 @@ def _run_full_pipeline(limit: int = 100) -> dict[str, Any]:
                 event_type = case_data.get("event_type", "")
                 if event_type in ("followup_reminder", "followup_dialog", "supplier_decision", "correction_request", "marking_request", "ready_to_ship"):
                     _auto_link_followup(con, case_id, case_data)
+                _link_problem_notice(con, case_id, case_data)
 
                 existing_cases.append({
                     "from_addr": norm(email_data.get("from_addr", "")),
@@ -866,6 +933,8 @@ def _apply_ai_to_case_id(
         # Только готовые кейсы идут в 1С; остальные остаются в нужных вкладках
         if queue_ready and updated.get("state") == "ready_to_1c" and updated.get("ready_for_export"):
             queue_case_event(con, updated_id)
+        # Мягкая связка problem_notice ↔ возврат по документ+артикул (не меняет состояний).
+        _link_problem_notice(con, updated_id, updated)
         # v2.1 AI-only: самообучение паттернов убрано (паттернов нет).
     # Брак/некондиция: авто-триггер vision по документам (несколько запросов + переключение на
     # vision-модель). Нет вложений → state=absent, vision не вызывается. Токены пишутся kind=vision
@@ -3850,6 +3919,7 @@ def _classify_pending(
                 if state is not None:
                     state["current_stage"] = "auto_link"
                 _auto_link_followup(con, case_id, case_data)
+            _link_problem_notice(con, case_id, case_data)
             # ── Один кейс на письмо (multi-case split ОТКЛЮЧЁН для скорости/стабильности) ──
             # Позиции таблицы доступны в export.items для 1С; multi_item_count в payload —
             # quality_gate его учитывает и не флагает ложно. Чистим старые сиблинги.
@@ -4308,6 +4378,7 @@ def api_case_ai_apply(case_id: int) -> dict[str, Any]:
             (dumps(updated.get("export") or {}), utcnow(), updated_id),
         )
         con.execute("UPDATE ai_suggestions SET accepted=1 WHERE case_id=? AND prompt_hash=?", (case_id, suggestion.get("prompt_hash")))
+        _link_problem_notice(con, updated_id, updated)
         con.commit()
     return {"ok": True, "applied": True, "suggestion": suggestion, "learning": learning_result, "case": get_case(case_id)}
 
