@@ -2542,6 +2542,9 @@ def apply_ai_overlay(email_data: dict[str, Any], case_data: dict[str, Any], ai_r
         state = "needs_review"
     elif event_type in {"correction_request", "marking_request", "number_replacement"}:
         state = "linked_event" if strong_key or email_data.get("references") else "needs_link"
+    elif event_type == "ready_to_ship":
+        # «Готово к выдаче/забрать возврат» — в связки, не в ручной (ветки не было в AI-пути).
+        state = "linked_event" if strong_key or email_data.get("references") else "needs_link"
     elif event_type == "shortage_link_event":
         state = "needs_link"
     elif event_type == "problem_notice":
