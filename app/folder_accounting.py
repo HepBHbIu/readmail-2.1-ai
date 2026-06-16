@@ -22,6 +22,7 @@ FOLDER_READY_TO_SHIP = "Готово к выдаче / забрать возвр
 FOLDER_LINKS_ACTIVE = "Связки активные"
 FOLDER_LINKS_COMPLETED = "Связки завершённые"
 FOLDER_REPORTS = "Прайсы / отчёты / остатки"
+FOLDER_PROBLEM_NOTICE = "Уведомления о проблеме"
 FOLDER_DUPLICATES = "Дубли"
 FOLDER_JUNK = "Не по теме / мусор"
 FOLDER_RAW_NO_CASE = "Raw без кейса"
@@ -42,6 +43,7 @@ ALL_FOLDERS = [
     FOLDER_LINKS_ACTIVE,
     FOLDER_LINKS_COMPLETED,
     FOLDER_REPORTS,
+    FOLDER_PROBLEM_NOTICE,
     FOLDER_DUPLICATES,
     FOLDER_JUNK,
     FOLDER_RAW_NO_CASE,
@@ -158,6 +160,10 @@ def folder_for(
     if event_type == "ready_to_ship":
         return _folder("SPECIAL_ACTION", FOLDER_READY_TO_SHIP, "ready_to_ship", True,
                        "забрать возврат или подтвердить выдачу", "товар/возврат готов к выдаче")
+    if event_type == "problem_notice" or state == "problem_notice":
+        return _folder("TERMINAL", FOLDER_PROBLEM_NOTICE, "problem_notice", False,
+                       "наблюдать; возможен будущий возврат",
+                       "уведомление о проблеме (принят с дефектом, не запрос на возврат)")
 
     mapping = {
         va.ACTION_REVIEW: ("ACTION", FOLDER_REVIEW),
@@ -297,6 +303,6 @@ def _folder_group_for_name(name: str) -> str:
         return "SPECIAL_ACTION"
     if name in {FOLDER_LINKS_ACTIVE, FOLDER_LINKS_COMPLETED}:
         return "LINKED"
-    if name in {FOLDER_REPORTS, FOLDER_DUPLICATES, FOLDER_JUNK}:
+    if name in {FOLDER_REPORTS, FOLDER_PROBLEM_NOTICE, FOLDER_DUPLICATES, FOLDER_JUNK}:
         return "TERMINAL"
     return "TECHNICAL"

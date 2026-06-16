@@ -1,7 +1,7 @@
 """Hidden Processed Mail — раздел «Обработанные / не требуют действия».
 
 Слой ПОВЕРХ folder_accounting (без новой SQL-правды): партиционирует все письма на
-рабочие папки vs скрытый раздел и даёт сводку/постраничный список по 11 группам.
+рабочие папки vs скрытый раздел и даёт сводку/постраничный список по 12 группам.
 Read-only: НЕ вызывает AI/1С, НЕ меняет БД/outbox.
 """
 from __future__ import annotations
@@ -10,7 +10,7 @@ from typing import Any
 
 from . import folder_accounting as fa
 
-# 11 групп скрытого раздела: (key, folder_name, title)
+# 12 групп скрытого раздела: (key, folder_name, title)
 HIDDEN_GROUPS: list[tuple[str, str, str]] = [
     ("correction_edo_ksf", fa.FOLDER_CORRECTION, "Корректировки / ЭДО / КСФ"),
     ("marking_tnved", fa.FOLDER_MARKING, "Маркировка / ТНВЭД"),
@@ -19,6 +19,7 @@ HIDDEN_GROUPS: list[tuple[str, str, str]] = [
     ("linked_active", fa.FOLDER_LINKS_ACTIVE, "Связки активные"),
     ("linked_completed", fa.FOLDER_LINKS_COMPLETED, "Связки завершённые"),
     ("supplier_reports", fa.FOLDER_REPORTS, "Прайсы / отчёты / остатки"),
+    ("problem_notice", fa.FOLDER_PROBLEM_NOTICE, "Уведомления о проблеме"),
     ("duplicates", fa.FOLDER_DUPLICATES, "Дубли"),
     ("junk", fa.FOLDER_JUNK, "Не по теме / мусор"),
     ("raw_without_case", fa.FOLDER_RAW_NO_CASE, "Raw без кейса"),
