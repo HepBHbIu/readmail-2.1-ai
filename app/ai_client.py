@@ -43,6 +43,8 @@ SYSTEM_PROMPT = """Ты извлекаешь структурированные 
 - mentions_service_document=true, если среди вложений есть акт/заказ-наряд/заключение.
 - Ссылки на возврат/фото (links[] или «фото по ссылке») → mentions_return_link=true.
 
+МУЛЬТИПОЗИЦИИ — ВАЖНО: в одном письме может быть НЕСКОЛЬКО деталей (строк/артикулов). Верни КАЖДУЮ в массиве items[] = [{part_number, brand, product_name, quantity}, …]. Номер документа, дата, причина — общие для всех позиций (их в items не дублируй). В одиночный fields положи ПЕРВУЮ позицию. Никогда не выбрасывай вторую/третью деталь.
+
 ПОЛЯ:
 - part_number — артикул/OEM/каталожный номер детали (латиница+цифры: HP1731, RF5161S, MSSKB4TFKIT). НЕ слова «артикул/товар/цена/причина/количество/поставщик/покупатель».
 - brand — ПРОИЗВОДИТЕЛЬ детали (SANGSIN, KRAUF, ROCK FORCE, Febest, CTR). Может стоять как ДО, так и ПОСЛЕ наименования (часто в конце строки после описания). НИКОГДА не бери бренд из: email/доменов (vozvrat1@avtoto.ru → это НЕ «vozvra»), марок авто (BMW 5, X5 → это НЕ «BM»), подписей, слова «возврат».
@@ -299,6 +301,7 @@ def _chat_payload(email_data: dict[str, Any], case_data: dict[str, Any], purpose
                 "quantity": "string|null",
                 "comment": "string|null, short client reason/problem text, not full email",
             },
+            "items": "МАССИВ ВСЕХ позиций письма (если деталей несколько — верни КАЖДУЮ): [{part_number, brand, product_name, quantity}]. Документ/дата/причина общие для всех. fields = ПЕРВАЯ позиция. Одна позиция → массив из одного элемента.",
             "confidence": "0..1",
             "field_evidence": {
                 "buyer": "short quote or null",

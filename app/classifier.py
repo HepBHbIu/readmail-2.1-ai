@@ -2577,6 +2577,34 @@ def apply_ai_overlay(email_data: dict[str, Any], case_data: dict[str, Any], ai_r
     )
     payload["shortage_link"] = shortage_link
 
+    # Мультипозиция от ИИ: items[] → table_items. build_export_json соберёт ВСЕ строки
+    # (шапка документа общая), иначе вторая/третья деталь терялась. >1 позиции = мультикейс.
+    ai_items = ai_response.get("items")
+    if isinstance(ai_items, list) and ai_items:
+        norm_items: list[dict[str, Any]] = []
+        for it in ai_items:
+            if not isinstance(it, dict):
+                continue
+            row: dict[str, Any] = {}
+            for k in ("part_number", "brand", "product_name", "quantity", "price", "comment"):
+                v = it.get(k)
+                if v not in (None, ""):
+                    row[k] = v
+            if row.get("part_number") or row.get("product_name"):
+                norm_items.append(row)
+        # дедуп по артикулу+наименованию (ИИ иногда повторяет первую позицию в items)
+        seen: set[tuple] = set()
+        uniq: list[dict[str, Any]] = []
+        for row in norm_items:
+            key = (str(row.get("part_number") or "").lower(), str(row.get("product_name") or "").lower())
+            if key in seen:
+                continue
+            seen.add(key)
+            uniq.append(row)
+        if len(uniq) > 1:
+            payload["table_items"] = uniq
+            payload["multi_item_count"] = len(uniq)
+
     merged.update(
         {
             "buyer_code": buyer_code,
