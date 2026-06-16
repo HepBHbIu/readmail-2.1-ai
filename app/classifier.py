@@ -2475,7 +2475,11 @@ def apply_ai_overlay(email_data: dict[str, Any], case_data: dict[str, Any], ai_r
         fields.pop("document_date", None)
     apply_explicit_labels(fields, _ai_full_text)
     priority = priority_for(deadline_at, _ai_full_text, is_followup)
-    pre_delivery = _detect_pre_delivery_refusal(_ai_full_text, event_type, fields)
+    # Доверяем вердикту ИИ: если он явно классифицировал отказ ДО поставки — это pre_delivery
+    # (формат АвтоЕвро «Запрос на снятие» эвристика не ловит, но 1С-минимум у него свой:
+    # № заявки/подтверждения + артикул, без документа реализации).
+    pre_delivery = _detect_pre_delivery_refusal(_ai_full_text, event_type, fields) or \
+        str(ai_response.get("event_type") or "") == "pre_delivery_refusal"
     if pre_delivery:
         event_type = "pre_delivery_refusal"
     shortage_link = detect_shortage_link_only(_ai_full_text, claim_kind, evidence)
