@@ -554,7 +554,7 @@ async function pollTick() {
   if (wasImportBusy && !res.import_busy) { if (activeTab === "emails") loadEmails(); }
   if (wasAiBusy && !res.ai_busy) { if (activeTab === "ai_review") loadAiReview(); }
   // Обновляем счётчики вкладок при любом изменении
-  const hash = JSON.stringify([res.total_emails, res.pattern_ready, res.needs_ai, res.ai_ready, res.links_count, res.review_count, res.unprocessed, res.offtopic, res.outbox_new]);
+  const hash = JSON.stringify([res.total_emails, res.pattern_ready, res.needs_ai, res.ai_ready, res.links_count, res.review_count, res.unprocessed, res.unprocessed_tab, res.processed_hidden, res.offtopic, res.outbox_new]);
   if (hash !== _lastPipelineHash) {
     _lastPipelineHash = hash;
     updateTabBadges(res);
@@ -577,7 +577,8 @@ function updateTabBadges(res) {
     "links": res.links_count || 0,
     "review": res.review_count || 0,
     "offtopic": res.offtopic || 0,
-    "unprocessed": res.unprocessed || 0,
+    "unprocessed": res.unprocessed_tab ?? res.unprocessed ?? 0,
+    "processed": res.processed_hidden || 0,
     "onec": res.outbox_new || 0,
     "pipeline": res.total_emails || 0,   // всего писем (быстрый источник)
   };

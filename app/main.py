@@ -493,6 +493,15 @@ def _link_problem_notice(con: Any, case_id: int, case_data: dict[str, Any]) -> N
         pass
 
 
+def _processed_hidden_count(con: Any) -> int:
+    """Кол-во писем в разделе «Обработанные / не требуют действия» — для бейджа вкладки."""
+    try:
+        from . import processed_hidden as ph
+        return int(ph.build_processed_hidden_summary(con).get("hidden_from_operator") or 0)
+    except Exception:
+        return 0
+
+
 def _auto_queue_ready_if_enabled() -> dict[str, Any] | None:
     apply_runtime_settings()
     result: dict[str, Any] = {"ok": True}
@@ -6796,6 +6805,19 @@ def api_pipeline_status() -> dict[str, Any]:
                    AND NOT EXISTS (SELECT 1 FROM ai_suggestions s WHERE s.case_id=cases.id AND s.accepted=1)"""
             ).fetchone()["c"]
 
+            # Счётчик для ВКЛАДКИ «Неразобранные» — совпадает с by-method=unprocessed
+            # (всё в needs_review/unknown, кроме followup/решений; вкл. уже тронутые AI).
+            unprocessed_tab = con.execute(
+                """SELECT COUNT(*) c FROM cases c
+                   WHERE c.state IN ('needs_review','unknown')
+                     AND c.event_type NOT IN ('followup_reminder','followup_dialog','supplier_decision')
+                     AND (
+                        EXISTS (SELECT 1 FROM ai_suggestions s WHERE s.case_id=c.id)
+                        OR ((c.buyer_code IS NULL OR c.buyer_code='') AND (c.claim_kind IS NULL OR c.claim_kind=''))
+                        OR c.event_type='unknown'
+                     )"""
+            ).fetchone()["c"]
+
             links_count = con.execute(
                 """SELECT COUNT(*) c FROM cases
                    WHERE (state='needs_link' OR link_quarantine=1)
@@ -6833,6 +6855,8 @@ def api_pipeline_status() -> dict[str, Any]:
                 "ai_ready": ai_ready,
                 "links_count": links_count,
                 "unprocessed": unprocessed,
+                "unprocessed_tab": unprocessed_tab,
+                "processed_hidden": _processed_hidden_count(con),
                 "offtopic": offtopic,
                 "review_count": review_count,
                 "case_states": case_states,
