@@ -187,6 +187,7 @@ function onTabActivated(tab) {
     else if (tab === "ai_review") loadAiReview();
     else if (tab === "links") loadLinks();
     else if (tab === "offtopic") loadOfftopic();
+    else if (tab === "problem_notice") loadProblemNotice();
     else if (tab === "processed") loadProcessedHidden();
     else if (tab === "pipeline") loadPipeline();
     else if (tab === "unprocessed") loadUnprocessed();
@@ -247,18 +248,7 @@ function filterSettingsCat(cat) {
 ══════════════════════════════════════════════════════ */
 
 let _reviewPage = loadSavedPage("review");
-let _reviewFolder = localStorage.getItem("readmail.reviewFolder") || "all";
 let _reviewSelectedId = null;
-// Порядок и подписи чипов-папок (имена приходят с бэка folder_names, тут — запасной порядок).
-const REVIEW_FOLDER_ORDER = ["all","ready_1c","manual","needs_link","corrections","ready_to_ship",
-  "followups","reminders","supplier_decisions","marking","problem_notice","information","unknown"];
-
-function selectReviewFolder(key) {
-  _reviewFolder = key;
-  _reviewPage = 1;
-  localStorage.setItem("readmail.reviewFolder", key);
-  loadReview();
-}
 const _reviewCache = new Map();
 
 let _rt, _pt, _at; // debounce timers for review / patterns / ai search
@@ -267,7 +257,7 @@ async function loadReview() {
   try {
     const filter = $("review-filter")?.value || "all";
     const buyer  = $("review-buyer")?.value  || "";
-    const folder = _reviewFolder || "all";
+    const folder = $("review-folder")?.value || "all";
     const kind   = $("review-kind")?.value   || "";
     const q      = $("review-search")?.value || "";
     const miss = Array.from(document.querySelectorAll(".review-miss:checked")).map(el => el.value);
@@ -295,22 +285,17 @@ async function loadReview() {
     }
     const cnt = $("review-count");
     if (cnt) cnt.textContent = `Показано ${res.shown_count ?? (res.cases || []).length} из ${res.total_count ?? res.total ?? 0}`;
-    // Чипы-папки (видимое меню вместо дропдауна): явные имена + счётчики.
-    const chips = $("review-folder-chips");
-    if (chips) {
-      const names = res.folder_names || {};
-      const counts = res.folder_counts || {};
-      const totalAll = Object.values(counts).reduce((a, b) => a + (b || 0), 0);
-      const keys = REVIEW_FOLDER_ORDER.filter(k => k === "all" || k in names || k in counts);
-      Object.keys(names).forEach(k => { if (!keys.includes(k)) keys.push(k); });
-      chips.innerHTML = keys.map(key => {
-        const label = key === "all" ? "Все" : (names[key] || key);
-        const count = key === "all" ? totalAll : (counts[key] ?? 0);
-        const active = key === _reviewFolder;
-        const dim = key !== "all" && !count ? " chip-empty" : "";
-        return `<button class="folder-chip${active ? " active" : ""}${dim}" onclick="selectReviewFolder('${key}')">` +
-               `${esc(label)}<span class="chip-count">${count}</span></button>`;
-      }).join("");
+    // Дорисовка опций дропдауна явными именами + счётчиками с бэка.
+    const folderSel = $("review-folder");
+    if (folderSel) {
+      const currentFolder = folderSel.value;
+      Array.from(folderSel.options).forEach(option => {
+        const key = option.value;
+        const baseName = key === "all" ? "Все папки" : (res.folder_names?.[key] || option.textContent.replace(/\s+\(\d+\)$/, ""));
+        const count = res.folder_counts?.[key];
+        option.textContent = count == null ? baseName : `${baseName} (${count})`;
+        option.selected = key === currentFolder;
+      });
     }
     // Badge on tab
     const tabBadge = $("badge-review");
@@ -571,7 +556,7 @@ async function pollTick() {
   if (wasImportBusy && !res.import_busy) { if (activeTab === "emails") loadEmails(); }
   if (wasAiBusy && !res.ai_busy) { if (activeTab === "ai_review") loadAiReview(); }
   // Обновляем счётчики вкладок при любом изменении
-  const hash = JSON.stringify([res.total_emails, res.pattern_ready, res.needs_ai, res.ai_ready, res.links_count, res.review_count, res.unprocessed, res.unprocessed_tab, res.processed_hidden, res.offtopic, res.outbox_new]);
+  const hash = JSON.stringify([res.total_emails, res.pattern_ready, res.needs_ai, res.ai_ready, res.links_count, res.review_count, res.unprocessed, res.unprocessed_tab, res.processed_hidden, res.offtopic, res.outbox_new, res.case_states && res.case_states.problem_notice]);
   if (hash !== _lastPipelineHash) {
     _lastPipelineHash = hash;
     updateTabBadges(res);
@@ -595,6 +580,7 @@ function updateTabBadges(res) {
     "review": res.review_count || 0,
     "offtopic": res.offtopic || 0,
     "unprocessed": res.unprocessed_tab ?? res.unprocessed ?? 0,
+    "problem_notice": (res.case_states && res.case_states.problem_notice) || 0,
     "processed": res.processed_hidden || 0,
     "onec": res.outbox_new || 0,
     "pipeline": res.total_emails || 0,   // всего писем (быстрый источник)
@@ -1852,6 +1838,19 @@ async function loadOfftopic() {
       function(p) { _offtopicPage = p; savePage("offtopic", p); loadOfftopic(); },
       "Писем не по теме нет");
   } catch (e) { console.warn("loadOfftopic error:", e); }
+}
+
+let _problemNoticePage = loadSavedPage("problem_notice");
+async function loadProblemNotice() {
+  try {
+    const q = $("problem_notice-search")?.value || "";
+    const res = await api(`/api/v2/cases/by-method?method=problem_notice&limit=30&page=${_problemNoticePage}&q=${encodeURIComponent(q)}`);
+    const cnt = $("problem_notice-count");
+    if (cnt) cnt.textContent = res.total || 0;
+    renderLooseCaseCards(res, "problem_notice-list", "problem_notice-pagination", _problemNoticePage,
+      function(p) { _problemNoticePage = p; savePage("problem_notice", p); loadProblemNotice(); },
+      "Уведомлений о проблеме нет");
+  } catch (e) { console.warn("loadProblemNotice error:", e); }
 }
 
 async function loadLinks() {
@@ -4084,6 +4083,7 @@ document.addEventListener("DOMContentLoaded", () => {
   $("emails-page-size")?.addEventListener("change", loadEmails);
   $("links-search")?.addEventListener("input", debouncedLoad(() => { _linksPage = 1; loadLinks(); }));
   $("offtopic-search")?.addEventListener("input", debouncedLoad(() => { _offtopicPage = 1; loadOfftopic(); }));
+  $("problem_notice-search")?.addEventListener("input", debouncedLoad(() => { _problemNoticePage = 1; loadProblemNotice(); }));
 
   // Запуск slow-polling (10s). Если что-то будет работать — автоматически ускорится до 2s
   _pollSlow = setInterval(pollTick, 10000);

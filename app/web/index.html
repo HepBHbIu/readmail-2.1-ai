@@ -28,7 +28,8 @@
           <div class="nav-group-menu">
             <button class="tab" data-tab="review">Сверка <span class="tab-badge" id="badge-review"></span></button>
             <button class="tab" data-tab="ai_review">AI-разбор</button>
-            <button class="tab" data-tab="unprocessed">Неразобранные <span class="tab-badge" id="badge-unprocessed"></span></button>
+            <button class="tab" data-tab="unprocessed">✋ Ручной разбор <span class="tab-badge" id="badge-unprocessed"></span></button>
+            <button class="tab" data-tab="problem_notice">⚠️ Уведомления о проблеме <span class="tab-badge" id="badge-problem_notice"></span></button>
             <button class="tab" data-tab="offtopic">Не по теме <span class="tab-badge" id="badge-offtopic"></span></button>
             <button class="tab" data-tab="links">Связки <span class="tab-badge" id="badge-links"></span></button>
             <button class="tab" data-tab="processed">Обработанные / не требуют действия <span class="tab-badge" id="badge-processed"></span></button>
@@ -265,7 +266,21 @@
             <button class="btn-sm" onclick="loadReview()">Обновить</button>
           </div>
           <div style="padding:6px 8px;display:flex;gap:5px;flex-wrap:wrap;border-bottom:1px solid var(--border)">
-            <div id="review-folder-chips" class="folder-chips" title="Группы писем по назначению"></div>
+            <select id="review-folder" class="select-sm" onchange="_reviewPage=1;loadReview()" title="Папка писем">
+              <option value="all">Все папки</option>
+              <option value="ready_1c">✅ Готово в 1С</option>
+              <option value="manual">✋ Ручной разбор</option>
+              <option value="needs_link">🔗 Связки: ждут привязки</option>
+              <option value="corrections">📝 Корректировки / ЭДО</option>
+              <option value="ready_to_ship">📦 Готово к выдаче</option>
+              <option value="followups">💬 Диалоги (продолжения)</option>
+              <option value="reminders">⏰ Напоминания</option>
+              <option value="supplier_decisions">✔️ Решения поставщика</option>
+              <option value="marking">🏷 Маркировка / ТНВЭД</option>
+              <option value="problem_notice">⚠️ Уведомления о проблеме</option>
+              <option value="information">🗑 Прайсы / отчёты / мусор</option>
+              <option value="unknown">❓ Неизвестные</option>
+            </select>
             <select id="review-filter" class="select-sm" onchange="_reviewPage=1;loadReview()">
               <option value="all">Все</option>
               <option value="pattern">Паттерн</option>
@@ -403,6 +418,22 @@
       </div>
       <div id="offtopic-list" class="unprocessed-list"></div>
       <div class="pagination" id="offtopic-pagination"></div>
+    </section>
+
+    <!-- УВЕДОМЛЕНИЯ О ПРОБЛЕМЕ -->
+    <section id="tab-problem_notice" class="tab-content">
+      <div class="toolbar">
+        <div class="toolbar-left">
+          <span class="hint-text">Принят с дефектом, решение у клиента — НЕ запрос на возврат. В 1С не идёт; ключ накладная+артикул для привязки будущего возврата.</span>
+        </div>
+        <div class="toolbar-right">
+          <input type="search" id="problem_notice-search" class="search-input" placeholder="Поиск по теме, отправителю">
+          <span class="count-badge" id="problem_notice-count">0</span>
+          <button class="btn-sm" onclick="loadProblemNotice()">Обновить</button>
+        </div>
+      </div>
+      <div id="problem_notice-list" class="unprocessed-list"></div>
+      <div class="pagination" id="problem_notice-pagination"></div>
     </section>
 
     <!-- ОБРАБОТАННЫЕ / НЕ ТРЕБУЮТ ДЕЙСТВИЯ -->

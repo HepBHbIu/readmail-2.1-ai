@@ -7091,6 +7091,9 @@ def api_v2_cases_by_method(
                         OR c.event_type = 'unknown'
                     )
                 """
+            elif method == "problem_notice":
+                # Уведомления о проблеме (принят с дефектом, не запрос на возврат).
+                where = "(c.event_type='problem_notice' OR c.state='problem_notice')"
             else:
                 # ЭТАП 4: письма не по задаче возвратов/претензий.
                 # Их можно открыть и вручную переобучить/переназначить, если классификация ошиблась.
