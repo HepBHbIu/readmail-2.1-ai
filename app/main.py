@@ -1088,15 +1088,17 @@ def _ai_decision_snapshot(limit: int = 20) -> dict[str, Any]:
 
 
 def _select_full_ai_ids(limit: int) -> list[int]:
-    """Режим «Автопилот ИИ»: ИИ смотрит ВСЁ подряд. Берём возвраты в needs_review,
-    которые ещё НЕ обработаны ИИ (нет ai_overlay/processing_source=ai), новые первыми."""
+    """v2.1 «Сразу ИИ»: ИИ смотрит КАЖДОЕ письмо (любой event_type), а не только возвраты —
+    чтобы претензия, спрятанная скелетом в «корректировке»/связках, не прошла мимо ИИ.
+    Берём не-обработанные ИИ кейсы, новые первыми; пропускаем уже AI-обработанные,
+    отправленные и внутренние."""
     ids: list[int] = []
     with connect() as con:
         rows = con.execute(
             """SELECT c.id, c.payload_json FROM cases c JOIN raw_emails e ON e.id=c.raw_email_id
-               WHERE c.event_type='new_return' AND c.state='needs_review'
+               WHERE c.state NOT IN ('exported','closed','delivered','ignored_internal')
                ORDER BY e.received_at DESC, c.id DESC LIMIT ?""",
-            (max(1, limit) * 4,),
+            (max(1, limit) * 6,),
         ).fetchall()
     for r in rows:
         try:
@@ -2289,6 +2291,7 @@ def api_review_cases(
                 "defect_doc_flag": payload.get("defect_doc_flag"),
                 "evidence_gate": payload.get("evidence_gate") or {},
                 "fields": d.get("fields") or {},
+                "multi_item_count": int(payload.get("multi_item_count") or 0),
                 "missing": d.get("missing") or [],
                 "quality": d.get("quality") or [],
                 "subject": d.get("subject"),
@@ -2812,7 +2815,7 @@ def api_reset_and_import(confirm: str = Query(...), limit: int = 50) -> dict[str
     with connect() as con:
         reset = reset_processing_data(con, keep_settings=True, keep_learning=True, keep_process_events=False)
     _log("operator", "Тестовые данные обнулены перед новым импортом", level="warn", details=reset)
-    imp = _import_once(limit=max(1, int(limit)))
+    imp = _safe_import_cycle()  # v2.1: полный цикл фетч+классиф (учитывает фильтр дат)
     _log("import", "Импорт после reset завершён", level="ok" if imp.get("ok", True) else "warn", details=imp)
     return {"ok": True, "reset": reset, "import": imp}
 

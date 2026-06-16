@@ -353,6 +353,7 @@ async function loadReview() {
         <div class="split-item-meta">
           ${badge(kind, "blue")}
           ${f.part_number ? `<span style="font-size:10px">${esc(f.part_number)}</span>` : ""}
+          ${(c.multi_item_count || 0) > 1 ? `<span class="badge badge-blue" style="font-size:9px" title="Позиций в письме">📦 ${c.multi_item_count} поз.</span>` : ""}
           ${f.document_number ? `<span style="font-size:10px">${esc(f.document_number)}</span>` : ""}
           <span style="color:var(--text-muted)">${fmtDate(c.received_at)}</span>
         </div>
