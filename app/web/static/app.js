@@ -442,8 +442,16 @@ function renderReviewDetail(c) {
         Папка: <strong>${esc(c.folder_name || "Служебные")}</strong>. Кейс виден для сверки, экспорт в 1С для этого типа отключён.
       </div>`}
     <div style="margin-top:12px;padding:8px;border:1px dashed var(--border);border-radius:6px">
-      <div style="font-size:12px;font-weight:600;margin-bottom:6px">↪ Переместить вручную (со статусом)</div>
+      <div style="font-size:12px;font-weight:600;margin-bottom:6px">↪ Оператор: сменить статус и/или переместить</div>
       <input id="route-reason-${c.id}" class="search-input" style="width:100%;margin-bottom:6px" placeholder="Причина/комментарий оператора (необязательно)">
+      <div style="display:flex;gap:5px;align-items:center;margin-bottom:6px">
+        <span style="font-size:11px;color:var(--text-muted)">Причина:</span>
+        <select id="route-kind-${c.id}" class="select-sm">
+          ${["defect","nonconforming","wrong_item","shortage","overdelivery","incomplete_set","number_replacement","correction_request","marking_request","quality_refusal"]
+            .map(k => `<option value="${k}"${c.claim_kind===k?" selected":""}>${KIND_LABELS[k]||k}</option>`).join("")}
+        </select>
+        <button class="btn-sm" onclick="changeCaseKind(${c.id})">Применить причину</button>
+      </div>
       <div style="display:flex;gap:5px;flex-wrap:wrap">
         <button class="btn-sm success" onclick="routeCase(${c.id},'ready_1c')">✅ В 1С</button>
         <button class="btn-sm" onclick="routeCase(${c.id},'problem_notice')">⚠️ Уведомление</button>
@@ -455,17 +463,24 @@ function renderReviewDetail(c) {
   `;
 }
 
+async function _postRoute(caseId, body) {
+  const res = await api(`/api/cases/${caseId}/route`, { method: "POST", body: JSON.stringify(body) });
+  if (res && res.ok) { loadReview(); if (typeof loadPipelineStatus === "function") loadPipelineStatus(); }
+  return res;
+}
 async function routeCase(caseId, dest) {
   const reason = ($(`route-reason-${caseId}`)?.value || "").trim();
   const labels = { ready_1c: "1С", junk: "мусор", needs_link: "связки", problem_notice: "уведомления о проблеме", manual: "ручной разбор" };
-  const res = await api(`/api/cases/${caseId}/route`, { method: "POST", body: JSON.stringify({ destination: dest, reason }) });
-  if (res && res.ok) {
-    toast(`Кейс #${caseId} → ${labels[dest] || dest}${reason ? " ("+reason+")" : ""}`, "success");
-    loadReview();
-    if (typeof loadPipelineStatus === "function") loadPipelineStatus();
-  } else {
-    toast("Не удалось переместить: " + (res?.error || "ошибка"), "error");
-  }
+  const res = await _postRoute(caseId, { destination: dest, reason });
+  if (res && res.ok) toast(`Кейс #${caseId} → ${labels[dest] || dest}${reason ? " ("+reason+")" : ""}`, "success");
+  else toast("Не удалось переместить: " + (res?.error || "ошибка"), "error");
+}
+async function changeCaseKind(caseId) {
+  const kind = $(`route-kind-${caseId}`)?.value;
+  const reason = ($(`route-reason-${caseId}`)?.value || "").trim();
+  const res = await _postRoute(caseId, { claim_kind: kind, reason });
+  if (res && res.ok) toast(`Кейс #${caseId}: причина → ${KIND_LABELS[kind] || kind}`, "success");
+  else toast("Не удалось сменить причину: " + (res?.error || "ошибка"), "error");
 }
 
 const DOC_LABELS = { install_order: "заказ-наряд установка", removal_order: "заказ-наряд снятие", service_act: "акт/заключение сервиса" };
