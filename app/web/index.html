@@ -1,0 +1,1112 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<title>Readmail v2</title>
+<link rel="stylesheet" href="/static/style.css?v=20260615onec">
+</head>
+<body>
+<div id="app">
+
+  <!-- Шапка -->
+  <header class="topbar">
+    <div class="topbar-left">
+      <span class="logo">Readmail <span class="version">v2</span></span>
+    </div>
+    <div class="topbar-center">
+      <nav class="tabs nav-groups" id="main-tabs">
+        <div class="nav-group">
+          <button class="nav-group-head" type="button">Приём <span class="nav-caret">▾</span></button>
+          <div class="nav-group-menu">
+            <button class="tab active" data-tab="emails">Письма</button>
+          </div>
+        </div>
+        <div class="nav-group">
+          <button class="nav-group-head" type="button">Обработка <span class="nav-group-dot" id="navdot-process"></span> <span class="nav-caret">▾</span></button>
+          <div class="nav-group-menu">
+            <button class="tab" data-tab="review">Сверка <span class="tab-badge" id="badge-review"></span></button>
+            <button class="tab" data-tab="ai_review">AI-разбор</button>
+            <button class="tab" data-tab="unprocessed">Неразобранные <span class="tab-badge" id="badge-unprocessed"></span></button>
+            <button class="tab" data-tab="offtopic">Не по теме <span class="tab-badge" id="badge-offtopic"></span></button>
+            <button class="tab" data-tab="links">Связки <span class="tab-badge" id="badge-links"></span></button>
+            <button class="tab" data-tab="processed">Обработанные / не требуют действия <span class="tab-badge" id="badge-processed"></span></button>
+            <button class="tab" data-tab="pipeline">📊 Все письма (Pipeline) <span class="tab-badge" id="badge-pipeline"></span></button>
+          </div>
+        </div>
+        <div class="nav-group">
+          <button class="nav-group-head" type="button">1С <span class="nav-caret">▾</span></button>
+          <div class="nav-group-menu">
+            <button class="tab" data-tab="onec">Готово к выгрузке</button>
+          </div>
+        </div>
+        <div class="nav-group">
+          <button class="nav-group-head" type="button">Контроль <span class="nav-caret">▾</span></button>
+          <div class="nav-group-menu">
+            <button class="tab" data-tab="dashboard">🖥 Пульт</button>
+            <button class="tab" data-tab="inbox_sorter">Inbox Sorter</button>
+            <button class="tab" data-tab="final_sorter">Сортер</button>
+            <button class="tab" data-tab="evidence">Evidence</button>
+            <button class="tab" data-tab="ai_trace">AI Trace</button>
+            <button class="tab" data-tab="defect_audit">Defect Audit</button>
+            <button class="tab" data-tab="supplier_matrix">Поставщики</button>
+            <button class="tab" data-tab="quick_review_pipeline">Quick Review</button>
+            <button class="tab" data-tab="outbox_staging">Staging</button>
+          </div>
+        </div>
+        <div class="nav-group">
+          <button class="nav-group-head" type="button">Настройка <span class="nav-caret">▾</span></button>
+          <div class="nav-group-menu">
+            <button class="tab" data-tab="clients">Клиенты</button>
+            <button class="tab" data-tab="settings">Настройки</button>
+          </div>
+        </div>
+      </nav>
+    </div>
+    <div class="topbar-right">
+      <div class="global-search" id="global-search">
+        <input type="search" id="gsearch-input" autocomplete="off" spellcheck="false"
+          placeholder="Найти: письмо / кейс / 1С / артикул / документ  (Ctrl+K)">
+        <div class="gsearch-dropdown" id="gsearch-dropdown" style="display:none"></div>
+      </div>
+      <div class="status-bar topbar-status" id="system-status-bar"><span class="status-item">Загрузка...</span></div>
+      <div class="user-chip" id="user-chip" style="display:none">
+        <span id="user-chip-name">—</span>
+        <button class="btn-logout" id="btn-logout" type="button" onclick="doLogout()">Выйти</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Пайплайн-тулбар -->
+  <div class="pipeline-bar" id="pipeline-bar">
+
+   <div class="manual-blocks" id="manual-blocks" style="display:none">
+    <div class="manual-block">
+     <div class="manual-block-label">Почта (общая)</div>
+     <div class="pipeline-flow" id="pipeline-import-flow">
+      <div class="pstep" id="pipe-step-import">
+        <div class="pstep-head">
+          <span class="pstep-title">Импорт</span>
+          <label class="mini-toggle" title="Авто-скан почты (каждые 3 мин)">
+            <input type="checkbox" id="s-auto-scan" onchange="toggleAutoScan(this.checked)"><span>⟳</span>
+          </label>
+          <span class="pstep-count" id="pipe-count-import">—</span>
+        </div>
+        <div class="pstep-actions">
+          <button class="pstep-btn run" id="pipeline-btn-import-start" onclick="runImport()">Старт</button>
+          <button class="pstep-btn stop" id="pipeline-btn-import-stop" onclick="stopImport()" style="display:none">Стоп</button>
+        </div>
+      </div>
+     </div>
+    </div><!-- /manual-block почта -->
+
+    <!-- v2.1 AI-only: блок «Паттерн-конвейер» удалён. Остаётся только ИИ-конвейер. -->
+
+    <div class="manual-block">
+     <div class="manual-block-label">ИИ-конвейер</div>
+     <div class="pipeline-flow" id="pipeline-ai-flow">
+      <div class="pstep">
+        <div class="pstep-head">
+          <span class="pstep-title">ИИ</span>
+          <select id="fullai-scope" class="mini-sel" title="Что прогонять">
+            <option value="new">свежие</option>
+            <option value="old">старые</option>
+          </select>
+          <input type="number" id="fullai-limit" class="mini-num" value="20" min="1" max="200" title="Сколько возвратов за прогон">
+          <span class="pstep-count" id="pipe-count-fullai">—</span>
+        </div>
+        <div class="pstep-actions">
+          <input type="number" id="fullai-caseid" class="mini-num" placeholder="№" title="ИИ по конкретному кейсу — введите номер" style="flex:0 0 40px">
+          <button class="pstep-btn run" id="btn-fullai-run" onclick="runFullAiBatch()">Прогон</button>
+          <button class="pstep-btn stop" id="btn-fullai-stop" onclick="stopFullAiBatch()" style="display:none">Стоп</button>
+        </div>
+      </div>
+      <div class="pstep-arrow">→</div>
+      <div class="pstep">
+        <div class="pstep-head"><span class="pstep-title">Сверка</span></div>
+        <div class="pstep-actions"><button class="pstep-btn run" onclick="activateTab('review', true)">Открыть</button></div>
+      </div>
+      <div class="pstep-arrow">→</div>
+      <div class="pstep">
+        <div class="pstep-head"><span class="pstep-title">1С</span></div>
+        <div class="pstep-actions"><button class="pstep-btn run" onclick="deliverOutbox()">Отправить</button></div>
+      </div>
+     </div>
+    </div><!-- /manual-block ИИ -->
+   </div><!-- /manual-blocks -->
+
+    <!-- Автопилоты (всегда видны) -->
+    <div class="pipeline-btns">
+      <!-- v2.1 AI-only: один автопилот (полный ИИ). Обычный паттерн-автопилот удалён. -->
+      <button class="btn-run-all btn-start btn-start-ai" id="pipeline-btn-autopilot-ai" title="Конвейер 24/7 на ИИ: импорт → ИИ (каждое письмо, +фото/документы) → Сверка → 1С авто">
+        <span>✦</span><span>Автопилот</span>
+      </button>
+      <button class="btn-run-all btn-stop" id="pipeline-btn-autopilot-stop" style="display:none" title="Остановить конвейер">
+        <span>■</span><span>Стоп</span>
+      </button>
+    </div>
+
+  </div>
+
+  <!-- AI-лог «от запроса до вывода» (виден во всех режимах: паттерн+ИИ, автопилот, полный ИИ, vision/доки) -->
+  <div class="ai-live-log" id="ai-live-log" style="display:none">
+    <div class="ai-live-log-head" onclick="toggleAiLog()">
+      <span>🔬 AI-лог — под капотом (запрос → ответ → токены)</span>
+      <span class="ai-live-log-caret" id="ai-live-log-caret">▾</span>
+      <label class="autoscan-label" style="margin-left:auto" onclick="event.stopPropagation()">
+        <input type="checkbox" id="ai-log-auto" onchange="toggleAiLogAuto(this.checked)"> авто-обновление
+      </label>
+      <button class="btn-sm" onclick="event.stopPropagation();loadAiLiveLog()">Обновить</button>
+    </div>
+    <div class="ai-live-log-body" id="ai-live-log-body" style="display:none"></div>
+  </div>
+
+  <!-- Модал живого прогресса цикла -->
+  <div class="modal" id="cycle-modal" style="display:none">
+    <div class="modal-box" style="max-width:680px;max-height:85vh;display:flex;flex-direction:column">
+      <div class="modal-title" style="display:flex;align-items:center;gap:10px">
+        <span id="cycle-modal-icon">→</span>
+        <span id="cycle-modal-title">Запуск полного цикла</span>
+        <span style="margin-left:auto;font-size:12px;color:var(--text-muted)" id="cycle-elapsed"></span>
+      </div>
+      <!-- Шаги -->
+      <div class="cycle-steps" id="cycle-steps">
+        <div class="cycle-step" id="cstep-import">Импорт <span class="cstep-val" id="cstep-import-val"></span></div>
+        <div class="cycle-step" id="cstep-ai">AI <span class="cstep-val" id="cstep-ai-val"></span></div>
+        <div class="cycle-step" id="cstep-queue">Очередь 1С <span class="cstep-val" id="cstep-queue-val"></span></div>
+        <div class="cycle-step" id="cstep-deliver">Доставка <span class="cstep-val" id="cstep-deliver-val"></span></div>
+      </div>
+      <!-- Лог событий -->
+      <div style="flex:1;overflow-y:auto;min-height:0;margin-top:10px">
+        <div id="cycle-log" style="font-size:12px;font-family:monospace;line-height:1.7;white-space:pre-wrap"></div>
+      </div>
+      <!-- Итог -->
+      <div id="cycle-summary" style="display:none;margin-top:10px;padding:10px;background:var(--bg-secondary);border-radius:6px;font-size:13px"></div>
+      <div class="modal-footer" style="margin-top:10px">
+        <button class="btn-secondary" id="cycle-close-btn" style="display:none" onclick="closeCycleModal()">Закрыть</button>
+        <span style="color:var(--text-muted);font-size:12px" id="cycle-running-hint">Идёт обработка...</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Основная область -->
+  <main class="content">
+
+    <!-- ПУЛЬТ (developer/admin) -->
+    <section id="tab-dashboard" class="tab-content">
+      <div class="dash-actions" id="dash-actions"></div>
+      <div class="dash-grid" id="dash-grid">
+        <div class="dash-loading">Загрузка пульта…</div>
+      </div>
+    </section>
+
+    <!-- ПИСЬМА -->
+    <section id="tab-emails" class="tab-content active">
+      <div class="toolbar">
+        <div class="toolbar-left">
+          <select id="emails-filter" class="select-sm">
+            <option value="all">Все письма</option>
+            <option value="new">Новые возвраты</option>
+            <option value="reminder">Напоминалки</option>
+            <option value="quarantine">Карантин ссылок</option>
+            <option value="unprocessed">Необработанные</option>
+          </select>
+          <select id="emails-buyer" class="select-sm"><option value="">Все клиенты</option></select>
+          <select id="emails-sort" class="select-sm">
+            <option value="date_desc">↓ По дате</option>
+            <option value="date_asc">↑ По дате</option>
+            <option value="client">По клиенту</option>
+            <option value="subject">По теме</option>
+            <option value="priority">По приоритету</option>
+          </select>
+          <select id="emails-page-size" class="select-sm">
+            <option value="20">20</option>
+            <option value="50" selected>50</option>
+            <option value="100">100</option>
+            <option value="200">200</option>
+          </select>
+          <input type="text" id="emails-search" class="input-sm" placeholder="Поиск по теме, артикулу…">
+        </div>
+        <div class="toolbar-right">
+          <span class="count-badge" id="emails-count">0 писем</span>
+          <button class="btn-sm" onclick="loadEmails()">Обновить</button>
+        </div>
+      </div>
+      <div id="mail-reconcile-card" class="evidence-band">
+        <div><span class="evidence-band-label">Сверка почты</span><strong>Отчёт ещё не загружен</strong></div>
+      </div>
+      <div class="table-wrap">
+        <table class="data-table" id="emails-table">
+          <thead>
+            <tr>
+              <th style="width:28px"></th>
+              <th style="width:160px">Клиент</th>
+              <th>Тема / поля</th>
+              <th style="width:110px">Тип претензии</th>
+              <th style="width:80px">Статус</th>
+              <th style="width:110px">Дата</th>
+            </tr>
+          </thead>
+          <tbody id="emails-tbody"></tbody>
+        </table>
+      </div>
+      <div class="pagination" id="emails-pagination"></div>
+    </section>
+
+    <!-- СВЕРКА -->
+    <section id="tab-review" class="tab-content">
+      <div class="split-page">
+        <div class="split-list-col" id="review-list-col">
+          <div class="split-list-toolbar">
+            <span style="font-size:11px;color:var(--text-muted)">Все кейсы · сверка по папкам</span>
+            <span class="count-badge" id="review-count">Показано 0 из 0</span>
+            <button class="btn-sm success" onclick="approveAllReview()" title="Отправить только готовые возвратные кейсы; служебные папки не затрагиваются">Готовые → 1С</button>
+            <button class="btn-sm" onclick="loadReview()">Обновить</button>
+          </div>
+          <div style="padding:6px 8px;display:flex;gap:5px;flex-wrap:wrap;border-bottom:1px solid var(--border)">
+            <select id="review-folder" class="select-sm" onchange="_reviewPage=1;loadReview()" title="Папка писем">
+              <option value="all">Все папки</option>
+              <option value="returns">Возвраты / проверка</option>
+              <option value="needs_link">Связки требуют привязки</option>
+              <option value="corrections">Корректировки / ЭДО</option>
+              <option value="ready_to_ship">Готово к выдаче</option>
+              <option value="followups">Продолжения диалогов</option>
+              <option value="reminders">Напоминания</option>
+              <option value="supplier_decisions">Решения поставщика</option>
+              <option value="marking">Маркировка / ТНВЭД</option>
+              <option value="information">Прайсы / отчёты / информация</option>
+              <option value="unknown">Неизвестные</option>
+            </select>
+            <select id="review-filter" class="select-sm" onchange="_reviewPage=1;loadReview()">
+              <option value="all">Все</option>
+              <option value="pattern">Паттерн</option>
+              <option value="ai">AI</option>
+            </select>
+            <select id="review-buyer" class="select-sm" onchange="_reviewPage=1;loadReview()">
+              <option value="">Все клиенты</option>
+            </select>
+            <select id="review-kind" class="select-sm" onchange="_reviewPage=1;loadReview()" title="Сортировать по причине возврата">
+              <option value="">Все причины</option>
+            </select>
+            <input type="text" id="review-search" class="input-sm" placeholder="Поиск: номер, тема…"
+              style="flex:1;min-width:100px" oninput="clearTimeout(_rt); _rt=setTimeout(loadReview,350)">
+          </div>
+          <div id="review-missing-filter" style="padding:5px 8px;display:flex;gap:10px;flex-wrap:wrap;align-items:center;border-bottom:1px solid var(--border);font-size:11px">
+            <span style="color:var(--text-muted)">Пустые ячейки:</span>
+            <label style="display:flex;gap:3px;align-items:center;cursor:pointer"><input type="checkbox" class="review-miss" value="document_number" onchange="_reviewPage=1;loadReview()">нет № <span class="muted" data-miss-count="document_number"></span></label>
+            <label style="display:flex;gap:3px;align-items:center;cursor:pointer"><input type="checkbox" class="review-miss" value="document_date" onchange="_reviewPage=1;loadReview()">нет даты <span class="muted" data-miss-count="document_date"></span></label>
+            <label style="display:flex;gap:3px;align-items:center;cursor:pointer"><input type="checkbox" class="review-miss" value="part_number" onchange="_reviewPage=1;loadReview()">нет артикула <span class="muted" data-miss-count="part_number"></span></label>
+            <label style="display:flex;gap:3px;align-items:center;cursor:pointer"><input type="checkbox" class="review-miss" value="quantity" onchange="_reviewPage=1;loadReview()">нет кол-ва <span class="muted" data-miss-count="quantity"></span></label>
+            <label style="display:flex;gap:3px;align-items:center;cursor:pointer"><input type="checkbox" class="review-miss" value="claim_kind" onchange="_reviewPage=1;loadReview()">нет причины <span class="muted" data-miss-count="claim_kind"></span></label>
+          </div>
+          <div id="review-case-list" class="split-items"></div>
+          <div class="pagination" id="review-pagination"></div>
+        </div>
+        <div class="split-detail-col" id="review-detail-col">
+          <div class="split-half" style="flex:1;overflow-y:auto">
+            <div class="split-half-header">
+              Детали кейса
+              <span id="review-case-title" style="font-weight:400;color:var(--text-muted)"></span>
+            </div>
+            <div id="review-fields-content" class="split-half-body">
+              <div class="split-empty">← Выберите письмо</div>
+            </div>
+          </div>
+          <div class="split-inner-div"></div>
+          <div class="split-half" style="flex:1;overflow-y:auto">
+            <div class="split-half-header">Оригинал письма (эталон)</div>
+            <div id="review-email-body" class="split-half-body">
+              <div class="split-empty">← Выберите письмо</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ПАТТЕРНЫ -->
+
+    <!-- AI-РАЗБОР -->
+    <section id="tab-ai_review" class="tab-content">
+      <div class="split-page">
+        <div class="split-list-col" id="ai-list-col">
+          <div class="split-list-toolbar">
+            <span style="font-size:11px;color:var(--text-muted)">AI разбор</span>
+            <span class="count-badge" id="ai-review-count">0</span>
+            <button class="btn-sm" id="ai-review-btn-run" onclick="runAiOnReviewBatch()">Запуск</button>
+            <button class="btn-sm" onclick="loadAiReview()">Обновить</button>
+          </div>
+          <div style="padding:6px 8px;border-bottom:1px solid var(--border)">
+            <input type="text" id="ai-search" class="input-sm" placeholder="Поиск: номер, артикул, тема…"
+              style="width:100%" oninput="clearTimeout(_at); _at=setTimeout(()=>{_aiPage=1;loadAiReview()},350)">
+          </div>
+          <div id="ai-case-list" class="split-items"></div>
+          <div class="pagination" id="ai-pagination"></div>
+        </div>
+        <div class="split-detail-col" id="ai-detail-col">
+          <div class="split-half split-reference">
+            <div class="split-half-header">Оригинал письма</div>
+            <div id="ai-email-content" class="split-half-body email-body-view">
+              <div class="split-empty">← Выберите письмо</div>
+            </div>
+          </div>
+          <div class="split-inner-div"></div>
+          <div class="split-half split-processed">
+            <div class="split-half-header" style="display:flex;align-items:center;gap:8px">
+              <span>AI-результат / правка</span>
+              <span id="ai-case-title" style="font-weight:400;color:var(--text-muted);font-size:11px"></span>
+              <div id="ai-case-actions" class="split-inline-actions" style="display:none">
+                <button class="btn-xs-action success" id="ai-btn-confirm">Готово</button>
+                <button class="btn-xs-action" id="ai-btn-rerun">Заново</button>
+              </div>
+            </div>
+            <div id="ai-fields-content" class="split-half-body">
+              <div class="split-empty">← Выберите письмо</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+
+    <!-- НЕРАЗОБРАННЫЕ -->
+    <section id="tab-links" class="tab-content">
+      <div class="toolbar">
+        <div class="toolbar-left">
+          <span class="hint-text">Письма, которые надо привязать к исходному возврату: корректировки, выдача, напоминания, диалоги</span>
+        </div>
+        <div class="toolbar-right">
+          <input type="search" id="links-search" class="search-input" placeholder="Поиск по документу, теме, отправителю">
+          <span class="count-badge" id="links-count">0</span>
+          <button class="btn-sm" onclick="loadLinks()">Обновить</button>
+        </div>
+      </div>
+      <div id="links-list" class="unprocessed-list"></div>
+      <div class="pagination" id="links-pagination"></div>
+    </section>
+
+    <!-- НЕРАЗОБРАННЫЕ -->
+    <section id="tab-unprocessed" class="tab-content">
+      <div class="toolbar">
+        <div class="toolbar-left">
+          <span class="hint-text">Письма, которые ни паттерны ни AI не смогли обработать</span>
+        </div>
+        <div class="toolbar-right">
+          <button class="btn-sm" id="unprocessed-btn-ai" onclick="runAiOnUnprocessed()">AI на всех</button>
+          <span class="count-badge" id="unprocessed-count">0</span>
+          <button class="btn-sm" onclick="loadUnprocessed()">Обновить</button>
+        </div>
+      </div>
+      <div id="unprocessed-list" class="unprocessed-list"></div>
+      <div class="pagination" id="unprocessed-pagination"></div>
+    </section>
+
+    <!-- НЕ ПО ТЕМЕ -->
+    <section id="tab-offtopic" class="tab-content">
+      <div class="toolbar">
+        <div class="toolbar-left">
+          <span class="hint-text">Служебные письма, прайс-листы, промо и прочее вне задачи возвратов</span>
+        </div>
+        <div class="toolbar-right">
+          <input type="search" id="offtopic-search" class="search-input" placeholder="Поиск по теме, отправителю, типу">
+          <span class="count-badge" id="offtopic-count">0</span>
+          <button class="btn-sm" onclick="loadOfftopic()">Обновить</button>
+        </div>
+      </div>
+      <div id="offtopic-list" class="unprocessed-list"></div>
+      <div class="pagination" id="offtopic-pagination"></div>
+    </section>
+
+    <!-- ОБРАБОТАННЫЕ / НЕ ТРЕБУЮТ ДЕЙСТВИЯ -->
+    <section id="tab-processed" class="tab-content">
+      <div class="toolbar">
+        <div class="toolbar-left">
+          <span class="hint-text">Письма вне обычного потока возвратов: служебные, связки, прайсы, дубли, технические. Все учтены.</span>
+        </div>
+        <div class="toolbar-right">
+          <input type="search" id="processed-search" class="search-input" placeholder="Поиск тема/отправитель/покупатель" onkeydown="if(event.key==='Enter')loadProcessedItems()">
+          <button class="btn-sm" onclick="loadProcessedHidden()">Обновить</button>
+        </div>
+      </div>
+      <div id="processed-banner" style="margin:6px 0;padding:8px 10px;border-radius:8px;font-size:13px"></div>
+      <div id="processed-groups" style="display:flex;flex-wrap:wrap;gap:6px;margin:8px 0"></div>
+      <div id="processed-subgroups" style="display:flex;flex-wrap:wrap;gap:6px;margin:6px 0"></div>
+      <div id="processed-trace" style="display:none;margin:8px 0;padding:8px;border:1px solid var(--border,#ccc);border-radius:8px;background:var(--bg-soft,#1118)"></div>
+      <div id="processed-list" class="unprocessed-list"></div>
+      <div class="pagination" id="processed-pagination"></div>
+    </section>
+
+    <!-- PIPELINE (единый canonical-вид: все письма по route) -->
+    <section id="tab-pipeline" class="tab-content">
+      <div class="toolbar">
+        <div class="toolbar-left">
+          <span class="hint-text">Все письма по canonical_route. Сумма разделов = всего писем. Причина — фильтр внутри route.</span>
+        </div>
+        <div class="toolbar-right">
+          <input type="search" id="pipeline-search" class="search-input" placeholder="Поиск тема/отправитель/покупатель" onkeydown="if(event.key==='Enter')loadPipelineItems()">
+          <button class="btn-sm" onclick="loadPipeline()">Обновить</button>
+        </div>
+      </div>
+      <div id="pipeline-banner" style="margin:6px 0;padding:8px 10px;border-radius:8px;font-size:13px"></div>
+      <div id="pipeline-routes" style="display:flex;flex-wrap:wrap;gap:6px;margin:8px 0"></div>
+      <div id="pipeline-reasons" style="display:flex;flex-wrap:wrap;gap:6px;margin:6px 0"></div>
+      <div id="pipeline-trace" style="display:none;margin:8px 0;padding:8px;border:1px solid var(--border,#ccc);border-radius:8px;background:var(--bg-soft,#1118)"></div>
+      <div id="pipeline-list" class="unprocessed-list"></div>
+      <div class="pagination" id="pipeline-pagination"></div>
+    </section>
+
+    <!-- КЛИЕНТЫ -->
+    <section id="tab-clients" class="tab-content">
+      <div class="toolbar">
+        <div class="toolbar-left">
+          <input type="text" id="clients-search" class="input-sm" placeholder="Поиск клиента…" oninput="filterClients(this.value)">
+        </div>
+        <div class="toolbar-right">
+          <span class="count-badge" id="clients-count">0</span>
+          <button class="btn-sm" onclick="loadClients()">Обновить</button>
+        </div>
+      </div>
+      <div id="clients-grid" class="clients-grid"></div>
+    </section>
+
+    <!-- 1С -->
+    <section id="tab-onec" class="tab-content">
+      <div class="toolbar">
+        <div class="toolbar-left">
+          <span class="hint-text">Очередь JSON для 1С. До реальной загрузки это тестовый буфер: можно смотреть, проверять и чистить.</span>
+          <select id="onec-filter" class="select-sm" onchange="_onecPage=1;loadOnec()">
+            <option value="new">Готовые к отправке</option>
+            <option value="sent">Отправленные</option>
+            <option value="error">Ошибки</option>
+            <option value="all">Все</option>
+          </select>
+          <input type="text" id="onec-search" class="input-sm" placeholder="Артикул, клиент, документ…" oninput="filterOnecTable(this.value)">
+        </div>
+        <div class="toolbar-right">
+          <button class="btn-sm" id="onec-btn-validate" onclick="validateOnec()">Проверить</button>
+          <button class="btn-sm danger" onclick="cleanupOnec()" title="Убрать записи без ready_to_1c">Некорректные</button>
+          <button class="btn-sm danger" onclick="cleanupEmptyOnec()" title="Убрать записи без артикула/номера/даты">Без полей</button>
+          <button class="btn-sm success" id="onec-btn-deliver" onclick="deliverOnec()">Доставить в 1С</button>
+          <span class="count-badge" id="onec-count">0</span>
+          <button class="btn-sm" onclick="loadOnec()">Обновить</button>
+        </div>
+      </div>
+      <div id="onec-summary" class="onec-summary"></div>
+      <div id="onec-validate-result" style="display:none;padding:8px 16px;font-size:12px;background:var(--amber-light);border-bottom:1px solid var(--border)"></div>
+      <div class="table-wrap">
+        <table class="data-table onec-table" id="onec-table">
+          <thead>
+            <tr>
+              <th style="width:28px"></th>
+              <th style="width:130px">Клиент</th>
+              <th style="width:90px">№ документа</th>
+              <th style="width:90px">Дата</th>
+              <th style="width:100px">Артикул <span class="required-star">*</span></th>
+              <th style="width:80px">Кол-во</th>
+              <th style="width:80px">Цена</th>
+              <th>Наименование</th>
+              <th style="width:80px">Бренд</th>
+              <th style="width:110px">Причина</th>
+              <th style="width:70px">Статус</th>
+            </tr>
+          </thead>
+          <tbody id="onec-tbody"></tbody>
+        </table>
+      </div>
+      <div class="pagination" id="onec-pagination"></div>
+    </section>
+
+    <!-- FINAL CASE SORTER -->
+    <section id="tab-final_sorter" class="tab-content">
+      <div class="toolbar">
+        <div class="toolbar-left">
+          <strong>Final Case Sorter</strong>
+          <select id="sorter-bucket" class="select-sm" onchange="loadFinalSorter(true)"><option value="">Все buckets</option></select>
+          <select id="sorter-buyer" class="select-sm" onchange="loadFinalSorter(true)"><option value="">Все поставщики</option></select>
+        </div>
+        <div class="toolbar-right">
+          <span class="hint-text" id="sorter-generated">Карта: —</span>
+          <span class="count-badge" id="sorter-count">0</span>
+          <button class="btn-sm" onclick="loadFinalSorter(true)">Обновить</button>
+          <button class="btn-sm" disabled title="Пересборка выполняется безопасным CLI-скриптом">Пересобрать карту</button>
+        </div>
+      </div>
+      <div id="sorter-metrics" class="sorter-metrics"></div>
+      <div class="table-wrap">
+        <table class="data-table evidence-table sorter-table">
+          <thead><tr>
+            <th>Кейс</th><th>Поставщик</th><th>Bucket</th><th>Текущий статус</th>
+            <th>Следующий шаг</th><th>Причины</th><th>Review</th><th>Действия</th>
+          </tr></thead>
+          <tbody id="sorter-tbody"></tbody>
+        </table>
+      </div>
+      <div class="pagination" id="sorter-pagination"></div>
+    </section>
+
+    <!-- EVIDENCE DASHBOARD -->
+    <section id="tab-evidence" class="tab-content">
+      <div class="toolbar evidence-toolbar">
+        <div class="toolbar-left">
+          <strong>Evidence Pipeline</strong>
+          <span class="hint-text" id="evidence-last-run">Последний dry-run: —</span>
+        </div>
+        <div class="toolbar-right">
+          <button class="btn-sm" onclick="loadEvidenceDashboard()" title="Перечитать готовые отчёты">Обновить</button>
+          <button class="btn-sm" disabled title="Следующий этап: безопасный запуск CLI из панели">Пересчитать dry-run</button>
+        </div>
+      </div>
+      <div id="evidence-metrics" class="evidence-metrics"></div>
+      <div class="evidence-band">
+        <div>
+          <span class="evidence-band-label">Источник</span>
+          <span id="evidence-source">—</span>
+        </div>
+        <div>
+          <span class="evidence-band-label">Режим</span>
+          <span class="status-pill neutral">read-only</span>
+        </div>
+        <div>
+          <span class="evidence-band-label">Runtime errors</span>
+          <strong id="evidence-runtime-errors">0</strong>
+        </div>
+      </div>
+    </section>
+
+    <!-- AI TRACE -->
+    <section id="tab-inbox_sorter" class="tab-content">
+      <div class="toolbar">
+        <div class="toolbar-left">
+          <strong>Inbox Sorter</strong>
+          <select id="inbox-bucket" class="select-sm" onchange="loadInboxSorter(true)">
+            <option value="">Все корзины</option>
+          </select>
+          <label class="check-label"><input type="checkbox" id="inbox-without-case" onchange="loadInboxSorter(true)"> Только без кейса</label>
+        </div>
+        <div class="toolbar-right">
+          <span class="status-pill neutral">read-only snapshot</span>
+          <span class="count-badge" id="inbox-count">0</span>
+          <button class="btn-sm" onclick="loadInboxSorter(true)">Обновить</button>
+        </div>
+      </div>
+      <div id="inbox-metrics" class="sorter-metrics"></div>
+      <div class="table-wrap">
+        <table class="data-table evidence-table">
+          <thead><tr><th>Raw ID</th><th>Корзина</th><th>Отправитель</th><th>Тема</th><th>Уверенность</th><th>Следующий шаг</th><th>Причины</th><th>Кейс</th></tr></thead>
+          <tbody id="inbox-tbody"></tbody>
+        </table>
+      </div>
+      <div class="pagination" id="inbox-pagination"></div>
+    </section>
+
+    <!-- AI TRACE -->
+    <section id="tab-ai_trace" class="tab-content">
+      <div class="toolbar">
+        <div class="toolbar-left">
+          <strong>AI Trace</strong>
+          <select id="trace-mode" class="select-sm" onchange="loadAiTrace(true)"><option value="">Все режимы</option></select>
+          <select id="trace-buyer" class="select-sm" onchange="loadAiTrace(true)"><option value="">Все поставщики</option></select>
+          <select id="trace-field" class="select-sm" onchange="loadAiTrace(true)"><option value="">Все изменённые поля</option></select>
+          <label class="check-label"><input type="checkbox" id="trace-rejected" onchange="loadAiTrace(true)"> Есть отклонённые</label>
+        </div>
+        <div class="toolbar-right">
+          <span class="count-badge" id="trace-count">0</span>
+          <button class="btn-sm" onclick="loadAiTrace(true)">Обновить</button>
+          <button class="btn-sm" disabled title="Replay запускается только явной CLI-командой с --limit --dry-run">Sandbox replay</button>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table class="data-table evidence-table">
+          <thead><tr><th>Кейс</th><th>Поставщик</th><th>Режим</th><th>Модель</th><th>Изменено</th><th>Принято / отклонено</th><th>Evidence</th><th>Токены</th><th>Ошибка</th></tr></thead>
+          <tbody id="trace-tbody"></tbody>
+        </table>
+      </div>
+      <div class="pagination" id="trace-pagination"></div>
+    </section>
+
+    <!-- DEFECT AUDIT -->
+    <section id="tab-defect_audit" class="tab-content">
+      <div class="toolbar">
+        <div class="toolbar-left">
+          <strong>Defect Audit</strong>
+          <select id="defect-class" class="select-sm" onchange="loadDefectAudit(true)">
+            <option value="">Все классы</option>
+            <option value="confirmed_defect">Подтверждён</option>
+            <option value="weak_defect">Слабый</option>
+            <option value="conflict_defect">Конфликт</option>
+            <option value="defect_rejected_by_evidence">Отклонён evidence</option>
+          </select>
+          <label class="check-label"><input type="checkbox" id="defect-photo" onchange="loadDefectAudit(true)"> Есть фото</label>
+          <label class="check-label"><input type="checkbox" id="defect-no-reason" onchange="loadDefectAudit(true)"> Нет явной причины</label>
+          <label class="check-label"><input type="checkbox" id="defect-ai-proposed" onchange="loadDefectAudit(true)"> AI предложил defect</label>
+        </div>
+        <div class="toolbar-right">
+          <span class="count-badge" id="defect-count">0</span>
+          <button class="btn-sm" onclick="loadDefectAudit(true)">Обновить</button>
+        </div>
+      </div>
+      <div id="defect-metrics" class="sorter-metrics"></div>
+      <div class="table-wrap">
+        <table class="data-table evidence-table">
+          <thead><tr><th>Кейс</th><th>Поставщик</th><th>Claim kind</th><th>Класс</th><th>Evidence status</th><th>Фото</th><th>AI defect</th><th>Фрагмент</th></tr></thead>
+          <tbody id="defect-tbody"></tbody>
+        </table>
+      </div>
+      <div class="pagination" id="defect-pagination"></div>
+    </section>
+
+    <!-- SUPPLIER MATRIX -->
+    <section id="tab-supplier_matrix" class="tab-content">
+      <div class="toolbar">
+        <div class="toolbar-left">
+          <strong>Матрица поставщиков</strong>
+          <input type="text" id="supplier-matrix-search" class="input-sm" placeholder="buyer_code…" oninput="renderSupplierMatrix()">
+        </div>
+        <div class="toolbar-right">
+          <span class="count-badge" id="supplier-matrix-count">0</span>
+          <button class="btn-sm" onclick="loadEvidenceSuppliers()">Обновить</button>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table class="data-table evidence-table">
+          <thead><tr>
+            <th>Поставщик</th><th>Возвраты</th><th>Авто %</th><th>Safe</th><th>Warning</th>
+            <th>Quick</th><th>Human</th><th>Blocked</th><th>Основные блокеры</th>
+          </tr></thead>
+          <tbody id="supplier-matrix-tbody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- QUICK REVIEW -->
+    <section id="tab-quick_review_pipeline" class="tab-content">
+      <div class="toolbar">
+        <div class="toolbar-left">
+          <select id="qr-buyer" class="select-sm" onchange="loadQuickReviewQueue(true)"><option value="">Все поставщики</option></select>
+          <select id="qr-field" class="select-sm" onchange="loadQuickReviewQueue(true)">
+            <option value="">Все поля</option><option value="claim_kind">Причина</option>
+            <option value="document_number">№ документа</option><option value="document_date">Дата</option>
+            <option value="quantity">Количество</option><option value="part_number">Артикул</option>
+          </select>
+          <label class="check-label"><input type="checkbox" id="qr-one-click" onchange="loadQuickReviewQueue(true)"> Один клик</label>
+          <input type="text" id="qr-reason" class="input-sm" placeholder="Причина блокировки…" oninput="scheduleQuickReviewReload()">
+        </div>
+        <div class="toolbar-right">
+          <span class="count-badge" id="qr-count">0</span>
+          <button class="btn-sm" onclick="loadQuickReviewQueue(true)">Обновить</button>
+          <button class="btn-sm" disabled title="Очередь пересчитывается CLI-скриптом">Пересчитать очередь</button>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table class="data-table evidence-table">
+          <thead><tr><th>ID</th><th>Поставщик</th><th>Поле</th><th>Причина</th><th>Текущее</th><th>Кандидаты</th><th></th></tr></thead>
+          <tbody id="qr-tbody"></tbody>
+        </table>
+      </div>
+      <div class="pagination" id="qr-pagination"></div>
+    </section>
+
+    <!-- OUTBOX STAGING -->
+    <section id="tab-outbox_staging" class="tab-content">
+      <div class="toolbar">
+        <div class="toolbar-left">
+          <strong>Safe staging</strong>
+          <select id="staging-buyer" class="select-sm" onchange="loadOutboxStaging(true)"><option value="">Все поставщики</option></select>
+          <select id="staging-kind" class="select-sm" onchange="loadOutboxStaging(true)">
+            <option value="">Все причины</option><option value="quality_refusal">Отказ клиента</option>
+            <option value="defect">Брак</option><option value="shortage">Недовоз</option>
+            <option value="wrong_item">Пересорт</option><option value="marking">Маркировка</option>
+          </select>
+        </div>
+        <div class="toolbar-right">
+          <span class="status-pill safe">Только auto_export_safe</span>
+          <span class="count-badge" id="staging-count">0</span>
+          <button class="btn-sm" onclick="loadOutboxStaging(true)">Обновить</button>
+          <button class="btn-sm" disabled title="Отправка в real outbox будет отдельным этапом">Approve: next step</button>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table class="data-table evidence-table">
+          <thead><tr><th>Кейс</th><th>Поставщик</th><th>Документ</th><th>Артикул</th><th>Кол-во</th><th>Причина</th><th>Staged at</th><th></th></tr></thead>
+          <tbody id="staging-tbody"></tbody>
+        </table>
+      </div>
+      <div class="pagination" id="staging-pagination"></div>
+    </section>
+
+    <!-- НАСТРОЙКИ -->
+    <section id="tab-settings" class="tab-content">
+      <div class="settings-subnav" id="settings-subnav"></div>
+      <div class="settings-layout">
+
+        <div class="settings-group">
+          <h3>Режим обучения</h3>
+          <div class="group-desc">Включи — на главной появятся ручные блоки управления (ИИ-конвейер: Импорт → ИИ → Сверка → 1С). Выключено — на главной только «Автопилот».</div>
+          <div class="form-row">
+            <label>Ручные блоки на главной</label>
+            <input type="checkbox" id="s-training-mode" onchange="setTrainingMode(this.checked)">
+          </div>
+        </div>
+
+        <div class="settings-group settings-row-full">
+          <h3>Аналитика токенов ИИ</h3>
+          <div class="group-desc">Раздельно: режим (Паттерн-фолбэк / Полный ИИ) и тип (текст / визуал), вход↓ и выход↑. По дням, неделям, месяцам.</div>
+          <div id="token-report" class="token-report"></div>
+          <div class="tok-period-tabs" id="tok-period-tabs">
+            <button class="tok-period-btn active" data-period="day" onclick="loadTokenTimeline('day')">По дням</button>
+            <button class="tok-period-btn" data-period="week" onclick="loadTokenTimeline('week')">По неделям</button>
+            <button class="tok-period-btn" data-period="month" onclick="loadTokenTimeline('month')">По месяцам</button>
+          </div>
+          <div id="tok-timeline" class="tok-timeline"></div>
+        </div>
+
+        <div class="settings-group">
+          <h3>Почта (IMAP)</h3>
+          <div class="form-row"><label>Сервер</label><input type="text" id="s-imap-host" placeholder="imap.yandex.com"></div>
+          <div class="form-row"><label>Порт</label><input type="number" id="s-imap-port" value="993" style="width:90px"></div>
+          <div class="form-row"><label>Логин</label><input type="text" id="s-imap-user" placeholder="email@domain.ru"></div>
+          <div class="form-row"><label>Пароль</label>
+            <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+              <input type="password" id="s-imap-pass" placeholder="пароль приложения" style="flex:1">
+              <span id="s-imap-pass-status" class="secret-status missing">✗</span>
+              <button class="btn-sm" onclick="clearSecret('imap_password')">✕</button>
+            </div>
+          </div>
+          <div class="form-row"><label>Лимит/папка</label><input type="number" id="s-imap-limit" value="200" style="width:80px"></div>
+          <div class="form-row"><label>Общий лимит</label><input type="number" id="s-imap-total-limit" value="2000" style="width:80px"></div>
+          <div class="form-row"><label>Batch UID</label><input type="number" id="s-imap-batch-size" value="20" min="1" max="50" style="width:80px"></div>
+          <div class="form-row"><label>Макс. письмо MB</label><input type="number" id="s-imap-max-raw-mb" value="25" min="1" style="width:80px"></div>
+          <div class="form-row"><label>Макс. вложение MB</label><input type="number" id="s-import-max-attachment-mb" value="10" min="1" style="width:80px"></div>
+          <div class="form-row"><label>Вложения</label><input type="checkbox" id="s-import-download-attachments"></div>
+          <div class="form-row" style="border-top:1px solid var(--border);padding-top:6px">
+            <label><input type="checkbox" id="s-imap-date-from-en"> Грузить ОТ</label>
+            <input type="date" id="s-imap-date-from" style="margin-left:6px">
+          </div>
+          <div class="form-row">
+            <label><input type="checkbox" id="s-imap-date-to-en"> Грузить ДО</label>
+            <input type="date" id="s-imap-date-to" style="margin-left:6px">
+          </div>
+          <div class="group-desc">Только «ОТ» → всё с даты; только «ДО» → всё до даты; обе → промежуток; обе сняты → все письма. IMAP фильтрует по дате (день).</div>
+          <div class="form-row"><button class="btn-sm danger" onclick="purgeOutsidePeriod()" title="Удалить из базы письма вне заданного периода (по дате письма), каскадом">🗑 Удалить письма вне периода</button></div>
+          <div id="settings-status" class="settings-status">Почта не настроена</div>
+          <div id="mail-health-status" class="mail-health-card idle">Проверка импорта...</div>
+          <button class="btn-sm" type="button" onclick="loadMailHealth()">Проверить импорт</button>
+        </div>
+
+        <div class="settings-group">
+          <h3>Папки IMAP</h3>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px">
+            <button class="btn-sm" onclick="refreshFolders()">Загрузить папки</button>
+            <button class="btn-sm success" onclick="saveImapFolders()">Сохранить</button>
+            <button class="btn-sm" onclick="testImapConnection()">Проверить</button>
+          </div>
+          <div id="folders-list-container" style="max-height:280px;overflow-y:auto"></div>
+          <div id="imap-test-result" class="code-block" style="display:none;margin-top:8px;max-height:200px;overflow:auto"></div>
+        </div>
+
+        <div class="settings-group settings-row-full ai-settings-panel">
+          <div class="ai-panel-head">
+            <div>
+              <h3>AI: текст, фото и стоимость</h3>
+              <div class="group-desc">Текстовые письма и фото/PDF могут идти разными моделями. Цены задаются по каждой модели отдельно.</div>
+            </div>
+            <div class="ai-head-toggle"><span>AI</span><input type="checkbox" id="ai-enabled"></div>
+          </div>
+
+          <div class="ai-role-grid">
+            <div class="ai-role-card">
+              <div class="ai-role-title">
+                <h4>Текст писем</h4>
+                <span>паттерны + AI-разбор</span>
+              </div>
+              <div class="form-row compact"><label>Модель</label>
+                <div class="model-select-wrap">
+                  <input type="text" id="ai-model" placeholder="deepseek/deepseek-v3">
+                  <button class="btn-sm" onclick="loadAiModels('text')">Список</button>
+                  <button class="btn-sm" onclick="openModelTest('text')" title="Мини-чат с текстовой моделью">Тест</button>
+                </div>
+              </div>
+              <div class="form-row compact"><label>Провайдер</label>
+                <select id="ai-provider" class="select-sm" onchange="switchAiProvider(this.value)">
+                  <option value="routerai">RouterAI</option>
+                  <option value="gigachat">GigaChat</option>
+                  <option value="yandexgpt">Яндекс GPT</option>
+                  <option value="openai_compatible">Локальная</option>
+                </select>
+              </div>
+              <div id="ai-provider-help" class="ai-inline-help"></div>
+              <div id="ai-provider-fields"></div>
+              <div class="form-row compact"><label>API Key</label>
+                <div class="secret-line">
+                  <input type="password" id="ai-api-key" placeholder="API key">
+                  <span id="ai-api-key-status" class="secret-status missing">✗</span>
+                  <button class="btn-sm" onclick="clearSecret('ai_api_key')">✕</button>
+                </div>
+              </div>
+              <div id="ai-test-result" class="code-block" style="display:none;margin-top:8px;max-height:140px;overflow:auto"></div>
+            </div>
+
+            <div class="ai-role-card">
+              <div class="ai-role-title">
+                <h4>Фото и PDF</h4>
+                <span>вложения, фото деталей, сканы</span>
+              </div>
+              <div class="form-row compact"><label>Включить</label><input type="checkbox" id="s-vision-enabled"></div>
+              <div class="form-row compact"><label>Модель</label>
+                <div class="model-select-wrap">
+                  <input type="text" id="s-vision-model" placeholder="qwen/qwen2.5-vl-7b-instruct">
+                  <button class="btn-sm" onclick="loadAiModels('vision')">Список</button>
+                  <button class="btn-sm" onclick="openModelTest('vision')" title="Загрузить файл и спросить визуальную модель">Тест</button>
+                </div>
+              </div>
+              <div class="form-row compact"><label>Провайдер</label>
+                <select id="s-vision-provider" class="select-sm">
+                  <option value="routerai">RouterAI</option>
+                  <option value="gigachat">GigaChat</option>
+                  <option value="yandexgpt">Яндекс GPT</option>
+                  <option value="openai_compatible">Локальная</option>
+                </select>
+              </div>
+              <div class="form-row compact"><label>API Key</label>
+                <div class="secret-line">
+                  <input type="password" id="s-vision-key" placeholder="отдельный ключ (если нужен)">
+                  <span id="s-vision-key-status" class="secret-status missing">✗</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div id="ai-models-list" class="ai-model-list-host"></div>
+
+          <div class="ai-settings-grid">
+            <div class="ai-settings-column">
+              <h4>Цены моделей</h4>
+              <div class="group-desc">Модель берётся из выбора выше. Здесь только цены, ₽: за запрос (если есть), за 1 млн вход, за 1 млн выход.</div>
+              <input type="hidden" id="ai-price-rules">
+              <div id="ai-price-groups" class="ai-price-groups"></div>
+            </div>
+            <div class="ai-settings-column">
+              <h4>Расход</h4>
+              <div id="token-stats" class="stats-block">
+                <div class="stat-row"><span>За сегодня:</span> <strong id="ts-today">—</strong></div>
+                <div class="stat-row"><span>Сегодня ₽:</span> <strong id="ts-today-cost">—</strong></div>
+                <div class="stat-row"><span>Средний запрос:</span> <strong id="ts-avg-request">—</strong></div>
+                <div class="stat-row"><span>Всего:</span> <strong id="ts-total">—</strong></div>
+                <div class="stat-row"><span>Всего ₽:</span> <strong id="ts-total-cost">—</strong></div>
+                <div class="stat-row"><span>Запросов:</span> <strong id="ts-requests">—</strong></div>
+              </div>
+              <div id="ai-cost-models" class="ai-cost-models"></div>
+              <button class="btn-sm" onclick="loadAiJournal()" style="margin-top:8px">Журнал AI</button>
+              <div id="ai-journal-list" style="margin-top:8px;font-size:12px;max-height:250px;overflow-y:auto"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="settings-group">
+          <h3>Режим обработки</h3>
+          <div class="form-row"><label>Режим</label>
+            <select id="s-processing-mode" onchange="updateProcessingModeUI(this.value)">
+              <option value="manual">Ручной</option>
+              <option value="semiauto">Полуавтомат</option>
+              <option value="auto">Автомат</option>
+              <option value="auto_trust">Полный автомат</option>
+            </select>
+          </div>
+          <div id="s-processing-mode-desc" style="font-size:11px;color:var(--text-muted);margin-top:4px"></div>
+          <div class="form-row"><label>Автоимпорт</label><input type="checkbox" id="s-auto-import"></div>
+          <div class="form-row"><label>Авто AI</label><input type="checkbox" id="s-auto-process"></div>
+          <div class="form-row"><label>Порог уверенности</label><input type="number" id="s-confidence-threshold" value="0.85" step="0.05" min="0" max="1" style="width:80px"></div>
+        </div>
+
+        <div class="settings-group">
+          <h3>Экспорт в 1С</h3>
+          <div class="form-row"><label>Режим</label>
+            <select id="s-1c-mode" class="select-sm">
+              <option value="file">Файл JSON</option>
+              <option value="http">HTTP POST</option>
+              <option value="both">Оба</option>
+              <option value="off">Отключено</option>
+            </select>
+          </div>
+          <div class="form-row"><label>Папка файлов</label><input type="text" id="s-1c-dir" placeholder="/app/data/outbox_1c"></div>
+          <div class="form-row"><label>HTTP URL</label><input type="text" id="s-1c-url" placeholder="http://1c-server/api/readmail"></div>
+          <div class="form-row"><label>Автодоставка</label><input type="checkbox" id="s-auto-deliver"></div>
+        </div>
+
+        <div class="settings-group">
+          <h3>Поля для 1С — что отправлять</h3>
+          <div class="group-desc">Чистая схема v2: несём основу (клиент, документ, артикул/бренд/имя/кол-во), остальное — по галочкам. Вся отладка (evidence/gate) уходит только в профиль debug.</div>
+          <div class="form-row"><label>Цена позиции</label><input type="checkbox" id="s-1c-inc-price"></div>
+          <div class="form-row"><label>Комментарий / причина текстом</label><input type="checkbox" id="s-1c-inc-comment"></div>
+          <div class="form-row"><label>Флаги (документы брака, фото/документы)</label><input type="checkbox" id="s-1c-inc-flags"></div>
+          <div class="form-row"><label>Статусы (состояние/контроль/приоритет)</label><input type="checkbox" id="s-1c-inc-status"></div>
+          <div class="form-row"><label>Тело и тема письма</label><input type="checkbox" id="s-1c-inc-text"></div>
+          <div class="form-row"><label>Описание вложений (имя/тип/размер)</label><input type="checkbox" id="s-1c-inc-attachments"></div>
+          <div class="form-row"><label>Источник (raw_email_id, message_id, дата)</label><input type="checkbox" id="s-1c-inc-source"></div>
+        </div>
+
+        <div class="settings-group">
+          <h3>Автопилот 24/7</h3>
+          <div style="font-size:12px;color:var(--text-muted);margin-bottom:10px;line-height:1.5">
+            Включи — система сама ждёт письма, обрабатывает и отправляет в 1С.<br>
+            Ручные кнопки по шагам отключаются — всё работает само.
+          </div>
+          <div class="form-row"><label>Статус</label><span id="settings-autopilot-status" class="process-status idle">Остановлен</span></div>
+          <div class="form-row"><label>Интервал (сек)</label><input type="number" id="settings-ap-interval" value="300" min="30" style="width:80px">
+            <span style="font-size:11px;color:var(--text-muted);margin-left:6px">300 = каждые 5 минут</span>
+          </div>
+          <div class="form-row">
+            <label>Автодоставка в 1С</label>
+            <input type="checkbox" id="settings-ap-deliver" title="Отправлять готовые кейсы в 1С автоматически без ручного подтверждения">
+          </div>
+          <div style="display:flex;gap:6px;margin-top:10px">
+            <button class="btn-sm success" id="btn-autopilot-start-settings" onclick="startAutopilot()">Включить автопилот</button>
+            <button class="btn-sm danger" id="btn-autopilot-stop-settings" onclick="stopAutopilot()" style="display:none">Остановить</button>
+          </div>
+        </div>
+
+        <div class="settings-group">
+          <h3>Telegram уведомления</h3>
+          <div class="form-row">
+            <label>Bot Token</label>
+            <div style="display:flex;align-items:center;gap:6px;flex:1">
+              <input type="password" id="s-tg-token" placeholder="123456789:ABC..." style="flex:1">
+              <span id="s-tg-token-status" class="secret-status missing">✗</span>
+            </div>
+          </div>
+          <div class="form-row">
+            <label>Chat IDs</label>
+            <input type="text" id="s-tg-chats" placeholder="123456789,987654321" style="flex:1">
+          </div>
+          <div style="font-size:11px;color:var(--text-muted);margin-bottom:8px">
+            Получи ID: напиши боту <code>@userinfobot</code> в ТГ. Несколько — через запятую.
+          </div>
+          <div class="form-row"><label>Белый список</label><input type="checkbox" id="s-tg-whitelist" checked></div>
+          <div class="form-row"><label>Таймер отчета, мин</label><input type="number" id="s-tg-report-interval" min="1" value="60" style="width:90px"></div>
+          <div class="form-row"><label>Мин. неразобранных</label><input type="number" id="s-tg-unresolved-min" min="1" value="1" style="width:90px"></div>
+          <div style="margin-top:6px;font-weight:500;font-size:12px;color:var(--text-muted)">Уведомлять о:</div>
+          <div class="form-row"><label>Итоги цикла</label><input type="checkbox" id="s-tg-cycle" checked></div>
+          <div class="form-row"><label>Неразобранных</label><input type="checkbox" id="s-tg-unresolved" checked></div>
+          <div class="form-row"><label>Ошибках 1С</label><input type="checkbox" id="s-tg-errors" checked></div>
+          <div class="form-row"><label>Готовых кейсах</label><input type="checkbox" id="s-tg-ready"></div>
+          <div class="form-row"><label>Причины в отчете</label><input type="checkbox" id="s-tg-reasons" checked></div>
+          <div style="display:flex;gap:6px;margin-top:8px">
+            <button class="btn-sm" onclick="testTelegram()">Тест бота</button>
+          </div>
+          <div id="tg-test-result" style="font-size:12px;margin-top:6px"></div>
+        </div>
+
+        <div class="settings-group">
+          <h3>Выгрузки</h3>
+          <div class="group-desc">Пара для сравнения: оригинальное письмо и результат обработки с одинаковым ID.</div>
+          <button class="btn-sm" onclick="downloadCompareJson()">Скачать эталон + паттерны + AI/1C JSON</button>
+          <div class="settings-status">В архиве будут original_emails.jsonl, processed_cases.jsonl, etalon_pattern.jsonl, etalon_pattern_ai_1c.jsonl, folders_report.json, paired_index.json и manifest.json.</div>
+        </div>
+
+        <div class="settings-group">
+          <h3>Объемы и трафик</h3>
+          <div class="group-desc">Мегабайты по почте, вложениям, AI API, 1С JSON и локальному хранилищу.</div>
+          <div id="traffic-stats" class="stats-block">
+            <div class="stat-row"><span>Итого трафик:</span> <strong id="tr-total">—</strong></div>
+            <div class="stat-row"><span>Почта:</span> <strong id="tr-mail">—</strong></div>
+            <div class="stat-row"><span>AI API:</span> <strong id="tr-ai">—</strong></div>
+            <div class="stat-row"><span>1С JSON:</span> <strong id="tr-1c">—</strong></div>
+            <div class="stat-row"><span>Хранилище:</span> <strong id="tr-storage">—</strong></div>
+          </div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px">
+            <button class="btn-sm" onclick="loadTrafficStats()">Обновить объемы</button>
+            <button class="btn-sm danger" onclick="purgeJunkAttachments()" title="Удалить тяжёлые вложения служебных писем (прайс-листы ПИТСТОП и пр.) — письма остаются">Очистить помойку (прайс-листы)</button>
+          </div>
+        </div>
+
+        <div class="settings-group">
+          <h3>Сброс данных</h3>
+          <button class="btn-sm" id="settings-btn-reset-work" onclick="resetWorkOnly()">Обнулить обработку</button>
+          <div style="font-size:11px;color:var(--text-muted);margin-top:6px;margin-bottom:10px">
+            Письма и вложения остаются. Удаляются только кейсы, сверка, AI/1С-очередь и отчёты качества — можно заново прогнать ИИ.
+          </div>
+          <button class="btn-sm danger" id="settings-btn-reset" onclick="resetPipeline()">Сбросить локальные данные</button>
+          <div style="font-size:11px;color:var(--text-muted);margin-top:6px">Полный сброс удаляет локальные письма, вложения и обработку. Настройки сохраняются.</div>
+        </div>
+
+        <div class="settings-row-full">
+          <button class="btn-primary" onclick="saveSettings()">Сохранить настройки</button>
+          <span id="settings-saved" class="save-hint" style="display:none">✓ Сохранено</span>
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Детальная боковая панель -->
+  <div id="detail-overlay" class="detail-overlay hidden" onclick="closeDetailPanel()"></div>
+  <aside id="detail-panel" class="detail-panel hidden">
+    <div class="detail-header">
+      <span id="detail-title">Детали</span>
+      <button class="btn-icon" onclick="closeDetailPanel()">✕</button>
+    </div>
+    <div id="detail-body" class="detail-body"></div>
+    <div class="detail-actions" id="detail-actions"></div>
+  </aside>
+
+  <!-- Модалки -->
+  <div id="confirm-modal" class="modal hidden">
+    <div class="modal-box">
+      <div class="modal-title" id="confirm-title">Подтвердить?</div>
+      <div class="modal-body" id="confirm-body"></div>
+      <div class="modal-footer">
+        <button class="btn-secondary" id="confirm-cancel">Отмена</button>
+        <button class="btn-primary" id="confirm-ok">Подтвердить</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="outbox-json-modal" class="modal hidden">
+    <div class="modal-box" style="max-width:700px;min-width:400px">
+      <div class="modal-title" id="outbox-json-title">JSON</div>
+      <div class="modal-body" id="outbox-json-body" style="max-height:60vh;overflow:auto;text-align:left;font-family:monospace;font-size:12px"></div>
+      <div class="modal-footer">
+        <button class="btn-secondary" onclick="closeOutboxJsonModal()">Закрыть</button>
+        <button class="btn-sm" onclick="copyOutboxJson()">Копировать</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Тест модели (текст/визуал) -->
+  <div id="model-test-modal" class="modal hidden">
+    <div class="modal-box" style="max-width:640px;min-width:420px;display:flex;flex-direction:column;max-height:85vh">
+      <div class="modal-title" id="model-test-title">Тест модели</div>
+      <div class="modal-body" style="text-align:left;flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:8px">
+        <div id="model-test-model" style="font-size:11px;color:var(--text-muted)"></div>
+        <div id="model-test-file-row" style="display:none">
+          <label style="font-size:12px;display:block;margin-bottom:3px">Файл (фото/скан/PDF):</label>
+          <input type="file" id="model-test-file" accept="image/*,.pdf">
+        </div>
+        <label style="font-size:12px">Запрос модели:</label>
+        <textarea id="model-test-prompt" rows="3" placeholder="Напр.: что на картинке? какой артикул и бренд?" style="width:100%;border:1px solid var(--border);border-radius:6px;padding:6px;font-size:13px;background:var(--bg)"></textarea>
+        <div id="model-test-chat" style="font-size:12px;line-height:1.6;display:flex;flex-direction:column;gap:6px"></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" onclick="closeModelTest()">Закрыть</button>
+        <button class="btn-primary" id="model-test-send" onclick="sendModelTest()">Отправить</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="evidence-modal" class="modal hidden">
+    <div class="modal-box evidence-modal-box">
+      <div class="modal-title" id="evidence-modal-title">Evidence</div>
+      <div class="modal-body" id="evidence-modal-body"></div>
+      <div class="modal-footer">
+        <button class="btn-secondary" onclick="closeEvidenceModal()">Закрыть</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast-container"></div>
+</div>
+
+<script src="/static/app.js?v=20260615onec"></script>
+</body>
+</html>

@@ -1,0 +1,50 @@
+buyer:
+  code: favorit_parts_ru
+  name: Фаворит Parts
+  enabled: true
+  aliases:
+    domains:
+    - '@favorit-parts.ru'
+    senders:
+    - reclaim@favorit-parts.ru
+    - Reclaim@favorit-parts.ru
+    subject_contains:
+    - Заявка на возврат поставщику
+    - С резервных складов
+    body_contains:
+    - видео предоставьте
+    - фото неинформативны
+    - Заявка на возврат поставщику
+    - Примите у нас данный возврат
+statuses:
+  quality_refusal:
+  - отказ клиента
+  - заявка на возврат
+  - Отказ
+  - Примите у нас данный возврат
+  defect:
+  - дефект
+  - брак
+  shortage:
+  - недопоставка
+  - недовоз
+  nonconforming:
+  - некондиция
+processing_types:
+  evidence_request:
+  - фото неинформативны
+  - жду видео
+  - предоставьте видео
+  - видео выгрузки
+  - видео предоставьте
+  follow_up_request:
+  - просим проверить
+  - ждем ответ
+  - ждём ответ
+  - жду от вас ответ
+  new_return:
+  - Заявка на возврат поставщику
+  - Примите у нас данный возврат
+required_documents:
+- видео выгрузки/приёмки
+- фото отгрузки

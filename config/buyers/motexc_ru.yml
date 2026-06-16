@@ -1,0 +1,39 @@
+buyer:
+  code: motexc_ru
+  name: MOTEXC
+  enabled: true
+  aliases:
+    domains:
+    - '@motexc.ru'
+    senders:
+    - supplier.return@motexc.ru
+    subject_contains:
+    - Согласование возврата
+    - MOTEXC
+    - возврат
+    body_contains:
+    - Согласование возврата
+    - возврат
+    attachment_contains:
+    - xls
+    - xlsx
+    - pdf
+statuses:
+  quality_refusal:
+  - согласование возврата
+  - возврат заказных товаров
+  defect:
+  - брак
+  - дефект
+  wrong_item:
+  - пересорт
+  shortage:
+  - недопоставка
+  nonconforming:
+  - некондиция
+processing_types:
+  new_return:
+  - Согласование возврата
+  - возврат заказных товаров
+required_documents:
+- файл согласования возврата

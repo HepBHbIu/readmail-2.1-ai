@@ -1,0 +1,64 @@
+version: "3.9"
+
+services:
+  readmail:
+    build: .
+    image: readmail:v2.1-ai
+    container_name: readmail_21          # отдельный контейнер v2.1 (AI-only), не конфликтует с v2
+    restart: unless-stopped
+    # БЕЗ --reload. Код смонтирован томом — после правок: docker restart readmail_21
+    command: ["python", "-m", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8765", "--workers", "1"]
+    ports:
+      - "8766:8765"                      # хост 8766 → контейнер 8765 (v2 держит 8765)
+    volumes:
+      # Данные (БД, архив писем, выгрузка в 1С)
+      - ./data:/app/data
+      # Конфиги покупателей — редактируются вручную или через UI
+      - ./config:/app/config
+      # Готовые Evidence-отчёты — панель только читает их
+      - ./audit_out:/app/audit_out:ro
+      # Логи
+      - ./logs:/app/logs
+      # КОД — монтируем чтобы изменения применялись без пересборки образа
+      - ./app:/app/app
+    environment:
+      # ─── Почта ───
+      - IMAP_HOST=${IMAP_HOST:-imap.yandex.com}
+      - IMAP_PORT=${IMAP_PORT:-993}
+      - IMAP_USERNAME=${IMAP_USERNAME:-}
+      - IMAP_PASSWORD=${IMAP_PASSWORD:-}
+      - IMAP_FOLDERS=${IMAP_FOLDERS:-INBOX}
+      # ─── AI (v2.1: только ИИ, паттернов нет) ───
+      - ENABLE_AI=${ENABLE_AI:-true}
+      - AI_ONLY=${AI_ONLY:-true}
+      - AI_PROVIDER=${AI_PROVIDER:-routerai}
+      - AI_API_KEY=${AI_API_KEY:-}
+      - AI_MODEL=${AI_MODEL:-deepseek/deepseek-v3}
+      - ROUTERAI_API_KEY=${ROUTERAI_API_KEY:-}
+      - ROUTERAI_BASE_URL=${ROUTERAI_BASE_URL:-https://routerai.ru/api/v1}
+      - GIGACHAT_AUTH_KEY=${GIGACHAT_AUTH_KEY:-}
+      - YANDEXGPT_API_KEY=${YANDEXGPT_API_KEY:-}
+      - YANDEXGPT_FOLDER_ID=${YANDEXGPT_FOLDER_ID:-}
+      # ─── Автоматизация ───
+      - SCAN_INTERVAL_SECONDS=${SCAN_INTERVAL_SECONDS:-0}
+      # ─── Vision ───
+      - AI_VISION_ENABLED=${AI_VISION_ENABLED:-false}
+      - AI_VISION_MODEL=${AI_VISION_MODEL:-qwen/qwen2.5-vl-7b-instruct}
+      - AI_VISION_API_KEY=${AI_VISION_API_KEY:-}
+      # ─── Архивация ───
+      - ARCHIVE_FULL_DAYS=${ARCHIVE_FULL_DAYS:-90}
+      - ARCHIVE_META_DAYS=${ARCHIVE_META_DAYS:-365}
+      # ─── 1С ───
+      - ONE_C_EXPORT_MODE=${ONE_C_EXPORT_MODE:-file}
+      - ONE_C_FILE_DIR=/app/data/outbox_1c
+      - ONE_C_HTTP_URL=${ONE_C_HTTP_URL:-}
+      - ONE_C_HTTP_TOKEN=${ONE_C_HTTP_TOKEN:-}
+      # ─── БД ───
+      - DATABASE_PATH=/app/data/readmail.sqlite3
+      - BUYER_CONFIG_DIR=/app/config/buyers
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8765/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s

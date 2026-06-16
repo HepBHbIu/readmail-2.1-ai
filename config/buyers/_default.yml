@@ -1,0 +1,37 @@
+buyer:
+  code: unknown_buyer
+  name: Неизвестный покупатель
+  enabled: false
+  aliases:
+    domains: []
+    senders: []
+    subject_contains: []
+    body_contains: []
+statuses:
+  defect:
+  - брак
+  - дефект
+  - неисправность
+  nonconforming:
+  - некондиция
+  - нетоварный вид
+  - повреждена упаковка
+  - без маркировки
+  wrong_item:
+  - пересорт
+  - не тот товар
+  - неверный артикул
+  shortage:
+  - недовоз
+  - не довезли
+  - отсутствует позиция
+  overdelivery:
+  - излишек
+  - лишний товар
+  correction_request:
+  - корректировочный документ
+  - УКД
+  - КСФ
+  marking_request:
+  - маркировка
+  - честный знак

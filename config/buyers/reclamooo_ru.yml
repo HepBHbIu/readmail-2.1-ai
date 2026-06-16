@@ -1,0 +1,21 @@
+buyer:
+  code: reclamooo_ru
+  name: Reclamooo
+  enabled: true
+  aliases:
+    domains:
+    - '@yandex.ru'
+    - '@ya.ru'
+    senders:
+    - reclamooo.berru@yandex.ru
+    folders:
+    - Возвраты Berru|reclamooo.berru@yandex.ru
+    subject_contains:
+    - возврат
+    - претенз
+    - реклам
+    body_contains:
+    - возврат
+    - брак
+required_documents:
+- фото

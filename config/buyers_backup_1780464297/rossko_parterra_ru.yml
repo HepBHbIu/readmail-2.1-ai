@@ -1,0 +1,53 @@
+buyer:
+  code: rossko_parterra_ru
+  name: ROSSKO
+  enabled: true
+  aliases:
+    domains:
+      - '@rossko.ru'
+    senders:
+      - Natalya.Vedernikova@rossko.ru
+    subject_contains:
+      - Возврат РОССКО
+      - ROSSKO
+      - RE: Возврат РОССКО
+    body_contains:
+      - Причина возврата – брак
+      - Причина возврата - брак
+      - Причина возврата – нетоварный вид
+      - Причина возврата - нетоварный вид
+      - Покупали:
+      - По счёт-фактуре
+      - По счет-фактуре
+      - Подскажите, пожалуйста, есть решение по возврату?
+      - Фото во вложении
+
+statuses:
+  defect:
+    - брак
+  nonconforming:
+    - нетоварный вид
+  quality_refusal:
+    - отказ покупателя
+
+processing_types:
+  new_return:
+    - просьба согласовать возврат товара
+    - Фото во вложении
+  followup_dialog:
+    - Подскажите, пожалуйста, есть решение по возврату?
+    - есть решение по возврату?
+
+fields:
+  regex:
+    document_number:
+      - сч[её]т[- ]?фактур[еы]\s*№\s*([0-9]+)
+      - По сч[её]т-фактуре №\s*([0-9]+)
+    part_number:
+      - Покупали:\s*([A-Z0-9][A-Z0-9._\/-]{3,40})
+    quantity:
+      - Кол-во:\s*(\d+(?:[,.]\d+)?)
+
+required_documents:
+  - фото
+  - счёт-фактура

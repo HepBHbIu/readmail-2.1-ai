@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+# Запуск визуальной TUI-панели Readmail прямо в терминале сервера.
+#   ./readmail
+# Никакой графики не нужно — это обычный текстовый терминал.
+DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+exec python3 "$DIR/scripts/readmail_panel.py" "$@"

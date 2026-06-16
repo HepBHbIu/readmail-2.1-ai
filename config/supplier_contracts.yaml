@@ -1,0 +1,88 @@
+default:
+  quantity_evidence:
+    allow_quantity_label: true
+    allow_piece_unit: true
+    allow_table_quantity_column: true
+    allow_compact_item_line: true
+    require_product_context_for_single_number: true
+  part_number_evidence:
+    allow_part_label: true
+    allow_compact_item_line: true
+    allow_table_column: true
+    allow_product_context: true
+    max_distance_to_product_name: 120
+  document_number_evidence:
+    allow_upd_context: true
+    allow_document_label: true
+    require_document_context_for_auto_export: true
+
+avtoto_ru:
+  allow_known_nested_counterparty_auto_warning: true
+  quantity_evidence:
+    allow_compact_item_line: true
+    allow_piece_unit: true
+    compact_item_line_patterns:
+      - '(?i)арт\.?\s*{part_number}.{0,80}?шт\.?\s*{quantity}'
+      - '(?i){part_number}.{0,80}?шт\.?\s*{quantity}'
+      - '(?i)артикул\s*{part_number}.{0,80}?(количество|кол-во|шт)\D*{quantity}'
+  buyer_evidence:
+    pattern_plus_known_nested_mismatch_class: auto_export_with_warning
+  part_number_evidence:
+    allow_compact_item_line: true
+    allow_part_label: true
+  claim_kind_evidence:
+    quality_refusal_phrases:
+      - Отказ от товара
+    allow_explicit_reason_auto_warning: true
+  document_number_evidence:
+    positive_context:
+      - УПД
+      - документ
+      - реализация
+
+berg_ru:
+  allow_known_nested_counterparty_auto_warning: true
+  quantity_evidence:
+    allow_compact_item_line: true
+  buyer_evidence:
+    pattern_plus_known_nested_mismatch_class: auto_export_with_warning
+
+auto_sputnik:
+  quantity_evidence:
+    prefer_table_quantity_column: true
+  part_number_evidence:
+    prefer_table_column: true
+  claim_kind_evidence:
+    reason_column_names:
+      - Причина претензии
+      - Причина
+    allow_table_reason_column: true
+
+avtoformula:
+  quantity_evidence:
+    allow_text_quantity_with_part_context: true
+    allow_quantity_1_with_part_context: true
+  part_number_evidence:
+    allow_compact_item_line: true
+    allow_part_label: true
+  claim_kind_evidence:
+    allow_explicit_reason_auto_warning: true
+
+autoeuro_ru:
+  quantity_evidence:
+    allow_compact_item_line: true
+    allow_quantity_label: true
+  claim_kind_evidence:
+    allow_explicit_reason_auto_warning: true
+
+ixora_auto_ru:
+  document_number_evidence:
+    require_strict_document_context: true
+    negative_context:
+      - претензия
+      - заявка
+      - обращение
+
+autorus_ru:
+  document_number_evidence:
+    require_strict_document_context: true

@@ -1,0 +1,25 @@
+{
+  "_comment": "QA-датасет для единого поиска. Покрывает id-цепочку, документы, артикулы, message_id, дубликаты, pre_delivery_refusal, supplier_report, quick_review.",
+  "raw_emails": [
+    {"id": 1001, "mailbox": "INBOX", "uid": 11, "message_id": "<abc123@mail.ru>", "subject": "Брак тормозного диска", "from_addr": "client@autoeuro.ru", "snippet": "диск с дефектом, требуем возврат", "status": "imported", "received_at": "2026-06-01", "imported_at": "2026-06-01"},
+    {"id": 1002, "mailbox": "INBOX", "uid": 12, "message_id": "<dup999@mail.ru>", "subject": "Повтор брак диска", "from_addr": "client@autoeuro.ru", "snippet": "тот же диск", "status": "duplicate", "received_at": "2026-06-02", "imported_at": "2026-06-02", "duplicate_of_raw_email_id": 1001},
+    {"id": 1003, "mailbox": "INBOX", "uid": 13, "message_id": "<refuse77@mail.ru>", "subject": "Отказ от заказа до поставки", "from_addr": "buyer@shtuca.ru", "snippet": "отказываемся, товар ещё не приехал", "status": "imported", "received_at": "2026-06-03", "imported_at": "2026-06-03"},
+    {"id": 1004, "mailbox": "INBOX", "uid": 14, "message_id": "<price55@mail.ru>", "subject": "Прайс-лист на июнь", "from_addr": "sales@supplier.ru", "snippet": "прайс во вложении", "status": "imported", "received_at": "2026-06-04", "imported_at": "2026-06-04"}
+  ],
+  "cases": [
+    {"id": 2001, "raw_email_id": 1001, "buyer_code": "autoeuro_ru", "buyer_name": "АвтоЕвро", "event_type": "new_return", "claim_kind": "defect", "priority": 1, "state": "needs_review", "fields_json": {"document_number": "РН-7788", "part_number": "BR-500X", "product_name": "Диск тормозной", "quantity": 2}, "created_at": "2026-06-01", "updated_at": "2026-06-01"},
+    {"id": 2002, "raw_email_id": 1001, "buyer_code": "autoeuro_ru", "buyer_name": "АвтоЕвро", "event_type": "new_return", "claim_kind": "defect", "priority": 1, "state": "ready_to_1c", "fields_json": {"document_number": "778899", "part_number": "500200", "product_name": "Колодки", "quantity": 4}, "created_at": "2026-06-01", "updated_at": "2026-06-01"},
+    {"id": 2003, "raw_email_id": 1003, "buyer_code": "shtuca_ru", "buyer_name": "Штуца", "event_type": "pre_delivery_refusal", "claim_kind": "refusal", "priority": 2, "state": "needs_review", "fields_json": {"document_number": null, "part_number": "REF-9", "product_name": "Фильтр", "order_number": "ORD-321", "pre_delivery_refusal": true}, "created_at": "2026-06-03", "updated_at": "2026-06-03"},
+    {"id": 2004, "raw_email_id": 1004, "buyer_code": "supplier_ru", "buyer_name": "Поставщик", "event_type": "supplier_report", "claim_kind": "price_list", "priority": 3, "state": "closed", "fields_json": {"note": "прайс"}, "created_at": "2026-06-04", "updated_at": "2026-06-04"},
+    {"id": 2005, "raw_email_id": 1001, "buyer_code": "autoeuro_ru", "buyer_name": "АвтоЕвро", "event_type": "new_return", "claim_kind": "defect", "priority": 1, "state": "quick_review", "fields_json": {"document_number": "QR-100", "part_number": "QR-PART"}, "created_at": "2026-06-01", "updated_at": "2026-06-01"},
+    {"id": 2006, "raw_email_id": 1001, "buyer_code": "auto_sputnik", "buyer_name": "Авто-Спутник", "event_type": "new_return", "claim_kind": "quality_refusal", "priority": 1, "state": "needs_review", "fields_json": {"claim_number": "00000230135", "document_number": "82412", "part_number": "EIM1032NF"}, "created_at": "2026-06-05", "updated_at": "2026-06-05"},
+    {"id": 2007, "raw_email_id": 1001, "buyer_code": "avtoto_ru", "buyer_name": "Автото", "event_type": "new_return", "claim_kind": "defect", "priority": 1, "state": "needs_review", "fields_json": {"client_request_number": "REQ-778", "part_number": "A-778"}, "created_at": "2026-06-05", "updated_at": "2026-06-05"},
+    {"id": 2008, "raw_email_id": 1001, "buyer_code": "ixora_auto_ru", "buyer_name": "Иксора", "event_type": "new_return", "claim_kind": "quality_refusal", "priority": 1, "state": "needs_review", "fields_json": {"return_number": "RET-901", "part_number": "I-901"}, "created_at": "2026-06-05", "updated_at": "2026-06-05"},
+    {"id": 2009, "raw_email_id": 1001, "buyer_code": "profit_liga_ru", "buyer_name": "Профит Лига", "event_type": "new_return", "claim_kind": "quality_refusal", "priority": 1, "state": "needs_review", "fields_json": {"part_number": "P-55"}, "payload_json": {"request": {"request_number": "REQUEST-55"}}, "created_at": "2026-06-05", "updated_at": "2026-06-05"},
+    {"id": 2010, "raw_email_id": 1001, "buyer_code": "auto_sputnik", "buyer_name": "Авто-Спутник", "event_type": "new_return", "claim_kind": "quality_refusal", "priority": 1, "state": "needs_review", "fields_json": {"claim_number": "X-00000230135-OLD", "part_number": "OLD-1"}, "created_at": "2026-06-05", "updated_at": "2026-06-05"}
+  ],
+  "outbox": [
+    {"id": 3001, "case_id": 2001, "payload_json": "{}", "event_type": "return_ready", "status": "new", "event_key": "autoeuro_ru:2001:return", "created_at": "2026-06-01"},
+    {"id": 3002, "case_id": 2002, "payload_json": "{}", "event_type": "return_ready", "status": "error", "event_key": "autoeuro_ru:2002:return", "last_error": "connection refused to 1C", "created_at": "2026-06-01"}
+  ]
+}

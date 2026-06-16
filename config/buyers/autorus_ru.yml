@@ -1,0 +1,37 @@
+buyer:
+  code: autorus_ru
+  name: Авторусь
+  enabled: true
+  aliases:
+    domains:
+    - '@autorus.ru'
+    senders:
+    - zakaz@autorus.ru
+    folders: []
+    subject_contains:
+    - нет марки
+    - марка
+    - УПД
+    body_contains:
+    - выгрузить в ЭДО марку
+    - нужна марка
+    - буфер маркировок
+statuses:
+  quality_refusal:
+  - нет марки
+  - нужна марка
+  - выгрузить в ЭДО марку
+  - маркировка
+  - честный знак
+processing_types:
+  marking_request:
+  - нет марки
+  - нужна марка
+  - выгрузить в ЭДО марку
+  - марку по УПД
+required_documents:
+- маркировка / Честный знак / ЭДО
+field_extractors:
+- field: marking_code
+  type: next_token
+  after: Нужна марка

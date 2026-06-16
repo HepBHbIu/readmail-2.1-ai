@@ -1,0 +1,51 @@
+buyer:
+  code: auto_sputnik
+  name: Авто-Спутник
+  enabled: true
+  aliases:
+    domains:
+    - '@auto-sputnik.ru'
+    senders:
+    - ClaimsTosuppliers@auto-sputnik.ru
+    subject_contains:
+    - претензия
+    - поставщику
+    - по документу
+    body_contains:
+    - Авто-Спутник импорт
+    - причина претензии
+    - создана претензия
+statuses:
+  wrong_item:
+  - пересорт
+  - причина претензии пересорт
+  - не соответствует КМ
+  - пересортица
+  defect:
+  - брак
+  - дефект
+  quality_refusal:
+  - отказ клиента
+  shortage:
+  - недовоз
+  - недопоставка
+  - недостача
+  nonconforming:
+  - некондиция
+  - не соответствует км
+  - повреждение
+  - товарный вид
+required_documents:
+- акт пересорта
+- фото маркировки
+- ТОРГ-12
+field_extractors: []
+processing_types:
+  follow_up_request:
+  - ожидаем решение
+  - ожидаем ответ
+  - что по претензии
+  - где решение
+  document_update:
+  - во вложении
+  - прилагаем документы

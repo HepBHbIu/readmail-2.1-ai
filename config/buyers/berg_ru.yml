@@ -1,0 +1,26 @@
+buyer:
+  code: berg_ru
+  name: Berg
+  enabled: true
+  aliases:
+    domains:
+    - '@berg.ru'
+    senders: []
+    folders:
+    - Возвраты Berru|berg.ru
+    subject_contains:
+    - возврат
+    - претенз
+    - рекламац
+    body_contains:
+    - возврат
+    - брак
+    - некондиц
+statuses:
+  quality_refusal:
+  - отказ
+processing_types:
+  marking_request:
+  - маркировк
+required_documents:
+- фото

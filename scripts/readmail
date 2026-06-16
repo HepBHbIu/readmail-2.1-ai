@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+# Короткий запуск интерактивной shell Readmail: ./scripts/readmail
+# Локально (без Docker). В Docker: docker compose exec app python scripts/readmailctl.py shell
+DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+exec python3 "$DIR/scripts/readmailctl.py" shell "$@"

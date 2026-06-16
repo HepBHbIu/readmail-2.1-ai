@@ -1,0 +1,78 @@
+buyer:
+  code: profit_liga_ru
+  name: Профит-Лига / PR-LG
+  enabled: true
+  aliases:
+    domains:
+    - '@pr-lg.ru'
+    senders:
+    - robot@pr-lg.ru
+    - noreply@pr-lg.ru
+    - vozvrat@pr-lg.ru
+    - reclamaciya.priemka@pr-lg.ru
+    - returns@pr-lg.ru
+    subject_contains:
+    - Профит
+    - Профит-Лига
+    - PR-LG
+    - pr-lg
+    - Заявка на возврат
+    - Проведен возврат
+    - Проведён возврат
+    - Возврат товара
+    - Возврат товаров
+    body_contains:
+    - Заявка на возврат
+    - Проведен возврат товара
+    - Проведён возврат товара
+    - Отказ покупателя
+    - Отказ клиента
+    - Возврат проведен
+    - Возврат проведён
+    - тип возврата
+    - счет-фактура
+    - счёт-фактура
+    attachment_contains:
+    - xls
+    - xlsx
+    - pdf
+statuses:
+  quality_refusal:
+  - отказ покупателя
+  - отказ клиента
+  - тип возврата отказ покупателя
+  defect:
+  - брак
+  - дефект
+  shortage:
+  - недопоставка
+  - недовоз
+  number_replacement:
+  - замена номера/бренда
+  wrong_item:
+  - пересорт
+  nonconforming:
+  - некондиция
+  - нетоварный вид
+processing_types:
+  new_return:
+  - заявка на возврат
+  - возврат товаров
+  - возврат товара
+  supplier_decision:
+  - проведен возврат товара
+  - проведён возврат товара
+  - возврат проведен
+  - возврат проведён
+  followup_dialog:
+  - есть решение по возврату
+  - что по возврату
+  - ждем ответ
+  - ждём ответ
+  correction_document_request:
+  - корректировочную счет-фактуру
+  - корректировочную счёт-фактуру
+  - укд
+  - ксф
+required_documents:
+- УПД/накладная или номер счета-фактуры

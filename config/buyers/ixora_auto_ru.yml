@@ -1,0 +1,51 @@
+buyer:
+  code: ixora_auto_ru
+  name: Ixora Auto
+  enabled: true
+  aliases:
+    domains:
+    - '@ixora-auto.ru'
+    senders: []
+    folders:
+    - Возвраты Berru|ixora-auto.ru
+    subject_contains:
+    - возврат
+    - претенз
+    body_contains:
+    - возврат
+    - брак
+statuses:
+  defect:
+  - брак
+  - дефект
+  nonconforming:
+  - некондиция
+  - нетоварный вид
+  wrong_item:
+  - пересорт
+  - не тот артикул
+  shortage:
+  - недовоз
+  - не довезли
+  quality_refusal:
+  - отказ клиента
+  - отказ от товара
+required_documents:
+- фото
+defaults:
+  claim_kind: quality_refusal
+ai_prompt: 'ixora «Информируем о необходимости вернуть ранее приобретённый товар»
+  — причину в письме НЕ
+
+  указывают. Если явной причины (брак/недостача/пересорт) нет → claim_kind=quality_refusal
+  (отказ).
+
+  Поля бери из строк с метками: «Бренд:», «Номер детали:» → part_number, «Количество:»,
+
+  «Номер документа:» → document_number, «Дата документа» → document_date. TicketID
+  — это return_number.
+
+  «Запрос на возврат … Причина возврата: Отказ от детали. 2ш Дата с/ф:» — причина
+  и количество тут.
+
+  '

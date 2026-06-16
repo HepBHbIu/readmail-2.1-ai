@@ -1,0 +1,15 @@
+buyer:
+  code: reclamooo_ru
+  name: Reclamooo
+  enabled: true
+  aliases:
+    domains: ['@yandex.ru', '@ya.ru']
+    senders: ['reclamooo.berru@yandex.ru']
+    folders: ['Возвраты Berru|reclamooo.berru@yandex.ru']
+    subject_contains: ['возврат', 'претенз', 'реклам']
+    body_contains: ['возврат', 'брак']
+fields:
+  regex:
+    document_number: ['(?:УПД|счет|документ|номер)\s*№?\s*([0-9]{4,})']
+    part_number: ['(?:артикул|номер|part)\s*[:\s]*([A-Za-z0-9._\/-]{3,})']
+required_documents: ['фото']

@@ -1,0 +1,18 @@
+buyer:
+  code: trinity_parts_ru
+  name: Trinity Parts
+  enabled: true
+  aliases:
+    domains:
+    - '@trinity-parts.ru'
+    senders: []
+    folders:
+    - Возвраты Berru|trinity-parts.ru
+    subject_contains:
+    - возврат
+    - претенз
+    body_contains:
+    - возврат
+    - брак
+required_documents:
+- фото

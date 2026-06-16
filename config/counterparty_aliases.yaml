@@ -1,0 +1,15 @@
+avtoto_ru:
+  allowed_text_counterparties:
+    - Trinity-Parts
+    - Тринити-Партс
+    - Trinity Parts
+  relation: nested_supplier_or_signature
+  severity: warning
+
+berg_ru:
+  allowed_text_counterparties:
+    - Trinity-Parts
+    - Тринити-Партс
+    - Trinity Parts
+  relation: nested_supplier_or_signature
+  severity: warning

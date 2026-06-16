@@ -1,0 +1,19 @@
+buyer:
+  code: shate_m_ru
+  name: Shate-M
+  enabled: true
+  aliases:
+    domains:
+    - '@shate-m.com'
+    - '@shate-m.ru'
+    senders: []
+    folders:
+    - Возвраты Berru|shate-m.com
+    subject_contains:
+    - возврат
+    - претенз
+    body_contains:
+    - возврат
+    - брак
+required_documents:
+- фото
