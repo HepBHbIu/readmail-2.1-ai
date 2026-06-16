@@ -59,7 +59,11 @@ SYSTEM_PROMPT = """Ты извлекаешь структурированные 
 claim_kind: defect, nonconforming, number_replacement, wrong_item, shortage, overdelivery, incomplete_set, correction_request, marking_request, quality_refusal. Если возврат явный, но под-тип неясен — null (это НЕ ошибка, экспорт всё равно возможен).
 event_type: new_return, pre_delivery_refusal, followup_reminder, followup_dialog,
 supplier_decision, correction_request, marking_request, number_replacement,
-shortage_link_event, ready_to_ship, supplier_report, info_only, unknown.
+shortage_link_event, ready_to_ship, supplier_report, problem_notice, info_only, unknown.
+problem_notice — УВЕДОМЛЕНИЕ О ПРОБЛЕМЕ по позиции, решение по которой отдано клиенту, и которое
+ЯВНО «не является запросом на возврат» / «не требует ответа» (приняли товар с дефектом, ведут
+видеофиксацию). Это НЕ возврат (в 1С не идёт) и НЕ мусор: возможен будущий возврат, поэтому
+накладную и артикул ОБЯЗАТЕЛЬНО извлеки — они станут ключом для привязки будущей претензии.
 Для брака ищи доказательства: акт, заказ-наряд установки/снятия, заключение сервиса, фото.
 
 ЧТО НЕ ЯВЛЯЕТСЯ НОВЫМ ВОЗВРАТОМ:
@@ -68,7 +72,7 @@ shortage_link_event, ready_to_ship, supplier_report, info_only, unknown.
 - Замена артикула/номера производителем → number_replacement.
 - Прайс-лист, остатки, наличие, отчёт поставщика → supplier_report.
 - Товар готов к выдаче/отгрузке → ready_to_ship.
-- Уведомление о приёмке с дефектами с явной пометкой «НЕ является запросом на возврат» / «не требует ответа» (напр. trinity-parts «ТОВАР ПРИНЯТ С ДЕФЕКТАМИ ДО КЛИЕНТА») → event_type=info_only, requires_action=false. Накладную и артикул всё равно извлеки как контекст.
+- Уведомление о приёмке с дефектами с явной пометкой «НЕ является запросом на возврат» / «не требует ответа» (напр. trinity-parts «ТОВАР ПРИНЯТ С ДЕФЕКТАМИ ДО КЛИЕНТА») → event_type=problem_notice, requires_action=false. Накладную и артикул ОБЯЗАТЕЛЬНО извлеки (ключ для будущей привязки). Это НЕ info_only (info_only — для прайсов/отчётов без позиции).
 - Общие вопросы, реорганизация компании, «как удобнее провести» без конкретной детали.
 
 РЕШЕНИЕ:
@@ -281,7 +285,7 @@ def _chat_payload(email_data: dict[str, Any], case_data: dict[str, Any], purpose
         "required_json_shape": {
             "buyer_code": "string|null, short stable code if obvious, else null",
             "buyer_name": "string|null",
-            "event_type": "new_return|pre_delivery_refusal|followup_reminder|followup_dialog|supplier_decision|correction_request|marking_request|number_replacement|shortage_link_event|ready_to_ship|supplier_report|info_only|unknown",
+            "event_type": "new_return|pre_delivery_refusal|followup_reminder|followup_dialog|supplier_decision|correction_request|marking_request|number_replacement|shortage_link_event|ready_to_ship|supplier_report|problem_notice|info_only|unknown",
             "claim_kind": "defect|nonconforming|number_replacement|wrong_item|shortage|overdelivery|incomplete_set|correction_request|marking_request|quality_refusal|null",
             "fields": {
                 "claim_number": "string|null",

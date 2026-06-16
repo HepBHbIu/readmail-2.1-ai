@@ -620,44 +620,100 @@ def _extract_attachment_text(file_path: str, filename: str, max_chars: int = 600
         return b.decode("utf-8", errors="replace")
 
     def _xlsx_rows(data_or_path: Any) -> str:
-        import openpyxl, io as _io
-        wb = openpyxl.load_workbook(_io.BytesIO(data_or_path) if isinstance(data_or_path, bytes) else data_or_path,
-                                    data_only=True, read_only=True)
+        import io as _io
         out: list[str] = []
-        for ws in list(wb.worksheets)[:2]:
-            for i, rd in enumerate(ws.iter_rows(values_only=True)):
-                if i >= 120:
-                    break
-                cells = [str(c) for c in rd if c is not None]
-                if cells:
-                    out.append(" | ".join(cells))
+        # .xlsx/.xlsm → openpyxl; старый OLE2 .xls openpyxl НЕ читает → фолбэк на xlrd.
+        try:
+            import openpyxl
+            wb = openpyxl.load_workbook(_io.BytesIO(data_or_path) if isinstance(data_or_path, bytes) else data_or_path,
+                                        data_only=True, read_only=True)
+            for ws in list(wb.worksheets)[:2]:
+                for i, rd in enumerate(ws.iter_rows(values_only=True)):
+                    if i >= 120:
+                        break
+                    cells = [str(c) for c in rd if c is not None]
+                    if cells:
+                        out.append(" | ".join(cells))
+            if out:
+                return "\n".join(out)
+        except Exception:
+            pass
+        try:
+            import xlrd
+            book = (xlrd.open_workbook(file_contents=data_or_path) if isinstance(data_or_path, bytes)
+                    else xlrd.open_workbook(data_or_path))
+            for sh in book.sheets()[:2]:
+                for r in range(min(sh.nrows, 120)):
+                    cells = [str(c) for c in sh.row_values(r) if str(c).strip() not in ("", "None")]
+                    if cells:
+                        out.append(" | ".join(cells))
+        except Exception:
+            return ""
         return "\n".join(out)
+
+    def _inner_text(name: str, data: bytes) -> str:
+        """Текст из файла ВНУТРИ архива по его расширению (Excel/CSV/TXT/PDF)."""
+        ie = name.lower().rsplit(".", 1)[-1] if "." in name else ""
+        try:
+            if ie in {"xlsx", "xls", "xlsm"}:
+                return _xlsx_rows(data)
+            if ie in {"csv", "txt"}:
+                return _dec(data)
+            if ie == "pdf":
+                from .email_parser import _extract_pdf_text
+                return _extract_pdf_text(data) or ""
+        except Exception:
+            return ""
+        return ""
 
     try:
         if ext in {"xlsx", "xls", "xlsm"}:
             return _xlsx_rows(file_path)[:max_chars]
-        if ext == "csv":
-            return _dec(Path(file_path).read_bytes())[:max_chars]
-        if ext == "txt":
+        if ext in {"csv", "txt"}:
             return _dec(Path(file_path).read_bytes())[:max_chars]
         if ext == "zip":
-            import zipfile, io as _io
+            import zipfile
             parts: list[str] = []
             with zipfile.ZipFile(file_path) as zf:
                 for zi in zf.infolist():
                     if zi.is_dir():
                         continue
-                    ie = zi.filename.lower().rsplit(".", 1)[-1]
-                    if ie in {"xlsx", "xls", "xlsm"}:
-                        try:
-                            parts.append(_xlsx_rows(zf.read(zi.filename)))
-                        except Exception:
-                            pass
-                    elif ie in {"csv", "txt"}:
-                        parts.append(_dec(zf.read(zi.filename)))
+                    t = _inner_text(zi.filename, zf.read(zi.filename))
+                    if t.strip():
+                        parts.append(t)
                     if sum(len(p) for p in parts) > max_chars:
                         break
             return "\n".join(parts)[:max_chars]
+        if ext == "7z":
+            try:
+                import py7zr  # best-effort: либы нет в образе → graceful ""
+                parts: list[str] = []
+                with py7zr.SevenZipFile(file_path, mode="r") as z:
+                    for name, bio in (z.readall() or {}).items():
+                        t = _inner_text(name, bio.read())
+                        if t.strip():
+                            parts.append(t)
+                        if sum(len(p) for p in parts) > max_chars:
+                            break
+                return "\n".join(parts)[:max_chars]
+            except Exception:
+                return ""
+        if ext == "rar":
+            try:
+                import rarfile  # best-effort: нужен системный unrar/unar → graceful ""
+                parts: list[str] = []
+                with rarfile.RarFile(file_path) as rf:
+                    for ri in rf.infolist():
+                        if ri.isdir():
+                            continue
+                        t = _inner_text(ri.filename, rf.read(ri))
+                        if t.strip():
+                            parts.append(t)
+                        if sum(len(p) for p in parts) > max_chars:
+                            break
+                return "\n".join(parts)[:max_chars]
+            except Exception:
+                return ""
     except Exception:
         return ""
     return ""
@@ -754,6 +810,14 @@ def _apply_ai_to_case_id(
         _log("ai", "AI: кейс не найден", level="error", case_id=case_id, details={"purpose": purpose})
         return {"ok": False, "case_id": case_id, "error": "case_not_found", "applied": False}
     email_data, case_data = loaded
+    # v2.1: авто-дочитка ДЕШЁВОГО текста вложений (Excel/CSV/zip-акты) на первом прогоне —
+    # без vision. Бренд/наименование/№ у браков часто только в акте ТОРГ-2 (.xls/.zip).
+    if not read_attachments:
+        _doc_exts = (".xls", ".xlsx", ".xlsm", ".csv", ".txt", ".zip", ".rar", ".7z")
+        for _a in (email_data.get("attachments") or []):
+            if str(_a.get("filename") or "").lower().endswith(_doc_exts):
+                read_attachments = True
+                break
     # Дочитка вложений: подмешиваем текст Excel/doc-актов к телу (бренд/имя у браков — в акте).
     if read_attachments:
         try:
@@ -2026,6 +2090,7 @@ def api_review_cases(
         "reminders": "c.event_type='followup_reminder' AND c.state!='needs_link'",
         "supplier_decisions": "c.event_type='supplier_decision' AND c.state!='needs_link'",
         "marking": "c.event_type='marking_request' AND c.state!='needs_link'",
+        "problem_notice": "c.event_type='problem_notice' OR c.state='problem_notice'",
         "information": "c.state='ignored_info_only' OR c.event_type='info_only'",
         "unknown": "c.event_type='unknown' OR c.state IS NULL OR c.state='unknown'",
     }
@@ -2038,6 +2103,7 @@ def api_review_cases(
         "reminders": "Напоминания",
         "supplier_decisions": "Решения поставщика",
         "marking": "Маркировка / ТНВЭД",
+        "problem_notice": "Уведомления о проблеме",
         "information": "Прайсы / отчёты / информация",
         "unknown": "Неизвестные",
     }
@@ -2061,6 +2127,8 @@ def api_review_cases(
             key = "supplier_decisions"
         elif event_type == "marking_request":
             key = "marking"
+        elif event_type == "problem_notice" or state == "problem_notice":
+            key = "problem_notice"
         elif state == "ignored_info_only" or event_type == "info_only":
             key = "information"
         else:
@@ -7320,10 +7388,16 @@ def api_check_defect_docs(case_id: int) -> dict[str, Any]:
     if not atts:
         return {"ok": True, "state": "absent", "found": {}, "n_present": 0, "attachments": [], "note": "вложений нет"}
 
+    # Текст-извлекаемые документы (PDF/Excel/csv/txt/архив) — классифицируем по тексту, без vision.
+    _TEXTDOC_RE = re.compile(r"\.(pdf|docx?|xlsx?|xlsm|csv|txt|zip|rar|7z)$", re.I)
+
     def _is_doc(a: Any) -> bool:
         ct = (a["content_type"] or "").lower()
         fn = (a["filename"] or "").lower()
-        return "pdf" in ct or bool(re.search(r"\.(pdf|docx?|xlsx?)$", fn))
+        return "pdf" in ct or bool(_TEXTDOC_RE.search(fn))
+
+    def _is_pdf(a: Any) -> bool:
+        return "pdf" in (a["content_type"] or "").lower() or (a["filename"] or "").lower().endswith(".pdf")
 
     docs = [a for a in atts if _is_doc(a)]
     photos = [a for a in atts if not _is_doc(a)]
@@ -7331,7 +7405,7 @@ def api_check_defect_docs(case_id: int) -> dict[str, Any]:
     per_att: list[dict[str, Any]] = []
 
     def _classify_doc_text(text: str) -> str:
-        """Классификация документа по ИЗВЛЕЧЁННОМУ ТЕКСТУ PDF (быстро, без vision)."""
+        """Классификация документа по ИЗВЛЕЧЁННОМУ ТЕКСТУ (быстро, без vision)."""
         t = (text or "").lower()
         if not t.strip():
             return ""
@@ -7345,30 +7419,42 @@ def api_check_defect_docs(case_id: int) -> dict[str, Any]:
             return "service_act"
         return ""
 
+    def _doc_text(a: Any) -> str:
+        """Текст документа: PDF→pdfminer, Excel/csv/zip/архив→_extract_attachment_text."""
+        fp = a["file_path"]
+        if _is_pdf(a):
+            try:
+                from .email_parser import _extract_pdf_text
+                return _extract_pdf_text(Path(fp).read_bytes()) or ""
+            except Exception:
+                return ""
+        try:
+            return _extract_attachment_text(fp, a["filename"]) or ""
+        except Exception:
+            return ""
+
     def _process(a: Any, group: str) -> None:
         fp = a["file_path"]
         if not fp or not Path(fp).exists():
             per_att.append({"id": a["id"], "filename": a["filename"], "group": group, "error": "файл не на диске"})
             return
-        # PDF/документы — читаем ТЕКСТОМ (vision на больших PDF виснет), картинки — vision.
-        ct = (a["content_type"] or "").lower()
-        fn = (a["filename"] or "").lower()
-        if "pdf" in ct or fn.endswith(".pdf"):
-            dt = None
-            try:
-                from .email_parser import _extract_pdf_text
-                txt = _extract_pdf_text(Path(fp).read_bytes())
-                dt = _classify_doc_text(txt)
-            except Exception:
-                dt = None
+        # 1) Текст-документы (PDF/Excel/zip/csv) — классифицируем по тексту, без vision.
+        if _is_doc(a):
+            txt = _doc_text(a)
+            dt = _classify_doc_text(txt)
             if dt:
                 per_att.append({"id": a["id"], "filename": a["filename"], "group": group,
-                                "doc_type": dt, "reason": "PDF-текст", "via": "pdf_text"})
+                                "doc_type": dt, "reason": "текст вложения", "via": "text"})
                 if dt in found and not found[dt]:
                     found[dt] = a["id"]
                 return
-            # Скан-PDF без текстового слоя → отдаём в vision (как картинку). Может быть медленно.
-            # Не делаем return — проваливаемся в vision-блок ниже.
+            # Excel/csv/архив без признаков документа → дальше vision НЕ зовём (это не картинка).
+            if not _is_pdf(a):
+                per_att.append({"id": a["id"], "filename": a["filename"], "group": group,
+                                "doc_type": "", "reason": "текст без признаков документа", "via": "text"})
+                return
+            # Скан-PDF без текстового слоя → проваливаемся в vision ниже.
+        # 2) Картинки и скан-PDF → vision.
         try:
             # Учёт токенов vision пишется внутри run_vision_extraction (kind=vision, case_id).
             res = run_vision_extraction(Path(fp).read_bytes(), content_type=(a["content_type"] or "image/png"),
@@ -7383,20 +7469,41 @@ def api_check_defect_docs(case_id: int) -> dict[str, Any]:
             dt = str(resp.get("doc_type") or "").strip()
             per_att.append({"id": a["id"], "filename": a["filename"], "group": group,
                             "doc_type": dt, "reason": resp.get("reason"), "confidence": resp.get("confidence"),
-                            "skipped": res.get("skipped"), "error": res.get("error")})
+                            "skipped": res.get("skipped"), "error": res.get("error"), "via": "vision"})
             if dt in found and not found[dt]:
                 found[dt] = a["id"]
         except Exception as e:
             per_att.append({"id": a["id"], "filename": a["filename"], "group": group, "error": str(e)})
 
-    # 1) Документы первыми
+    def _photo_probe_order(items: list[Any], mode: str) -> list[Any]:
+        """Порядок чтения фото (vision дорогой). first_last_then_inner: первый, последний,
+        второй, предпоследний… — как описана пробивка (нет явного PDF → первый и последний;
+        конец документ → предпоследний). 'in_attachment_order'/'first_then_inner' → по порядку."""
+        if mode in ("in_attachment_order", "first_then_inner"):
+            return list(items)
+        order: list[Any] = []
+        i, j = 0, len(items) - 1
+        while i <= j:
+            order.append(items[i])
+            if i != j:
+                order.append(items[j])
+            i += 1
+            j -= 1
+        return order
+
+    # 1) Документы (PDF/Excel/zip) первыми — по тексту, дёшево (read_pdf_first).
     for a in docs:
         if all(found.values()):
             break
         _process(a, "document")
-    # 2) Фото — только если документов не хватило (фото может быть сканом документа)
-    if not all(found.values()):
-        for a in photos:
+    # 2) Фото — vision, порядок first_last_then_inner, лимит max_defect_images_per_case.
+    if not all(found.values()) and photos:
+        order_mode = getattr(settings, "defect_read_images_order", "first_last_then_inner")
+        max_imgs = max(0, int(getattr(settings, "max_defect_images_per_case", 2) or 0))
+        probe = _photo_probe_order(photos, order_mode)
+        if max_imgs:
+            probe = probe[:max_imgs]
+        for a in probe:
             if all(found.values()):
                 break
             _process(a, "photo")

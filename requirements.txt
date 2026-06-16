@@ -11,3 +11,6 @@ openpyxl>=3.1
 pdfminer.six>=20221105
 Pillow>=10.0
 xlrd>=2.0.1
+# Архивы (best-effort): .7z — py7zr (чистый python); .rar — rarfile (нужен системный unrar/unar).
+py7zr>=0.21
+rarfile>=4.1

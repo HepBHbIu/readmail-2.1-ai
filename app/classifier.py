@@ -2329,6 +2329,8 @@ def classify_email(
         state = "linked_event" if strong_key or email_data.get("references") else "needs_link"
     elif event_type == "shortage_link_event":
         state = "needs_link"
+    elif event_type == "problem_notice":
+        state = "problem_notice"
     else:
         state = "needs_review"
 
@@ -2381,7 +2383,7 @@ def classify_email(
         "weak_key": weak_key,
         "is_followup": is_followup,
         "ready_for_export": ready_for_export,
-        "needs_review": not ready_for_export and state not in {"ignored_internal", "context_sent", "ignored_info_only", "ignored_spam_promo"},
+        "needs_review": not ready_for_export and state not in {"ignored_internal", "context_sent", "ignored_info_only", "ignored_spam_promo", "problem_notice"},
         "needs_ai": needs_ai,
         "has_min_fields": has_min_fields,
         "state": state,
@@ -2405,6 +2407,7 @@ VALID_EVENT_TYPES = {
     "shortage_link_event",
     "ready_to_ship",
     "supplier_report",
+    "problem_notice",
     "info_only",
     "unknown",
 }
@@ -2537,6 +2540,8 @@ def apply_ai_overlay(email_data: dict[str, Any], case_data: dict[str, Any], ai_r
         state = "linked_event" if strong_key or email_data.get("references") else "needs_link"
     elif event_type == "shortage_link_event":
         state = "needs_link"
+    elif event_type == "problem_notice":
+        state = "problem_notice"
     elif event_type in {"info_only", "supplier_report"}:
         state = "ignored_info_only"
     else:
@@ -2588,7 +2593,7 @@ def apply_ai_overlay(email_data: dict[str, Any], case_data: dict[str, Any], ai_r
             "weak_key": weak_key,
             "is_followup": is_followup,
             "ready_for_export": ready_for_export,
-            "needs_review": not ready_for_export,
+            "needs_review": not ready_for_export and state != "problem_notice",
             "state": state,
             "fields": fields,
             "missing": missing,

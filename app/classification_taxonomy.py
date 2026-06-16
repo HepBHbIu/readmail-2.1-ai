@@ -108,6 +108,8 @@ def _current_taxonomy(
         if re.search(r"\.xlsx?\b|\.csv\b|\.zip\b", filenames, re.I):
             return "supplier_report", "excel_report"
         return "supplier_report", "daily_report"
+    if event_type == "problem_notice" or state == "problem_notice":
+        return "problem_notice", "defect_accepted_no_return"
     if event_type == "spam_promo" or state == "ignored_spam_promo":
         return "junk", "advertising"
     if event_type == "new_return":

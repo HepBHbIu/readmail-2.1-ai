@@ -116,13 +116,14 @@ const STATE_LABELS = {
   delivered: "Доставлен", unknown: "Неизвестно",
   linked_event: "Привязано", linking_event: "Привязка",
   ignored_info_only: "Служебное (пропущено)", ignore_info_only: "Служебное (пропущено)",
-  info_only: "Информационное",
+  info_only: "Информационное", problem_notice: "Уведомление о проблеме",
 };
 const EVENT_LABELS = {
   new_return: "Новый возврат", followup_reminder: "Напоминалка",
   followup_dialog: "Диалог", supplier_decision: "Решение поставщика", unknown: "Неизвестно",
   correction_request: "Корректировка", info_only: "Инфо/служебное",
   ready_to_ship: "Готов к отгрузке", marking_request: "Маркировка",
+  problem_notice: "Уведомление о проблеме",
 };
 
 /* ──────────────────────── Табы ──────────────────────── */
