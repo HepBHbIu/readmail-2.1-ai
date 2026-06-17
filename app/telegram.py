@@ -61,6 +61,93 @@ def send_message(text: str, *, chat_id: str | None = None, parse_mode: str = "HT
     return {"ok": ok, "results": results}
 
 
+def token_stats(period: str = "today") -> dict[str, Any]:
+    """Точная статистика токенов/времени/денег из ai_usage. БЕЗ режимов (паттернов нет).
+
+    Термины владельца: ВЫХОД = наш запрос (prompt) ↑, ВХОД = ответ сервера (completion) ↓.
+    Деньги считаем по таблице pricing.PRICES_RUB_PER_1M (по каждой модели отдельно).
+    period: 'today' (с начала суток МСК) или 'all'. Разбивка по kind (text/vision).
+    """
+    from .db import connect
+    from .pricing import cost_rub
+    conds = ["ok=1"]
+    params: list[Any] = []
+    if period == "today":
+        from datetime import datetime, timezone, timedelta
+        msk_now = datetime.now(timezone(timedelta(hours=3)))
+        start_utc = (msk_now.replace(hour=0, minute=0, second=0, microsecond=0) - timedelta(hours=3))
+        conds.append("created_at >= ?")
+        params.append(start_utc.strftime("%Y-%m-%dT%H:%M:%S"))
+    where = "WHERE " + " AND ".join(conds)
+    out: dict[str, Any] = {"period": period, "by_kind": {}, "total": {}}
+    try:
+        with connect() as con:
+            rows = con.execute(
+                f"""SELECT COALESCE(kind,'text') kind, model,
+                           COUNT(*) n, SUM(prompt_tokens) pt, SUM(completion_tokens) ct, SUM(duration_ms) dur
+                    FROM ai_usage {where}
+                    GROUP BY COALESCE(kind,'text'), model""",
+                params,
+            ).fetchall()
+    except Exception as exc:
+        return {"error": str(exc)}
+
+    def _blank() -> dict[str, Any]:
+        return {"emails": 0, "out_tokens": 0, "in_tokens": 0, "out_rub": 0.0, "in_rub": 0.0,
+                "total_rub": 0.0, "sec": 0.0}
+
+    agg: dict[str, dict[str, Any]] = {}
+    tot = _blank()
+    for r in rows:
+        d = dict(r)
+        kind = d["kind"]; model = d["model"]
+        n = int(d["n"] or 0); pt = int(d["pt"] or 0); ct = int(d["ct"] or 0); dur = int(d["dur"] or 0)
+        c = cost_rub(model, pt, ct)
+        k = agg.setdefault(kind, _blank())
+        for tgt in (k, tot):
+            tgt["emails"] += n
+            tgt["out_tokens"] += pt          # ВЫХОД = запрос (prompt)
+            tgt["in_tokens"] += ct           # ВХОД = ответ (completion)
+            tgt["out_rub"] += c["out_rub"]
+            tgt["in_rub"] += c["in_rub"]
+            tgt["total_rub"] += c["total_rub"]
+            tgt["sec"] += dur / 1000.0
+    for k in (*agg.values(), tot):
+        n = k["emails"]
+        k["avg_tokens"] = round((k["out_tokens"] + k["in_tokens"]) / n) if n else 0
+        k["avg_sec"] = round(k["sec"] / n, 1) if n else 0
+        k["avg_rub"] = round(k["total_rub"] / n, 4) if n else 0
+        for f in ("out_rub", "in_rub", "total_rub"):
+            k[f] = round(k[f], 2)
+    out["by_kind"] = agg
+    out["total"] = tot
+    return out
+
+
+def _fmt_n(x: int) -> str:
+    return f"{int(x):,}".replace(",", " ")
+
+
+def _token_stats_lines(period: str = "today") -> list[str]:
+    """Строки для ТГ: ВЫХОД(запрос)/ВХОД(ответ) токены + ₽, по text/vision, среднее на письмо."""
+    st = token_stats(period)
+    if st.get("error") or not st.get("total", {}).get("emails"):
+        return []
+    t = st["total"]; bk = st["by_kind"]
+    label = "сегодня" if period == "today" else "всего"
+    lines = [
+        f"💰 <b>Токены/деньги ({label})</b>: писем {t['emails']} · итого <b>{t['total_rub']}₽</b>",
+        f"  ↑ ВЫХОД (наш запрос): {_fmt_n(t['out_tokens'])} ток · {t['out_rub']}₽",
+        f"  ↓ ВХОД (ответ сервера): {_fmt_n(t['in_tokens'])} ток · {t['in_rub']}₽",
+    ]
+    for key, ic, nm in (("text", "✍️", "текст"), ("vision", "🖼", "визуал")):
+        b = bk.get(key)
+        if b and b["emails"]:
+            lines.append(f"  {ic} {nm}: {b['emails']} · ↑{_fmt_n(b['out_tokens'])}/↓{_fmt_n(b['in_tokens'])} ток · {b['total_rub']}₽ · ⌀{b['avg_sec']}с")
+    lines.append(f"  ⌀ письмо: {t['avg_tokens']} ток · {t['avg_rub']}₽ · {t['avg_sec']}с")
+    return lines
+
+
 def notify_cycle_done(result: dict[str, Any]) -> None:
     """Send a cycle summary after /api/autopilot/cycle completes."""
     if not settings.tg_notify_on_cycle or not settings.tg_bot_token:
@@ -90,6 +177,13 @@ def notify_cycle_done(result: dict[str, Any]) -> None:
         lines.append(f"❌ Ошибок доставки: <b>{errors}</b>")
     if not result.get("ok") and result.get("error"):
         lines.append(f"⚠️ {result['error'][:200]}")
+    try:
+        tl = _token_stats_lines("today")
+        if tl:
+            lines.append("")
+            lines.extend(tl)
+    except Exception:
+        pass
     try:
         send_message("\n".join(lines))
     except Exception:

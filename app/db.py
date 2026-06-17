@@ -512,6 +512,8 @@ def init_db() -> None:
         # раздельного учёта токенов по овалам и аналитики по дням/неделям/месяцам.
         _add_column(con, "ai_usage", "mode", "TEXT")
         _add_column(con, "ai_usage", "kind", "TEXT")
+        # Время AI-запроса (мс) — для отчёта «сек/письмо» в ТГ. Замер уже есть в ai_client.
+        _add_column(con, "ai_usage", "duration_ms", "INTEGER NOT NULL DEFAULT 0")
         # v2.1: добавить pattern_regex если ещё нет
         _add_column(con, "field_pattern_candidates", "pattern_regex", "TEXT")
         _add_column(con, "field_pattern_candidates", "context_before", "TEXT")
@@ -1267,6 +1269,7 @@ def record_ai_usage(
     error: str | None = None,
     mode: str | None = None,
     kind: str | None = None,
+    duration_ms: int = 0,
 ) -> int:
     if mode is None:
         mode = getattr(_ai_usage_ctx, "mode", None)
@@ -1274,12 +1277,12 @@ def record_ai_usage(
         kind = getattr(_ai_usage_ctx, "kind", None)
     cur = con.execute(
         """
-        INSERT INTO ai_usage(case_id, provider, model, prompt_hash, prompt_chars, response_chars, prompt_tokens, completion_tokens, cached, ok, error, created_at, mode, kind)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        INSERT INTO ai_usage(case_id, provider, model, prompt_hash, prompt_chars, response_chars, prompt_tokens, completion_tokens, cached, ok, error, created_at, mode, kind, duration_ms)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """,
         (case_id, provider, model, prompt_hash, int(prompt_chars or 0), int(response_chars or 0),
          int(prompt_tokens or 0), int(completion_tokens or 0), 1 if cached else 0, 1 if ok else 0, error, utcnow(),
-         mode, kind),
+         mode, kind, int(duration_ms or 0)),
     )
     return int(cur.lastrowid)
 

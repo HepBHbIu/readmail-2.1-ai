@@ -333,11 +333,10 @@ async function loadReview() {
     list.innerHTML = (res.cases || []).map(c => {
       _reviewCache.set(c.id, c);
       const f = c.fields || {};
-      const kind = KIND_LABELS[c.claim_kind] || c.claim_kind || "—";
+      const kind = c.claim_kind_ru || KIND_LABELS[c.claim_kind] || c.claim_kind || "—";
       const prColor = PRIORITY_COLORS[c.priority] || "gray";
-      const srcBadge = c.source === "ai"
-        ? `<span class="badge badge-amber" style="font-size:9px">AI</span>`
-        : `<span class="badge badge-blue" style="font-size:9px">Паттерн</span>`;
+      // v2.1 AI-only: режим один — бейдж «Паттерн/AI» убран за ненадобностью.
+      const srcBadge = "";
       const readyBadge = c.ready_for_export
         ? `<span class="badge badge-green" style="font-size:9px">Готов</span>`
         : `<span class="badge badge-gray" style="font-size:9px">${c.can_export ? "Review" : esc(c.state || "Служебное")}</span>`;
@@ -684,6 +683,9 @@ function updatePipelineUI(res) {
 
   _pipelineState = { importBusy, patternsBusy, aiBusy, autopilot: res.autopilot_running };
 
+  // Автопилот включён → блокируем ручные кнопки конвейера (активна только кнопка автопилота).
+  setConveyorManualEnabled(!res.autopilot_running);
+
   // Не сбрасываем кнопку если запущена вручную (_manualBusy) — иначе pollTick сдвигает её обратно
   if (!_manualBusy.has("import"))   btnToggle("pipeline-btn-import",   importBusy);
   if (!_manualBusy.has("patterns")) btnToggle("pipeline-btn-patterns", patternsBusy);
@@ -1023,11 +1025,22 @@ async function startAutopilot(mode = "full_ai") {
   const label = mode === "full_ai" ? "Автопилот ИИ" : "Автопилот";
   toast(res.ok ? `${label} запущен` : "Ошибка: " + (res.error || ""), res.ok ? "success" : "error");
   autoBtnToggle(true, res.mode || mode);
-  // Hide manual step buttons when autopilot is running
-  const flow = $("pipeline-manual-flow");
-  if (flow) flow.querySelectorAll(".btn-xs").forEach(b => b.style.opacity = "0.4");
+  setConveyorManualEnabled(false);  // автопилот рулит — ручные кнопки конвейера блокируем
 }
 function startAutopilotAi() { return startAutopilot("full_ai"); }
+
+// При автопилоте все ручные кнопки конвейера (Импорт/ИИ/Сверка/1С) блокируются —
+// активна только кнопка «Автопилот». При выключенном автопилоте — снова активны.
+function setConveyorManualEnabled(enabled) {
+  const root = document.getElementById("manual-blocks");
+  if (!root) return;
+  root.querySelectorAll("button, select, input").forEach(el => {
+    el.disabled = !enabled;
+    el.style.opacity = enabled ? "" : "0.45";
+    el.style.pointerEvents = enabled ? "" : "none";
+  });
+  root.title = enabled ? "" : "Автопилот включён — ручные шаги заблокированы. Остановите автопилот для ручного режима.";
+}
 
 /* ── Режим обучения: ручные блоки на главной (паттерн-конвейер + ИИ-конвейер) ── */
 function applyTrainingMode(on) {
@@ -1224,9 +1237,7 @@ async function stopAutopilot() {
   await api("/api/autopilot/stop", { method: "POST" });
   autoBtnToggle(false);
   toast("Автопилот остановлен");
-  // Restore manual step buttons
-  const flow = $("pipeline-manual-flow");
-  if (flow) flow.querySelectorAll(".btn-xs").forEach(b => b.style.opacity = "1");
+  setConveyorManualEnabled(true);  // вернуть ручные кнопки конвейера
 }
 
 /* ──────────────────────── Системный статус ──────────────────────── */
@@ -1809,7 +1820,7 @@ async function loadAiReview() {
     _aiCache.clear();
     (res.cases || []).forEach(c => _aiCache.set(c.id, c));
     list.innerHTML = (res.cases || []).map(c => {
-      const kind = KIND_LABELS[c.claim_kind] || c.claim_kind || "—";
+      const kind = c.claim_kind_ru || KIND_LABELS[c.claim_kind] || c.claim_kind || "—";
       const prColor = PRIORITY_COLORS[c.priority] || "gray";
       const isActive = c.id === _selectedAiId;
       return `<div class="split-item${isActive ? " active" : ""}" data-id="${c.id}" onclick="selectSplitCase('ai',${c.id})">
@@ -2115,7 +2126,9 @@ function renderOnecTable(items) {
     const vPrice = r.price_total || r.price;
     const vName = r.product_name;
     const vBrand = r.brand;
-    const vReason = r.claim_kind || r.reason;
+    // Причина по-русски: claim_kind (англ.) → KIND_LABELS; если уже текст-причина — как есть.
+    const _reasonRaw = r.claim_kind_ru || r.kind_ru || r.claim_kind || r.reason;
+    const vReason = KIND_LABELS[_reasonRaw] || _reasonRaw;
 
     const fv = (val, isNum = false) => {
       if (!val && val !== 0) return `<span class="field-empty">—</span>`;
@@ -3003,30 +3016,28 @@ async function loadTokenReport() {
   let res;
   try { res = await api("/api/ai/token-report"); } catch (e) { return; }
   if (!res || !res.ok) return;
-  const m = res.modes || {};
   const f = (n) => (Number(n) || 0).toLocaleString("ru");
-  const io = (o) => `${f(o.in)}<span class="muted">↓</span> / ${f(o.out)}<span class="muted">↑</span>`;
+  const rub = (n) => (Number(n) || 0).toLocaleString("ru", { maximumFractionDigits: 2 }) + "₽";
+  // o.out = ВЫХОД (наш запрос/prompt) ↑, o.in = ВХОД (ответ сервера/completion) ↓
+  const io = (o) => `${f(o.out)}<span class="muted">↑</span> / ${f(o.in)}<span class="muted">↓</span>`;
   const row = (label, b, cls) => {
-    const t = b.text || { in: 0, out: 0 }, v = b.vision || { in: 0, out: 0 }, tot = b.total || { in: 0, out: 0 };
+    const t = b.text || {}, v = b.vision || {}, tot = b.total || {};
     const visZero = !(v.in || v.out);
     return `<tr class="${cls || ""}">
       <td>${esc(label)}</td>
-      <td>${io(t)}</td>
-      <td class="${visZero ? "muted" : ""}">${io(v)}</td>
+      <td>${io(t)} <span class="muted">${rub((t.out_rub||0)+(t.in_rub||0))}</span></td>
+      <td class="${visZero ? "muted" : ""}">${io(v)} <span class="muted">${rub((v.out_rub||0)+(v.in_rub||0))}</span></td>
       <td><b>${io(tot)}</b></td>
+      <td><b>${rub(tot.total_rub)}</b></td>
       <td>${f(b.emails)}</td>
-      <td><b>${f(Math.round(b.avg_tokens_per_email || 0))}</b></td>
+      <td><b>${rub(b.avg_rub_per_email)}</b></td>
     </tr>`;
   };
-  let rows = "";
-  for (const k of ["pattern", "full_ai", "untagged"]) {
-    if (m[k] && (m[k].total.calls > 0)) rows += row(res.labels[k] || k, m[k]);
-  }
-  rows += row("ВСЕГО", res.total, "token-report-total");
+  const rows = row("ИИ (всего)", res.total, "token-report-total");
   el.innerHTML = `<table class="token-report-table">
-    <thead><tr><th>Режим</th><th>Текст</th><th>Визуал</th><th>Итого вх/вых</th><th>Писем</th><th>Сред/письмо</th></tr></thead>
+    <thead><tr><th>Режим</th><th>Текст</th><th>Визуал</th><th>Итого ↑вых/↓вх</th><th>₽ итого</th><th>Писем</th><th>₽/письмо</th></tr></thead>
     <tbody>${rows}</tbody></table>
-    <div class="group-desc">Письмо = уникальный кейс. Среднее = (вход+выход) ÷ число писем. ↓ вход · ↑ выход.</div>`;
+    <div class="group-desc">↑ ВЫХОД = наш запрос (prompt) · ↓ ВХОД = ответ сервера (completion). ₽ по тарифам модели. Письмо = уникальный кейс.</div>`;
 }
 
 function setInner(id, val) { const el = $(id); if (el) el.textContent = val; }

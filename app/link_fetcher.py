@@ -82,7 +82,14 @@ def _fetch_url(url: str, timeout: int = 20) -> tuple[bytes | None, str, int]:
     источником (avtoto банит дата-центр-IP; домашний VPN проходит). status_code=403 → IP-блок.
     Cookie сессии (settings.link_fetch_cookie) добавляется в заголовки, если задан.
     """
+    # Прокси — ТОЛЬКО для доменов из link_proxy_domains (avtoto банит дата-центр-IP).
+    # Остальные ссылки (яндекс/партерра) идут напрямую — быстро, прокси не трогаем.
     proxy = getattr(settings, "link_fetch_proxy", None) or None
+    if proxy:
+        host = urlparse(url).netloc.lower()
+        proxy_doms = [d.strip().lower() for d in str(getattr(settings, "link_proxy_domains", "") or "").split(",") if d.strip()]
+        if not any(host == d or host.endswith("." + d) for d in proxy_doms):
+            proxy = None
     cookie = getattr(settings, "link_fetch_cookie", None) or None
     headers = dict(_BROWSER_HEADERS)
     if cookie:
@@ -130,12 +137,44 @@ def parse_avtoto_claim(html: str) -> dict[str, Any]:
     result["photos"] = result["photos"][:30]
     result["documents"] = result["documents"][:20]
 
-    # ── Артикулы (позиции): <b class="code value">ART</b> ──
-    arts = re.findall(r'class="code value"[^>]*>\s*([A-Z0-9][A-Z0-9._/\-]{2,40})\s*<', html, re.I)
-    for a in dict.fromkeys(arts):
-        result["items"].append({"part_number": a.strip()})
-    if arts:
-        result["fields"]["part_number"] = arts[0].strip()
+    # ── Позиции построчно: <tr class="...restr"> с артикулом+наименованием+брендом+кол-вом ──
+    # Артикул: <b class="code value">ART</b>; наименование: data-tip="...";
+    # бренд: <td class="manuf value">KRAUF</td>; кол-во: следующий manuf value (число).
+    seen_arts: set[str] = set()
+    for row in re.findall(r'<tr[^>]*class="[^"]*restr[^"]*"[^>]*>(.*?)</tr>', html, re.I | re.S):
+        am = re.search(r'class="code value"[^>]*>\s*([A-Z0-9][A-Z0-9._/\-]{2,40})\s*<', row, re.I)
+        if not am:
+            continue
+        art = am.group(1).strip()
+        if art in seen_arts:
+            continue
+        seen_arts.add(art)
+        item: dict[str, Any] = {"part_number": art}
+        nm = re.search(r'data-tip="([^"]{2,120})"', row, re.I)
+        if nm:
+            item["product_name"] = _txt(nm.group(1)).title() if nm.group(1).isupper() else _txt(nm.group(1))
+        manufs = re.findall(r'class="manuf value"[^>]*>\s*([^<]+?)\s*<', row, re.I)
+        # первый непустой нечисловой = бренд; первое число = кол-во
+        for mv in manufs:
+            mv = mv.strip()
+            if mv and not mv.isdigit() and "brand" not in item:
+                item["brand"] = mv
+            elif mv.isdigit() and "quantity" not in item:
+                item["quantity"] = mv
+        result["items"].append(item)
+    # Фолбэк, если построчно не нашли (другая вёрстка): просто артикулы.
+    if not result["items"]:
+        for a in dict.fromkeys(re.findall(r'class="code value"[^>]*>\s*([A-Z0-9][A-Z0-9._/\-]{2,40})\s*<', html, re.I)):
+            result["items"].append({"part_number": a.strip()})
+    if result["items"]:
+        first = result["items"][0]
+        result["fields"]["part_number"] = first.get("part_number")
+        if first.get("brand"):
+            result["fields"]["brand"] = first["brand"]
+        if first.get("product_name"):
+            result["fields"]["product_name"] = first["product_name"]
+        if first.get("quantity") and not result["fields"].get("quantity"):
+            result["fields"]["quantity"] = first["quantity"]
 
     # ── Текст рекламации (.claim_text) → документ/дата/кол-во/причина ──
     claim = " ".join(_txt(m) for m in re.findall(r'class="claim_text"[^>]*>(.*?)</', html, re.I | re.S))

@@ -11,6 +11,8 @@ import httpx
 from .config import settings
 from .db import dumps, get_ai_cache, put_ai_cache, record_ai_usage, utcnow
 from .email_parser import clean_ws, visible_body
+from .evidence_signals import derive_evidence_signals
+from .sender_profiles import sender_hint
 
 
 class ModelNotFoundError(RuntimeError):
@@ -29,14 +31,19 @@ SYSTEM_PROMPT = """Извлекаешь данные из писем о возв
 - part_number — артикул детали (латиница+цифры HP1731/RF5161S, иногда только цифры 011227/553206). Метки «Артикул»/«Арт.»/«Код:». НЕ слова артикул/товар/цена/причина/кол-во.
 - brand — производитель рядом с артикулом (SANGSIN, KRAUF, FEBEST, CTR). НЕ из email/домена, НЕ марка авто.
 - product_name — короткое имя детали (Тяга рулевая, Колодки). Тип детали (Амортизатор/Насос/Рычаг) — это product_name, не brand.
-- document_number — номер документа реализации/поступления: рядом с «накладная/УПД/реализация/счёт-фактура №», «по документу №», «поступление №». НЕ номер заявки/претензии/акта/сумма/дата.
+- document_number — номер документа реализации/поступления: рядом с «накладная/УПД/реализация/счёт-фактура №», «по документу №», «поступление №». Часто в ТЕЛЕ письма («УПД №83904 от 15 июня»). НЕ номер заявки/претензии/акта/возврата/сумма/дата. ВАЖНО: №Э…/№В… из ТЕМЫ (напр. №Э00022168) — это return_number, НЕ document_number; document_number ищи отдельно по «УПД/накладная №».
 - document_date — дата документа: «№X от ДАТА» или дата рядом со счётом-фактурой/поступлением (может стоять ПЕРЕД номером). Верни DD.MM.YYYY (ISO 2026-06-09 → 09.06.2026). НЕ дата письма/заявки.
 - claim_number — «Претензия №»/«Рекламация №»/№ акта ТОРГ-2. client_request_number — «Заявка №»/«Запрос на возврат N»/«Подтверждение №». return_number — «Возврат поставщику №».
 - quantity — число. comment — 1-3 слова причины.
 
 МУЛЬТИПОЗИЦИИ: несколько деталей → items[]=[{part_number,brand,product_name,quantity}] КАЖДАЯ; fields=первая; документ/дата общие. Не выбрасывай 2-ю/3-ю.
 
-ВЛОЖЕНИЯ/ССЫЛКИ (даны в payload): имя файла «наряд установки/снятия», «акт/ТОРГ-2/заключение» → defect_documents_status. Фото-ссылки рекламации (reclamation/personnel_claim/storage…jpg) → mentions_photo=true, mentions_return_link=true.
+ВЛОЖЕНИЯ/ССЫЛКИ (даны в payload): имя файла «наряд установки/снятия», «акт/ТОРГ-2/заключение» → defect_documents_status. Ссылки на фото/файлы/видео доказательств (storage.yandexcloud, claim-transfer, disk.yandex, dropmefiles, minio, reclamation/personnel_claim/*.jpg, youtube — видео приёмки) → mentions_photo=true и mentions_return_link=true (по ним оператор смотрит доказательства). Если есть фото-доказательства И причина про брак/дефект → claim_kind=defect, defect_documents_status=partial+.
+
+ПОДСКАЗКИ В PAYLOAD (не данные письма, а навигация — используй, но проверяй по тексту):
+- email.sender_hint — типовой формат этого отправителя (домен). Если есть — доверяй структуре, но факты бери из письма.
+- email.evidence_signals — сигналы ПО ИМЕНАМ файлов/ссылок (без чтения содержимого): signals[], claim_kind_hint, mentions_*. defect_by_name → скорее claim_kind=defect; act_torg2_doc/upd_document → defect_documents_status≥partial; photo_evidence/return_portal_link → mentions_photo/mentions_return_link=true; position_table (xls) → позиции в приложенной таблице. Эти сигналы — фолбэк, текст письма приоритетнее.
+- В email.text может быть блок «[ТЕКСТ ВЛОЖЕНИЙ/АКТА]» — это РАСПОЗНАННЫЙ текст из xls/акта (строки через «|»). Если в самом письме позиций нет, а там есть — бери артикул/бренд/наименование/кол-во и № документа ОТТУДА (полноценные данные). Каждая строка-позиция → отдельный элемент items[]. Шапки/итого/печати игнорируй.
 
 event_type — КУДА пойдёт кейс:
 - new_return — ВОЗВРАТ в 1С: брак(defect), некондиция(nonconforming), пересорт(wrong_item), отказ клиента(quality_refusal), НЕДОВОЗ/недопоставка(shortage), некомплект, излишек. Нужны № документа+дата+артикул+причина.
@@ -49,6 +56,8 @@ event_type — КУДА пойдёт кейс:
 - supplier_report — прайс/остатки/отчёт. info_only — инфо без действия. unknown — непонятно.
 
 ПРОДОЛЖЕНИЕ ДИАЛОГА: есть In-Reply-To/References ИЛИ тема Re:/RE: → followup (НЕ new_return), даже если ниже цитата с данными (это данные исходного письма; поля бери из цитаты для привязки). «Просьба УТОЧНИТЬ отгрузку» без явного отказа/брака → followup_dialog (уточнение), НЕ возврат. new_return — только ПЕРВОЕ письмо без reply-заголовков.
+
+НЕОПРЕДЕЛЁННОСТЬ (заготовка — НЕ выдумывай): если не можешь уверенно определить тип или ключевые поля — НЕ подгоняй. Поставь самый вероятный event_type (или unknown), confidence<0.5, requires_action=true, next_action=что именно неясно и что проверить оператору (напр. «не видно № документа — проверить вложение/ссылку»), cannot_export_reason=чего не хватает для 1С. Лучше честный «не уверен» с подсказкой, чем выдуманные данные. Пустые поля = null.
 
 ПРИМЕРЫ:
 [ТЕМА «Претензия №00000232318 … по документу №83124 от 04.06.2026» ТЕЛО «… | KDN9130YU | Krauf | Клапан … | 1 | Отказ клиента»] → {"event_type":"new_return","claim_kind":"quality_refusal","fields":{"claim_number":"00000232318","document_number":"83124","document_date":"04.06.2026","part_number":"KDN9130YU","brand":"Krauf","product_name":"Клапан компрессора кондиционера","quantity":"1","comment":"отказ клиента"}}
@@ -186,18 +195,26 @@ def _links_for_prompt(email_data: dict[str, Any]) -> list[str]:
     (storage.../reclamation/*.jpg), которые visible_text срезает. Мусор-схемы отсеиваем,
     фото/документы выносим вперёд (это доказательства)."""
     text = " ".join(str(email_data.get(k) or "") for k in ("visible_text", "body_text", "snippet", "subject", "body_html"))
+    # Шум по корпусу v2: трекеры/аватары/подписи/соцсети — НЕ доказательства.
+    NOISE = ("w3.org", ".dtd", "schemas.", "/font", "unsubscribe", ".css", ".js",
+             "avatars.mds", "mds.yandex", "trk.mail.ru", "e.mail.ru", "vk.com",
+             "/track", "/pixel", "googletagmanager", "doubleclick", "facebook.com",
+             "t.me/", "wa.me/", "skype")
+    # Провайдеры доказательств/файлов по корпусу v2 — В НАЧАЛО (фото/акты/видео по ссылке).
+    EVID = ("storage.yandexcloud", "claim-transfer", "disk.yandex", "dropmefiles", "minio",
+            "reclamation", "personnel_claim", "claim", "vozvrat", "return", "nondelivery",
+            "/photo", ".jpg", ".jpeg", ".png", ".pdf", "youtube", "youtu.be")
     seen: list[str] = []
     for m in _PROMPT_URL_RE.findall(text):
         u = m.rstrip(".,;)]}\"'")
         low = u.lower()
-        if any(x in low for x in ("w3.org", ".dtd", "schemas.", "/font", "/track", "unsubscribe", ".css", ".js")):
+        if any(x in low for x in NOISE):
             continue
         if u not in seen:
             seen.append(u)
         if len(seen) >= 25:
             break
-    seen.sort(key=lambda u: 0 if any(x in u.lower() for x in (
-        "reclamation", "claim", "vozvrat", "return", "/photo", ".jpg", ".jpeg", ".png", ".pdf")) else 1)
+    seen.sort(key=lambda u: 0 if any(x in u.lower() for x in EVID) else 1)
     return seen
 
 
@@ -226,6 +243,10 @@ def _chat_payload(email_data: dict[str, Any], case_data: dict[str, Any], purpose
             "text": body,
             "attachments": _attachments_for_prompt(email_data),
             "links": _links_for_prompt(email_data),
+            # Дешёвые сигналы ПО ИМЕНАМ (брак/акт/фото/таблица) — без скачивания.
+            "evidence_signals": derive_evidence_signals(email_data),
+            # Подсказка под отправителя (типовой формат домена) — снимает неоднозначность.
+            "sender_hint": sender_hint(email_data.get("from_addr")),
         },
         "reply_context": {
             "has_in_reply_to": bool(email_data.get("in_reply_to")),
@@ -718,7 +739,10 @@ def run_ai_suggestion(
             _trace_suggestion(email_data, case_data, result, case_id=case_id, purpose=purpose)
             return result
     try:
+        import time as _t
+        _t0 = _t.time()
         raw, provider, model, _url = _request_chat(messages)
+        _dur_ms = int((_t.time() - _t0) * 1000)
         content = _response_content(raw)
         parsed = _extract_json(content)
         response_chars = len(content or "")
@@ -735,30 +759,36 @@ def run_ai_suggestion(
             "usage": {"prompt_chars": prompt_chars, "response_chars": response_chars},
         }
         if con is not None:
-            record_ai_usage(
-                con,
-                case_id=case_id,
-                provider=provider,
-                model=model,
-                prompt_hash=prompt_hash,
-                prompt_chars=prompt_chars,
-                response_chars=response_chars,
-                prompt_tokens=ptok,
-                completion_tokens=ctok,
-                cached=False,
-                ok=bool(parsed),
-            )
-            if settings.ai_cache_enabled and parsed:
-                put_ai_cache(
+            # Запись usage/кэша — НЕ ФАТАЛЬНА: «database is locked» при логировании НЕ должна
+            # терять оплаченный ответ модели (раньше падало в except → ok=False → деньги впустую).
+            try:
+                record_ai_usage(
                     con,
-                    prompt_hash=prompt_hash,
+                    case_id=case_id,
                     provider=provider,
                     model=model,
-                    response=parsed,
-                    raw_excerpt=result["raw_excerpt"],
+                    prompt_hash=prompt_hash,
                     prompt_chars=prompt_chars,
                     response_chars=response_chars,
+                    prompt_tokens=ptok,
+                    completion_tokens=ctok,
+                    cached=False,
+                    ok=bool(parsed),
+                    duration_ms=_dur_ms,
                 )
+                if settings.ai_cache_enabled and parsed:
+                    put_ai_cache(
+                        con,
+                        prompt_hash=prompt_hash,
+                        provider=provider,
+                        model=model,
+                        response=parsed,
+                        raw_excerpt=result["raw_excerpt"],
+                        prompt_chars=prompt_chars,
+                        response_chars=response_chars,
+                    )
+            except Exception:
+                pass
         _trace_suggestion(email_data, case_data, result, case_id=case_id, purpose=purpose)
         return result
     except Exception as exc:
@@ -1167,8 +1197,29 @@ def list_ai_models() -> dict[str, Any]:
 import base64 as _b64
 
 
+def _downscale_image(raw_bytes: bytes, max_side: int = 1280, quality: int = 80) -> bytes:
+    """Сжать фото перед vision: большая сторона ≤ max_side, JPEG q80. Payload падает в разы →
+    vision быстрее и дешевле. При любой ошибке возвращаем оригинал."""
+    try:
+        from PIL import Image
+        import io as _io
+        im = Image.open(_io.BytesIO(raw_bytes))
+        if im.mode in ("RGBA", "P", "LA"):
+            im = im.convert("RGB")
+        w, h = im.size
+        if max(w, h) > max_side:
+            scale = max_side / float(max(w, h))
+            im = im.resize((max(1, int(w * scale)), max(1, int(h * scale))), Image.LANCZOS)
+        out = _io.BytesIO()
+        im.save(out, format="JPEG", quality=quality, optimize=True)
+        data = out.getvalue()
+        return data if data and len(data) < len(raw_bytes) else raw_bytes
+    except Exception:
+        return raw_bytes
+
+
 def _image_to_b64(raw_bytes: bytes) -> str:
-    return _b64.b64encode(raw_bytes).decode("ascii")
+    return _b64.b64encode(_downscale_image(raw_bytes)).decode("ascii")
 
 
 def run_vision_on_attachment(
@@ -1270,7 +1321,8 @@ def run_vision_extraction(
             "content": [
                 {
                     "type": "image_url",
-                    "image_url": {"url": f"data:{content_type};base64,{b64}"},
+                    # _image_to_b64 нормализует в JPEG (сжатие) → тип всегда image/jpeg.
+                    "image_url": {"url": f"data:image/jpeg;base64,{b64}"},
                 },
                 {"type": "text", "text": prompt_text},
             ],
@@ -1289,7 +1341,10 @@ def run_vision_extraction(
         if settings.ai_vision_api_key:
             settings.ai_api_key = settings.ai_vision_api_key  # type: ignore[attr-defined]
 
+        import time as _tv
+        _tv0 = _tv.time()
         raw, provider, model, _url = _request_chat(messages)
+        _vdur_ms = int((_tv.time() - _tv0) * 1000)
         content = _response_content(raw)
         parsed = _extract_json(content)
         ptok, ctok = _usage_tokens(raw, len(str(prompt_text or "")), len(content or ""))
@@ -1307,7 +1362,8 @@ def run_vision_extraction(
             with _connect() as _uc:
                 record_ai_usage(_uc, case_id=case_id, provider=provider, model=model,
                                 prompt_chars=len(str(prompt_text or "")), response_chars=len(content or ""),
-                                prompt_tokens=ptok, completion_tokens=ctok, ok=bool(parsed), kind="vision")
+                                prompt_tokens=ptok, completion_tokens=ctok, ok=bool(parsed), kind="vision",
+                                duration_ms=_vdur_ms)
         except Exception:
             pass
         _trace_vision(prompt_text, content_type, result)

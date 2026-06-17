@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-<title>Readmail v2</title>
+<title>Readmail 2.1 (AI)</title>
 <link rel="stylesheet" href="/static/style.css?v=20260615onec">
 </head>
 <body>
@@ -13,7 +13,7 @@
   <!-- Шапка -->
   <header class="topbar">
     <div class="topbar-left">
-      <span class="logo">Readmail <span class="version">v2</span></span>
+      <span class="logo">Readmail <span class="version">2.1 · AI</span></span>
     </div>
     <div class="topbar-center">
       <nav class="tabs nav-groups" id="main-tabs">
@@ -269,6 +269,7 @@
             <select id="review-folder" class="select-sm" onchange="_reviewPage=1;loadReview()" title="Папка писем">
               <option value="all">Все папки</option>
               <option value="ready_1c">✅ Готово в 1С</option>
+              <option value="awaiting_ai">📥 Поступило в обработку</option>
               <option value="manual">✋ Ручной разбор</option>
               <option value="needs_link">🔗 Связки: ждут привязки</option>
               <option value="corrections">📝 Корректировки / ЭДО</option>
@@ -775,7 +776,7 @@
 
         <div class="settings-group settings-row-full">
           <h3>Аналитика токенов ИИ</h3>
-          <div class="group-desc">Раздельно: режим (Паттерн-фолбэк / Полный ИИ) и тип (текст / визуал), вход↓ и выход↑. По дням, неделям, месяцам.</div>
+          <div class="group-desc">Тип (текст / визуал), ВЫХОД↑ (наш запрос/prompt) и ВХОД↓ (ответ сервера/completion), токены и ₽. По дням, неделям, месяцам.</div>
           <div id="token-report" class="token-report"></div>
           <div class="tok-period-tabs" id="tok-period-tabs">
             <button class="tok-period-btn active" data-period="day" onclick="loadTokenTimeline('day')">По дням</button>

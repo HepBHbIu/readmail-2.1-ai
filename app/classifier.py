@@ -2439,6 +2439,10 @@ def apply_ai_overlay(email_data: dict[str, Any], case_data: dict[str, Any], ai_r
     # (бренд из email vozvrat@..., наименование-простыня). AI с новым промтом по ним
     # надёжен: если AI явно вернул пусто — старое значение паттерна считаем мусором и чистим.
     _SOFT_FIELDS = {"brand", "product_name", "comment"}
+    # v2.1 AI-only: ИИ — АВТОРИТЕТ. Скелет — лишь черновик-подсказка. Если ИИ вернул валидное
+    # значение поля, оно ПОБЕЖДАЕТ скелет (раньше скелет с кривым «не-битым» значением, напр.
+    # №Э00022168 в document_number у Trinity, перетирал верное 83904 от ИИ — системный косяк).
+    _ai_only = bool(getattr(settings, "ai_only", False))
     for key in ("claim_number", "client_request_number", "return_number", "document_number", "document_date", "part_number", "quantity", "brand", "product_name", "comment"):
         value = ai_fields.get(key)
         if value in (None, "", [], {}):
@@ -2450,9 +2454,9 @@ def apply_ai_overlay(email_data: dict[str, Any], case_data: dict[str, Any], ai_r
         if key == "document_date":
             value = _normalize_date(value) or value
         if not _looks_like_bad_value(value, key):
-            # Для мягких полей доверяем свежему AI; для критичных — не перетираем хороший паттерн.
             old = fields.get(key)
-            if key in _SOFT_FIELDS or not old or _looks_like_bad_value(old, key):
+            # AI-only: ИИ перетирает скелет. Иначе — не трогаем хороший паттерн (старое поведение).
+            if _ai_only or key in _SOFT_FIELDS or not old or _looks_like_bad_value(old, key):
                 fields[key] = value
 
     buyer_code = merged.get("buyer_code")

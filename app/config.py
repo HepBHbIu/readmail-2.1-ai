@@ -132,6 +132,14 @@ class Settings(BaseSettings):
     trusted_link_domains: str = "avtoto.ru,storage.yandexcloud.net,claim-transfer.parterra.ru,pr-lg.ru,auto-sputnik.ru"
     # Новые неизвестные ссылки — в карантин
     link_quarantine_enabled: bool = True
+    # Авто-заход по ссылкам-доказательствам в ядре обработки (условно: свежие + данные за ссылкой).
+    auto_fetch_links: bool = True
+    # Свежесть: дёргаем сайт только для писем не старше N дней (старые ссылки мертвы).
+    link_fetch_fresh_days: int = 2
+    # Прокси для захода по ссылкам (per-request, НЕ маршрут всей машины). Пусто = напрямую.
+    link_fetch_proxy: str = ""
+    # Прокси применяется ТОЛЬКО к этим доменам (avtoto банит дата-центр-IP). Остальное — напрямую.
+    link_proxy_domains: str = "avtoto.ru"
 
     # --- AI автоматика ---
     auto_ai_unknown_buyer: bool = False

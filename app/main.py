@@ -597,9 +597,8 @@ def _run_full_pipeline(limit: int = 100) -> dict[str, Any]:
 
                 # v2.1 AI-only: наблюдение/промоция паттернов убраны.
                 event_type = case_data.get("event_type", "")
-                if event_type in ("followup_reminder", "followup_dialog", "supplier_decision", "correction_request", "marking_request", "ready_to_ship"):
-                    _auto_link_followup(con, case_id, case_data)
-                _link_problem_notice(con, case_id, case_data)
+                # До ИИ НЕ линкуем и НЕ распределяем по папкам — кейс висит «Поступило в
+                # обработку» (needs_review+needs_ai). Линковка/раскладка — ПОСЛЕ ИИ (в _apply_ai_to_case_id).
 
                 existing_cases.append({
                     "from_addr": norm(email_data.get("from_addr", "")),
@@ -826,7 +825,7 @@ def _load_case_email_for_ai(case_id: int) -> tuple[dict[str, Any], dict[str, Any
         if not row:
             return None
         data = row_to_dict(row) or {}
-        attachments = [dict(a) for a in con.execute("SELECT filename, content_type, size_bytes FROM attachments WHERE raw_email_id=?", (data["raw_email_id"],)).fetchall()]
+        attachments = [dict(a) for a in con.execute("SELECT filename, content_type, size_bytes, file_path FROM attachments WHERE raw_email_id=?", (data["raw_email_id"],)).fetchall()]
     email_data = {
         "mailbox": data.get("mailbox"), "uid": data.get("uid"), "message_id": data.get("message_id"),
         "in_reply_to": data.get("in_reply_to"), "references": data.get("references") or [],
@@ -863,6 +862,93 @@ def _is_contentless_reminder(email_data: dict[str, Any]) -> bool:
     # признаки реальных данных (артикул/таблица/количество) → не пусто, пусть ИИ смотрит
     has_data = bool(re.search(r"\b[a-zа-я]{2,}\d{3,}\b", low)) or "артикул" in low or "|" in vt or "кол-во" in low
     return not has_data
+
+
+def _link_evidence_fresh(received_at: str | None) -> bool:
+    """Свежее ли письмо для захода по ссылкам (старые ссылки мертвы)."""
+    if not received_at:
+        return True
+    try:
+        from datetime import datetime, timezone, timedelta
+        s = str(received_at).replace("Z", "+00:00")
+        dt = datetime.fromisoformat(s)
+        if dt.tzinfo is None:
+            dt = dt.replace(tzinfo=timezone.utc)
+        return (datetime.now(timezone.utc) - dt) <= timedelta(days=int(getattr(settings, "link_fetch_fresh_days", 2)))
+    except Exception:
+        return True
+
+
+def _maybe_fetch_link_evidence(email_data: dict[str, Any], case_data: dict[str, Any]) -> str:
+    """Условный заход по ссылкам-доказательствам → текст для ИИ. Пусто = заходить не нужно.
+
+    Политика владельца: заходим только когда (а) письмо свежее и (б) данные реально за ссылкой
+    (нет артикула, либо явная фраза «по ссылке», либо shortage_link). Фото-подтверждение при
+    уже ясном кейсе НЕ дёргаем. avtoto при 403 вернёт blocked — отметим оператору.
+    """
+    if not getattr(settings, "auto_fetch_links", True):
+        return ""
+    if not _link_evidence_fresh(email_data.get("received_at")):
+        return ""
+    fields = case_data.get("fields") or {}
+    has_part = bool(fields.get("part_number"))
+    text_low = " ".join(str(email_data.get(k) or "") for k in ("subject", "body_text", "snippet")).lower()
+    by_link = any(p in text_low for p in ("по ссылке", "всё по ссылке", "все по ссылке", "по рекламации"))
+    event_type = str(case_data.get("event_type") or "")
+    # Заходим если: нет артикула, или явно «по ссылке», или это событие-по-ссылке.
+    if has_part and not by_link and event_type != "shortage_link_event":
+        return ""
+    try:
+        from .link_fetcher import read_email_links
+        agg = read_email_links(email_data.get("subject"), email_data.get("body_text"), email_data.get("body_html"))
+    except Exception:
+        return ""
+    chunks: list[str] = []
+    fld = agg.get("fields") or {}
+    if fld:
+        chunks.append("Поля со страницы: " + "; ".join(f"{k}={v}" for k, v in fld.items() if v))
+    items = agg.get("items") or []
+    if items:
+        arts = ", ".join(str(it.get("part_number") or "") for it in items if it.get("part_number"))
+        if arts:
+            chunks.append("Артикулы со страницы: " + arts)
+    photos = agg.get("photos") or []
+    # Vision по 1-2 свежим фото-доказательствам (если включён vision).
+    if photos and getattr(settings, "ai_vision_enabled", False):
+        from .link_fetcher import fetch_external_link
+        from .ai_client import run_vision_on_attachment
+        for purl in photos[:2]:
+            try:
+                fr = fetch_external_link(purl)
+                raw = fr.get("raw_bytes") if isinstance(fr, dict) else None
+                if not raw:
+                    got = _link_fetch_bytes(purl)
+                    raw, ct = got if got else (None, "image/jpeg")
+                else:
+                    ct = fr.get("content_type") or "image/jpeg"
+                if raw:
+                    vis = run_vision_on_attachment(raw, purl.rsplit("/", 1)[-1][:60], ct,
+                                                   "Фото-доказательство по ссылке. Достань артикул/бренд/№ документа/кол-во, опиши дефект.")
+                    vt = (vis.get("text") or "")
+                    if vt.strip():
+                        chunks.append(f"Фото [{purl.rsplit('/',1)[-1][:40]}]: {vt[:600]}")
+            except Exception:
+                continue
+    if agg.get("blocked") and not agg.get("processed"):
+        chunks.append("[ВНИМАНИЕ: ссылка-портал не открылась (403/IP-блок) — нужен прокси или сохранённая страница оператором]")
+    return "\n".join(chunks).strip()
+
+
+def _link_fetch_bytes(url: str):
+    """Скачать байты по прямой ссылке (для vision). Возвращает (bytes, content_type) или None."""
+    try:
+        from .link_fetcher import _fetch_url
+        raw, ct, st = _fetch_url(url, timeout=15)
+        if raw:
+            return raw, (ct or "image/jpeg")
+    except Exception:
+        pass
+    return None
 
 
 def _apply_ai_to_case_id(
@@ -907,6 +993,15 @@ def _apply_ai_to_case_id(
                 _log("ai", "AI: дочитаны вложения", case_id=case_id, details={"att_chars": len(att_txt)})
         except Exception:
             pass
+    # Условный заход по ссылкам-доказательствам (свежие + данные за ссылкой) — в ядре обработки.
+    try:
+        _link_txt = _maybe_fetch_link_evidence(email_data, case_data)
+        if _link_txt:
+            _lb = email_data.get("body_text") or email_data.get("snippet") or ""
+            email_data = {**email_data, "body_text": _lb + "\n\n[ДАННЫЕ ПО ССЫЛКЕ]\n" + _link_txt, "visible_text": None}
+            _log("ai", "AI: заход по ссылкам", case_id=case_id, details={"link_chars": len(_link_txt)})
+    except Exception:
+        pass
     # Защита от выдумок: пустое письмо-напоминание («Ожидаем ответ») без данных не отдаём ИИ —
     # извлекать нечего, есть риск галлюцинации полей (был кейс #24893). Поля из темы уже взяты паттернами.
     if _is_contentless_reminder(email_data):
@@ -942,6 +1037,13 @@ def _apply_ai_to_case_id(
         # Только готовые кейсы идут в 1С; остальные остаются в нужных вкладках
         if queue_ready and updated.get("state") == "ready_to_1c" and updated.get("ready_for_export"):
             queue_case_event(con, updated_id)
+        # ЛИНКОВКА ТОЛЬКО ПОСЛЕ ИИ: тип теперь подтверждён моделью → диалоги/корректировки/
+        # готов-к-выдаче привязываем к родительскому возврату (linked_event). В скелете до ИИ
+        # этого НЕ делаем — иначе кейс распределяется по папкам без понимания (баг).
+        _et_ai = str(updated.get("event_type") or "")
+        if _et_ai in ("followup_reminder", "followup_dialog", "supplier_decision",
+                      "correction_request", "marking_request", "ready_to_ship"):
+            _auto_link_followup(con, updated_id, updated)
         # Мягкая связка problem_notice ↔ возврат по документ+артикул (не меняет состояний).
         _link_problem_notice(con, updated_id, updated)
         # v2.1 AI-only: самообучение паттернов убрано (паттернов нет).
@@ -949,7 +1051,13 @@ def _apply_ai_to_case_id(
     # vision-модель). Нет вложений → state=absent, vision не вызывается. Токены пишутся kind=vision
     # с текущим режимом (pattern/full_ai) → видно в отчёте токенов и в AI-логе.
     defect_result = None
-    if (updated.get("claim_kind") or case_data.get("claim_kind")) in ("defect", "nonconforming"):
+    # СКОРОСТЬ: vision (чтение фото) — самый дорогой шаг (~22с, до 90с). Не гоняем его в батче,
+    # если ключевые поля УЖЕ полные (артикул+документ) — фото оператор глянет по клику. Это
+    # убирает зря-vision на avtoto (15 фото, а данные уже спарсены с портала).
+    _ck = (updated.get("claim_kind") or case_data.get("claim_kind"))
+    _ff = updated.get("fields") or {}
+    _fields_complete = bool(_ff.get("part_number") and _ff.get("document_number"))
+    if _ck in ("defect", "nonconforming") and not _fields_complete:
         try:
             defect_result = api_check_defect_docs(case_id)
             _log("ai", "AI: авто-проверка документов брака", case_id=case_id,
@@ -2164,7 +2272,10 @@ def api_review_cases(
     # Папки явно по НАЗНАЧЕНИЮ (порядок = порядок чипов в UI).
     FOLDER_SQL = {
         "ready_1c": "c.event_type IN ('new_return','pre_delivery_refusal') AND c.state='ready_to_1c'",
-        "manual": "c.state='needs_review'",
+        # «Ручной» = ИИ УЖЕ смотрел (needs_ai=0), но не смог → нужен глаз оператора.
+        "manual": "c.state='needs_review' AND c.needs_ai=0",
+        # «Ждут ИИ» = ещё НЕ обработаны (needs_ai=1) — не пугаем оператора, это очередь.
+        "awaiting_ai": "c.state='needs_review' AND c.needs_ai=1",
         "needs_link": "c.state='needs_link'",
         "corrections": "c.event_type='correction_request' AND c.state!='needs_link'",
         "ready_to_ship": "c.event_type='ready_to_ship' AND c.state!='needs_link'",
@@ -2178,6 +2289,7 @@ def api_review_cases(
     }
     FOLDER_NAMES = {
         "ready_1c": "✅ Готово в 1С",
+        "awaiting_ai": "📥 Поступило в обработку",
         "manual": "✋ Ручной разбор",
         "needs_link": "🔗 Связки: ждут привязки",
         "corrections": "📝 Корректировки / ЭДО",
@@ -2195,7 +2307,8 @@ def api_review_cases(
         event_type = str(case.get("event_type") or "")
         state = str(case.get("state") or "")
         if state == "needs_review":
-            key = "manual"  # ручной разбор — всё, что требует глаз оператора
+            # Разделяем: ИИ ещё НЕ смотрел (needs_ai=1) → «ждут ИИ»; смотрел и не смог → «ручной».
+            key = "awaiting_ai" if int(case.get("needs_ai") or 0) == 1 else "manual"
         elif event_type in {"new_return", "pre_delivery_refusal"} and state == "ready_to_1c":
             key = "ready_1c"
         elif state == "needs_link":
@@ -2253,7 +2366,7 @@ def api_review_cases(
         offset = (page - 1) * limit
         rows = con.execute(
             f"""SELECT c.id, c.buyer_code, c.buyer_name, c.event_type, c.claim_kind,
-                c.state, c.priority, c.confidence, c.ready_for_export,
+                c.state, c.priority, c.confidence, c.ready_for_export, c.needs_ai,
                 c.fields_json, c.missing_json, c.quality_json, c.payload_json,
                 e.subject, e.from_addr, e.received_at, e.snippet, c.raw_email_id
                 FROM cases c JOIN raw_emails e ON e.id=c.raw_email_id
@@ -2281,6 +2394,7 @@ def api_review_cases(
                 "buyer_name": d.get("buyer_name"),
                 "event_type": d.get("event_type"),
                 "claim_kind": d.get("claim_kind"),
+                "claim_kind_ru": claim_kind_ru(d.get("claim_kind")),
                 "state": d.get("state"),
                 "priority": d.get("priority"),
                 "confidence": d.get("confidence"),
@@ -4409,6 +4523,18 @@ class RouteCaseReq(BaseModel):
 _ROUTE_KINDS = {"defect", "nonconforming", "number_replacement", "wrong_item", "shortage",
                 "overdelivery", "incomplete_set", "correction_request", "marking_request", "quality_refusal"}
 
+# Причина возврата по-русски — для столбика в «Готово к 1С» и для outbox-комментария.
+CLAIM_KIND_RU = {
+    "defect": "Брак", "nonconforming": "Некондиция", "number_replacement": "Замена артикула",
+    "wrong_item": "Пересорт", "shortage": "Недовоз", "overdelivery": "Излишек",
+    "incomplete_set": "Некомплект", "correction_request": "Корректировка",
+    "marking_request": "Маркировка", "quality_refusal": "Отказ клиента",
+}
+
+
+def claim_kind_ru(kind: str | None) -> str:
+    return CLAIM_KIND_RU.get(str(kind or ""), str(kind or "") or "—")
+
 
 @app.post("/api/cases/{case_id}/route")
 def api_case_route(case_id: int, req: RouteCaseReq) -> dict[str, Any]:
@@ -4450,11 +4576,30 @@ def api_case_route(case_id: int, req: RouteCaseReq) -> dict[str, Any]:
             vals.append(v)
         vals.append(case_id)
         con.execute(f"UPDATE cases SET {', '.join(sets)} WHERE id=?", vals)
-        if req.destination == "ready_1c":
+        # ФИКС: правка причины ДОЛЖНА дойти до 1С. Пересобираем export.claim (иначе в 1С
+        # остаётся старая причина — баг ручного разбора: поменял брак→маркировку, а в 1С брак).
+        if new_kind:
             try:
-                queue_case_event(con, case_id)
+                _exr = con.execute("SELECT export_json FROM cases WHERE id=?", (case_id,)).fetchone()
+                _ex = json.loads(_exr["export_json"] or "{}") if _exr and _exr["export_json"] else {}
+                _ex.setdefault("claim", {})
+                _ex["claim"]["kind"] = new_kind
+                _ex["claim"]["kind_ru"] = claim_kind_ru(new_kind)
+                if reason:
+                    _ex["claim"]["comment"] = reason
+                con.execute("UPDATE cases SET export_json=?, updated_at=? WHERE id=?",
+                            (json.dumps(_ex, ensure_ascii=False), utcnow(), case_id))
             except Exception:
                 pass
+        # Обновляем очередь 1С: убираем старые НЕотправленные эвенты и, если кейс готов,
+        # ставим заново (force) — так правка причины/назначения реально доходит до выгрузки.
+        try:
+            con.execute("DELETE FROM outbox WHERE case_id=? AND status='new'", (case_id,))
+            _st = con.execute("SELECT state, ready_for_export FROM cases WHERE id=?", (case_id,)).fetchone()
+            if _st and _st["state"] == "ready_to_1c" and int(_st["ready_for_export"] or 0):
+                queue_case_event(con, case_id, force=True)
+        except Exception:
+            pass
         _parts = []
         if req.destination:
             _parts.append(f"→ {req.destination}")
@@ -6212,50 +6357,46 @@ def api_ai_usage_timeline(period: str = "day", limit: int = 14) -> dict[str, Any
 
 @app.get("/api/ai/token-report")
 def api_ai_token_report() -> dict[str, Any]:
-    """Сводка токенов для сверки: по двум режимам (паттерн+ИИ / полный ИИ) — текст вход/выход,
-    визуал вход/выход, итого и СРЕДНЕЕ на 1 письмо (по всем запросам кейса). Read-only.
-    Письмо = уникальный case_id; среднее = (вход+выход) / число писем в режиме."""
+    """Сводка токенов/₽ для сверки. v2.1: режим ОДИН (ИИ) — деления на паттерн/полный ИИ нет.
+    По типу text/vision: ВЫХОД (наш запрос/prompt) и ВХОД (ответ сервера/completion), токены и ₽,
+    среднее на письмо. Письмо = уникальный case_id. Read-only."""
     apply_runtime_settings()
+    from .pricing import cost_rub
 
     def _empty() -> dict[str, Any]:
-        return {"text": {"in": 0, "out": 0, "calls": 0}, "vision": {"in": 0, "out": 0, "calls": 0},
-                "total": {"in": 0, "out": 0, "calls": 0}, "emails": 0, "avg_tokens_per_email": 0.0}
+        # out = ВЫХОД (prompt/наш запрос), in = ВХОД (completion/ответ сервера)
+        return {"text": {"out": 0, "in": 0, "out_rub": 0.0, "in_rub": 0.0, "calls": 0},
+                "vision": {"out": 0, "in": 0, "out_rub": 0.0, "in_rub": 0.0, "calls": 0},
+                "total": {"out": 0, "in": 0, "out_rub": 0.0, "in_rub": 0.0, "total_rub": 0.0, "calls": 0},
+                "emails": 0, "avg_tokens_per_email": 0.0, "avg_rub_per_email": 0.0, "emails_label": "ИИ"}
 
-    labels = {"pattern": "Паттерн + ИИ", "full_ai": "Полный ИИ", "untagged": "Без режима"}
-    report: dict[str, Any] = {k: _empty() for k in ("pattern", "full_ai", "untagged")}
+    bucket = _empty()
     with connect() as con:
         rows = con.execute(
-            """SELECT COALESCE(mode,'untagged') m,
-                      CASE WHEN kind='vision' OR model LIKE '%vl%' OR model LIKE '%vision%'
-                           THEN 'vision' ELSE 'text' END k,
-                      COUNT(*) n, COALESCE(SUM(prompt_tokens),0) pin, COALESCE(SUM(completion_tokens),0) pout
-               FROM ai_usage GROUP BY m, k""",
+            """SELECT CASE WHEN kind='vision' OR model LIKE '%vl%' OR model LIKE '%vision%'
+                           THEN 'vision' ELSE 'text' END k, model,
+                      COUNT(*) n, COALESCE(SUM(prompt_tokens),0) pout, COALESCE(SUM(completion_tokens),0) pin
+               FROM ai_usage WHERE ok=1 GROUP BY k, model""",
         ).fetchall()
-        emails = con.execute(
-            "SELECT COALESCE(mode,'untagged') m, COUNT(DISTINCT case_id) e FROM ai_usage "
-            "WHERE case_id IS NOT NULL GROUP BY m",
-        ).fetchall()
-    email_by_mode = {r["m"]: int(r["e"]) for r in emails}
+        erow = con.execute("SELECT COUNT(DISTINCT case_id) e FROM ai_usage WHERE case_id IS NOT NULL").fetchone()
     for r in rows:
-        m = r["m"] if r["m"] in report else "untagged"
-        k = r["k"]
-        report[m][k] = {"in": int(r["pin"]), "out": int(r["pout"]), "calls": int(r["n"])}
-    total = _empty()
-    for m, b in report.items():
-        b["total"] = {"in": b["text"]["in"] + b["vision"]["in"],
-                      "out": b["text"]["out"] + b["vision"]["out"],
-                      "calls": b["text"]["calls"] + b["vision"]["calls"]}
-        b["emails"] = email_by_mode.get(m, 0)
-        toks = b["total"]["in"] + b["total"]["out"]
-        b["emails_label"] = labels.get(m, m)
-        b["avg_tokens_per_email"] = round(toks / b["emails"], 1) if b["emails"] else 0.0
-        for kk in ("text", "vision", "total"):
-            total[kk] = {"in": total[kk]["in"] + b[kk]["in"], "out": total[kk]["out"] + b[kk]["out"],
-                         "calls": total[kk]["calls"] + b[kk]["calls"]}
-        total["emails"] += b["emails"]
-    gt = total["total"]["in"] + total["total"]["out"]
-    total["avg_tokens_per_email"] = round(gt / total["emails"], 1) if total["emails"] else 0.0
-    return {"ok": True, "labels": labels, "modes": report, "total": total}
+        k = r["k"]; pout = int(r["pout"]); pin = int(r["pin"])
+        c = cost_rub(r["model"], pout, pin)
+        b = bucket[k]
+        b["out"] += pout; b["in"] += pin; b["calls"] += int(r["n"])
+        b["out_rub"] = round(b["out_rub"] + c["out_rub"], 2)
+        b["in_rub"] = round(b["in_rub"] + c["in_rub"], 2)
+    for kk in ("text", "vision"):
+        for f in ("out", "in", "calls"):
+            bucket["total"][f] += bucket[kk][f]
+        bucket["total"]["out_rub"] = round(bucket["total"]["out_rub"] + bucket[kk]["out_rub"], 2)
+        bucket["total"]["in_rub"] = round(bucket["total"]["in_rub"] + bucket[kk]["in_rub"], 2)
+    bucket["total"]["total_rub"] = round(bucket["total"]["out_rub"] + bucket["total"]["in_rub"], 2)
+    bucket["emails"] = int(erow["e"]) if erow else 0
+    _toks = bucket["total"]["out"] + bucket["total"]["in"]
+    bucket["avg_tokens_per_email"] = round(_toks / bucket["emails"], 1) if bucket["emails"] else 0.0
+    bucket["avg_rub_per_email"] = round(bucket["total"]["total_rub"] / bucket["emails"], 4) if bucket["emails"] else 0.0
+    return {"ok": True, "labels": {"ai": "ИИ"}, "modes": {"ai": bucket}, "total": bucket}
 
 
 # ── /api/ai/stop-batch ──
