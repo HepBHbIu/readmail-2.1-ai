@@ -934,7 +934,8 @@ def _date_grounded_in_text(date_str: str, text: str) -> bool:
         return True
     months = ["январ", "феврал", "март", "апрел", "мая", "июн", "июл", "август", "сентябр", "октябр", "ноябр", "декабр"]
     mon = months[mo - 1] if 1 <= mo <= 12 else ""
-    if mon and re.search(rf"\b{d}\s+{mon}", t):
+    # дата словами: «5 июня» И «05 июня» (ведущий ноль не должен ломать совпадение)
+    if mon and re.search(rf"(?<!\d)0?{d}\s+{mon}", t):
         return True
     return False
 
@@ -2469,6 +2470,18 @@ def apply_ai_overlay(email_data: dict[str, Any], case_data: dict[str, Any], ai_r
             # AI-only: ИИ перетирает скелет. Иначе — не трогаем хороший паттерн (старое поведение).
             if _ai_only or key in _SOFT_FIELDS or not old or _looks_like_bad_value(old, key):
                 fields[key] = value
+
+    # ФОЛБЭК ДАТЫ-СЛОВАМИ: qwen ненадёжно берёт «05 июня 2026». Если документ есть, а даты нет —
+    # вытаскиваем дату-словами/число из тела детерминированно (надёжнее модели).
+    if fields.get("document_number") and not fields.get("document_date"):
+        _dtxt = "\n".join(str(email_data.get(k) or "") for k in ("visible_text", "body_text", "snippet", "subject"))
+        _dm = (re.search(r"\b\d{3,7}\s+от\s+(\d{1,2}\s+" + RUSSIAN_MONTHS + r"\s+20\d{2})", _dtxt, re.I)
+               or re.search(r"\b\d{3,7}\s+от\s+(\d{1,2}[.\-/]\d{1,2}[.\-/]20\d{2})", _dtxt, re.I)
+               or re.search(r"(\d{1,2}\s+" + RUSSIAN_MONTHS + r"\s+20\d{2})", _dtxt, re.I))
+        if _dm:
+            _nd = _normalize_date(_dm.group(1))
+            if _nd:
+                fields["document_date"] = _nd
 
     buyer_code = merged.get("buyer_code")
     buyer_name = merged.get("buyer_name")
