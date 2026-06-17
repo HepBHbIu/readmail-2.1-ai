@@ -4171,7 +4171,7 @@ async function loadFunnel() {
   const body = $("funnel-body"); if (!body) return;
   body.innerHTML = "Загрузка…";
   let res;
-  try { res = await api("/api/folder-accounting?items=true"); } catch (e) { body.innerHTML = "Ошибка загрузки"; return; }
+  try { res = await api("/api/stats/folder-accounting?items=true"); } catch (e) { body.innerHTML = "Ошибка загрузки"; return; }
   if (!res || !res.ok) { body.innerHTML = "Ошибка"; return; }
   _funnelData = res;
   const max = Math.max(1, ...(res.funnel || []).map(s => s.count));
