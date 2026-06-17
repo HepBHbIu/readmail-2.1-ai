@@ -1779,3 +1779,14 @@ html, body { max-width: 100%; overflow-x: hidden; }
 .funnel-item-meta{display:flex;flex-wrap:wrap;gap:10px;font-size:11px;color:var(--text-muted);margin:4px 0}
 .funnel-item-why,.funnel-item-do{font-size:12px;margin-top:2px}
 .funnel-item-do{color:var(--green,#3c9)}
+
+/* ТЗ: верхняя панель — поиск фикс. ширины, статус-бар без визуальной обрезки (перенос/сжатие) */
+.topbar-right { flex-wrap: wrap; gap: 6px 10px; justify-content: flex-start; align-content: center; }
+.global-search { flex: 0 0 230px !important; min-width: 160px; max-width: 230px; }
+.topbar-status {
+  max-width: none !important;
+  overflow: visible !important;
+  flex: 1 1 320px;
+  flex-wrap: wrap !important;
+  row-gap: 3px;
+}

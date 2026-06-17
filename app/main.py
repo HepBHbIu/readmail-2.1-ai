@@ -7064,6 +7064,14 @@ def api_pipeline_status() -> dict[str, Any]:
                 and (patterns_total == 0 or patterns_processed < patterns_total)
             )
 
+            # ТЗ: ЕДИНЫЙ источник счётчиков навигации — операторская воронка (folder_accounting, кэш).
+            try:
+                from app.folder_accounting import build_folder_accounting
+                _fa = build_folder_accounting(con, include_items=False)
+                _funnel = {s["kind"]: int(s["count"]) for s in (_fa.get("funnel") or [])}
+            except Exception:
+                _funnel = {}
+
             return {
                 "ok": True,
                 "total_emails": total_emails,
@@ -7077,6 +7085,7 @@ def api_pipeline_status() -> dict[str, Any]:
                 "processed_hidden": _processed_hidden_count(con),
                 "offtopic": offtopic,
                 "review_count": review_count,
+                "funnel": _funnel,
                 "case_states": case_states,
                 "ready_to_1c": pattern_ready + ai_ready,
                 "outbox_new": in_outbox,

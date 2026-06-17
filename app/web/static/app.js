@@ -626,18 +626,17 @@ async function pollTick() {
 }
 
 function updateTabBadges(res) {
-  // Обновляем счётчики на вкладках
+  // ТЗ: ЕДИНЫЙ источник для операторских вкладок — воронка (res.funnel). Совпадает с карточками.
+  const fn = res.funnel || {};
   const badges = {
-    "patterns": res.pattern_ready || 0,
-    "ai_review": res.needs_ai || 0,
-    "links": res.links_count || 0,
-    "review": res.review_count || 0,
-    "offtopic": res.offtopic || 0,
-    "unprocessed": res.unprocessed_tab ?? res.unprocessed ?? 0,
-    "problem_notice": (res.case_states && res.case_states.problem_notice) || 0,
-    "processed": res.processed_hidden || 0,
+    "links": fn.linked ?? res.links_count ?? 0,
+    "review": res.review_count || 0,            // «Проверка перед 1С» — почти готовые
+    "offtopic": fn.archive ?? res.offtopic ?? 0,
+    "unprocessed": fn.manual ?? res.unprocessed_tab ?? 0,   // «Ручной разбор» = воронка
+    "problem_notice": fn.observe ?? (res.case_states && res.case_states.problem_notice) ?? 0,
+    "processed": fn.archive ?? res.processed_hidden ?? 0,
     "onec": res.outbox_new || 0,
-    "pipeline": res.total_emails || 0,   // всего писем (быстрый источник)
+    "pipeline": res.total_emails || 0,
   };
   Object.entries(badges).forEach(([tab, count]) => {
     let btn = document.querySelector(`.tab[data-tab="${tab}"]`);
@@ -3031,12 +3030,13 @@ async function loadTokenReport() {
       <td><b>${io(tot)}</b></td>
       <td><b>${rub(tot.total_rub)}</b></td>
       <td>${f(b.emails)}</td>
+      <td><b>${f(Math.round(b.avg_tokens_per_email || 0))}</b></td>
       <td><b>${rub(b.avg_rub_per_email)}</b></td>
     </tr>`;
   };
   const rows = row("ИИ (всего)", res.total, "token-report-total");
   el.innerHTML = `<table class="token-report-table">
-    <thead><tr><th>Режим</th><th>Текст</th><th>Визуал</th><th>Итого ↑вых/↓вх</th><th>₽ итого</th><th>Писем</th><th>₽/письмо</th></tr></thead>
+    <thead><tr><th>Режим</th><th>Текст</th><th>Визуал</th><th>Итого ↑вых/↓вх</th><th>₽ итого</th><th>Писем</th><th>⌀ ток/письмо</th><th>₽/письмо</th></tr></thead>
     <tbody>${rows}</tbody></table>
     <div class="group-desc">↑ ВЫХОД = наш запрос (prompt) · ↓ ВХОД = ответ сервера (completion). ₽ по тарифам модели. Письмо = уникальный кейс.</div>`;
 }
