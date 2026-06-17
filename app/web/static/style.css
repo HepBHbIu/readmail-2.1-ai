@@ -1790,3 +1790,9 @@ html, body { max-width: 100%; overflow-x: hidden; }
   flex-wrap: wrap !important;
   row-gap: 3px;
 }
+
+/* Прогресс обработки ИИ (этот заход) */
+.ai-progress{display:flex;align-items:center;gap:8px;padding:4px 10px;min-width:200px}
+.ai-progress-text{font-size:12px;font-weight:600;white-space:nowrap}
+.ai-progress-bar-wrap{flex:1;height:8px;min-width:80px;background:var(--bg-soft,#222);border-radius:4px;overflow:hidden}
+.ai-progress-bar{height:100%;width:0;background:var(--accent,#4f6ef7);border-radius:4px;transition:width .4s}

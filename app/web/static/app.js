@@ -623,7 +623,27 @@ async function pollTick() {
   loadSystemStatus();
 }
 
+function updateAiProgress(res) {
+  const wrap = document.getElementById("ai-progress");
+  if (!wrap) return;
+  const pending = Number(res.ai_pending || 0);
+  const done = Number(res.ai_done || 0);
+  const total = pending + done;
+  const txt = document.getElementById("ai-progress-text");
+  const bar = document.getElementById("ai-progress-bar");
+  if (total === 0) { if (txt) txt.textContent = "ИИ: нет писем"; if (bar) bar.style.width = "0%"; return; }
+  const pct = Math.round(100 * done / total);
+  if (pending === 0) {
+    if (txt) txt.innerHTML = `✅ ИИ: всё обработано (${done})`;
+    if (bar) { bar.style.width = "100%"; bar.style.background = "var(--green,#2a9d5b)"; }
+  } else {
+    if (txt) txt.textContent = `ИИ: обработано ${done} · осталось ${pending}`;
+    if (bar) { bar.style.width = pct + "%"; bar.style.background = "var(--accent,#4f6ef7)"; }
+  }
+}
+
 function updateTabBadges(res) {
+  updateAiProgress(res);
   // ТЗ: ЕДИНЫЙ источник для операторских вкладок — воронка (res.funnel). Совпадает с карточками.
   const fn = res.funnel || {};
   const badges = {

@@ -7074,6 +7074,15 @@ def api_pipeline_status() -> dict[str, Any]:
             except Exception:
                 _funnel = {}
 
+            # Прогресс ОБРАБОТКИ ИИ (этот заход): сколько ждут vs обработано. ai_pending=0 → всё готово.
+            ai_pending_total = con.execute(
+                """SELECT COUNT(*) c FROM cases c WHERE c.needs_ai=1
+                   AND NOT EXISTS(SELECT 1 FROM ai_suggestions s WHERE s.case_id=c.id AND s.accepted=1)"""
+            ).fetchone()["c"]
+            ai_done_total = con.execute(
+                "SELECT COUNT(DISTINCT case_id) c FROM ai_suggestions WHERE accepted=1"
+            ).fetchone()["c"]
+
             return {
                 "ok": True,
                 "total_emails": total_emails,
@@ -7088,6 +7097,8 @@ def api_pipeline_status() -> dict[str, Any]:
                 "offtopic": offtopic,
                 "review_count": review_count,
                 "funnel": _funnel,
+                "ai_pending": ai_pending_total,
+                "ai_done": ai_done_total,
                 "case_states": case_states,
                 "ready_to_1c": pattern_ready + ai_ready,
                 "outbox_new": in_outbox,

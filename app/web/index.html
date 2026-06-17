@@ -150,6 +150,12 @@
       </button>
     </div>
 
+    <!-- Прогресс обработки ИИ (этот заход): осталось → 0 = всё готово -->
+    <div class="ai-progress" id="ai-progress" title="Сколько писем ещё ждут обработки ИИ. 0 = всё обработано.">
+      <div class="ai-progress-text" id="ai-progress-text">ИИ: —</div>
+      <div class="ai-progress-bar-wrap"><div class="ai-progress-bar" id="ai-progress-bar"></div></div>
+    </div>
+
   </div>
 
   <!-- AI-лог «от запроса до вывода» (виден во всех режимах: паттерн+ИИ, автопилот, полный ИИ, vision/доки) -->
