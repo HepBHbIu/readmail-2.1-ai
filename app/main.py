@@ -5595,7 +5595,7 @@ def api_emails_v2(
                 f"""SELECT e.id, c.id AS case_id, c.buyer_code, c.buyer_name, c.event_type, c.claim_kind,
                     COALESCE(c.state, e.status) AS state, c.priority, c.confidence, c.deadline_at, c.fields_json,
                     e.from_addr, e.subject, e.received_at,
-                    (CASE WHEN c.payload_json LIKE '%"processing_source":"ai"%' OR c.payload_json LIKE '%ai_overlay%' THEN 1 ELSE 0 END) AS ai_processed,
+                    (CASE WHEN EXISTS(SELECT 1 FROM ai_suggestions s WHERE s.case_id=c.id AND s.accepted=1) THEN 1 ELSE 0 END) AS ai_processed,
                     (SELECT COUNT(*) FROM attachments a WHERE a.raw_email_id = e.id) as has_attachments
                     FROM raw_emails e LEFT JOIN cases c ON c.raw_email_id = e.id
                     {where}

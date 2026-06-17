@@ -272,117 +272,45 @@ def _links_for_prompt(email_data: dict[str, Any]) -> list[str]:
 def _chat_payload(email_data: dict[str, Any], case_data: dict[str, Any], purpose: str = "case_extract") -> tuple[list[dict[str, str]], str, int]:
     body = _body_for_ai(email_data)
 
+    # LEAN user-payload: правила и форматы — в SYSTEM-промте, здесь НЕ дублируем
+    # (раньше был массив rules[] + business_context + minimum_export — копия system,
+    # промт пух вдвое). Тут только: подсказка скелета, само письмо, reply-флаги, схема.
     prompt = {
-        "task": "extract_return_email_fields",
         "purpose": purpose,
-        "business_context": (
-            "Компания продаёт автозапчасти оптом. Клиенты пишут про возвраты: брак, некондиция, "
-            "пересорт, недовоз/недопоставка, некомплект, излишек, отказ клиента, корректировки документов. "
-            "Нужно получить безопасный JSON для дальнейшей проверки и возможной передачи в 1С."
-        ),
-        "known_case_guess": {
+        "skeleton_guess": {  # черновик детерминированного сортера (можно переопределить)
             "event_type": case_data.get("event_type"),
             "claim_kind": case_data.get("claim_kind"),
             "buyer_code": case_data.get("buyer_code"),
             "buyer_name": case_data.get("buyer_name"),
             "fields": case_data.get("fields") or {},
-            "missing": case_data.get("missing") or [],
         },
-        "minimum_export_fields": {
-            "business_number": "one of claim_number, client_request_number, return_number, document_number",
-            "part_number": "article/OEM/SKU/catalog number of the part",
-            "document_date": "date of UPD/invoice/document/claim if present",
-            "claim_kind": "client reason category; required for new_return",
-            "comment": "optional but useful short client reason/description from the letter",
-        },
-        "optional_fields_to_take_when_present": ["brand", "product_name", "quantity"],
         "email": {
             "subject": email_data.get("subject"),
             "from": email_data.get("from_addr"),
             "to": email_data.get("to_addr"),
-            "cc": email_data.get("cc_addr"),
             "received_at": email_data.get("received_at"),
             "text": body,
-            "quote_markers": email_data.get("quote_markers"),
             "attachments": _attachments_for_prompt(email_data),
             "links": _links_for_prompt(email_data),
         },
-        "required_json_shape": {
-            "buyer_code": "string|null, short stable code if obvious, else null",
-            "buyer_name": "string|null",
-            "event_type": "new_return|pre_delivery_refusal|followup_reminder|followup_dialog|supplier_decision|correction_request|marking_request|number_replacement|shortage_link_event|ready_to_ship|supplier_report|problem_notice|info_only|unknown",
-            "claim_kind": "defect|nonconforming|number_replacement|wrong_item|shortage|overdelivery|incomplete_set|correction_request|marking_request|quality_refusal|null",
-            "fields": {
-                "claim_number": "string|null",
-                "client_request_number": "string|null",
-                "return_number": "string|null",
-                "document_number": "string|null",
-                "document_date": "string|null",
-                "part_number": "string|null",
-                "brand": "string|null",
-                "product_name": "string|null",
-                "quantity": "string|null",
-                "comment": "string|null, short client reason/problem text, not full email",
-            },
-            "items": "МАССИВ ВСЕХ позиций письма (если деталей несколько — верни КАЖДУЮ): [{part_number, brand, product_name, quantity}]. Документ/дата/причина общие для всех. fields = ПЕРВАЯ позиция. Одна позиция → массив из одного элемента.",
-            "confidence": "0..1",
-            "field_evidence": {
-                "buyer": "short quote or null",
-                "event_type": "short quote or null",
-                "claim_kind": "short quote or null",
-                "document_number": "short quote or null",
-                "part_number": "short quote or null",
-                "evidence": "short quote about files/photos/links/service docs or null"
-            },
-            "evidence": {
-                "mentions_photo": "boolean",
-                "mentions_return_link": "boolean",
-                "mentions_service_document": "boolean",
-                "service_document_type": "акт|заказ-наряд|заключение сервиса|string|null"
-            },
-            "cannot_export_reason": "string|null",
-            "requires_action": "boolean",
-            "next_action": "string|null, short operator/system next step",
-            "defect_documents_status": "complete|partial|metadata_only|unknown_not_read|not_applicable",
-        },
         "reply_context": {
-            "is_reply_email": _is_reply_email(email_data),
-            "subject": email_data.get("subject"),
-            "from_addr": email_data.get("from_addr"),
-            "to_addr": email_data.get("to_addr"),
             "has_in_reply_to": bool(email_data.get("in_reply_to")),
             "has_references": bool(email_data.get("references")),
+            "subject_is_reply": _is_reply_email(email_data),
         },
-        "rules": [
-            "Сначала определи: это ПЕРВОЕ письмо нового обращения или ответ/продолжение?",
-            "Если есть Re:/Ответ:/In-Reply-To/References или цитаты — это НЕ первое письмо.",
-            "Для первого письма с новыми данными (документ, артикул, причина) → event_type=new_return.",
-            "Для ответа с напоминанием/просьбой дать ответ → event_type=followup_reminder.",
-            "Для ответа с решением/одобрением → event_type=supplier_decision.",
-            "Для ответа без новых данных о возврате → event_type=followup_dialog.",
-            "Отказ клиента до поставки/просьба снять товар без документа реализации → event_type=pre_delivery_refusal.",
-            "Корректировка поступления, УКД или КСФ → event_type=correction_request.",
-            "Маркировка, ЧЗ, ТНВЭД или ЭДО → event_type=marking_request.",
-            "Замена номера/артикула производителем → event_type=number_replacement.",
-            "Недопоставка только по внешней ссылке без товарной позиции → event_type=shortage_link_event.",
-            "Товар готов к выдаче/отгрузке → event_type=ready_to_ship.",
-            "Прайс-лист, остатки, наличие, stock/xls отчёт → event_type=supplier_report и requires_action=false.",
-            "Информационное письмо без действия → event_type=info_only и requires_action=false.",
-            "Не бери значения из заголовков таблиц вместо данных.",
-            "Не бери слова 'артикул', 'товар', 'цена', 'сумма', 'причина', 'количество' как значения полей.",
-            "Если письмо содержит таблицу, бери данные из строки товара, а не из названий колонок.",
-            "Расклеенная таблица вида 'Бренд: | SANGSIN', 'Артикул: | HP1731' — бери значение ПОСЛЕ метки и ' | '.",
-            "brand НИКОГДА не бери из email-адреса/домена (vozvrat@... -> не 'vozvra') и из марки авто (BMW -> не 'BM'). brand — производитель детали рядом с артикулом.",
-            "product_name — короткое название детали (Тяга рулевая, Шкив), НЕ фраза 'надлежащего качества по причине...'.",
-            "Последовательность 'АРТИКУЛ БРЕНД Наименование' (RF5161S ROCK FORCE Набор ключей) разбивай на три поля.",
-            "Артикул в теме письма ('при приемке: KRC1150RC', 'Арт. MSSKB4TFKIT') — это part_number.",
-            "'Корректировка поступления'/УКД/КСФ и общие вопросы без детали — НЕ возврат (event_type=unknown, part_number=null).",
-            "Если артикул не найден явно — part_number=null.",
-            "Если номер УПД/документа похож на сумму или дату — document_number=null.",
-            "Если есть номер претензии/заявки/возврата, заполни соответствующее поле даже при отсутствии document_number.",
-            "Если есть бренд, наименование или количество, заполни их как дополнительные поля.",
-            "Если первое письмо нового клиента, всё равно извлеки поля сразу; не жди обучения.",
-        ],
+        "return_json": {  # СХЕМА ответа — верни строго это
+            "buyer_code": "str|null", "buyer_name": "str|null",
+            "event_type": "new_return|pre_delivery_refusal|followup_reminder|followup_dialog|supplier_decision|correction_request|marking_request|number_replacement|shortage_link_event|ready_to_ship|supplier_report|problem_notice|info_only|unknown",
+            "claim_kind": "defect|nonconforming|number_replacement|wrong_item|shortage|overdelivery|incomplete_set|correction_request|marking_request|quality_refusal|null",
+            "fields": {"claim_number": "·", "client_request_number": "·", "return_number": "·",
+                       "document_number": "·", "document_date": "·", "part_number": "·",
+                       "brand": "·", "product_name": "·", "quantity": "·", "comment": "·"},
+            "items": "ВСЕ позиции письма [{part_number,brand,product_name,quantity}]; fields=первая",
+            "evidence": {"mentions_photo": "bool", "mentions_return_link": "bool", "mentions_service_document": "bool"},
+            "confidence": "0..1", "requires_action": "bool", "next_action": "str|null",
+            "cannot_export_reason": "str|null",
+            "defect_documents_status": "complete|partial|metadata_only|unknown_not_read|not_applicable",
+        },
     }
     user = json.dumps(prompt, ensure_ascii=False)
     # Индивидуальный промт клиента из его профиля (ai_prompt) → добавляем к общему SYSTEM_PROMPT.

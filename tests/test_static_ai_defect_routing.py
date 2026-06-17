@@ -62,11 +62,11 @@ def test_ai_prompts_share_full_event_contract():
     email = {"subject": "test", "body_text": "test", "visible_text": "test"}
     case = {"event_type": "unknown", "claim_kind": None, "fields": {}}
 
+    # v2.1: lean user-payload — схема в ключе return_json (правила/примеры в SYSTEM).
     normal_messages, _, _ = _chat_payload(email, case)
-    normal_shape = json.loads(normal_messages[1]["content"])["required_json_shape"]
-    # v2.1: компактного промта нет — любой purpose использует полный контракт.
+    normal_shape = json.loads(normal_messages[1]["content"])["return_json"]
     full_messages, _, _ = _chat_payload(email, case, purpose="manual_full_ai")
-    full_shape = json.loads(full_messages[1]["content"])["required_json_shape"]
+    full_shape = json.loads(full_messages[1]["content"])["return_json"]
 
     for shape in (normal_shape, full_shape):
         for event_type in EXPECTED_EVENT_TYPES:
