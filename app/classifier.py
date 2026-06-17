@@ -2368,6 +2368,15 @@ def classify_email(
         ),
         "shortage_link": shortage_link,
     }
+    # v2.1 «обезврежен скелет»: в AI-only детерминированный сортер НЕ раскидывает по
+    # терминальным папкам по ключевым словам (отсюда промахи: претензия→корректировка,
+    # ЧЗ→возврат, Re:→new_return). Всё уходит «ОЖИДАЕТ ИИ» (needs_review+needs_ai), а
+    # event_type/claim_kind/маршрут ставит ТОЛЬКО ИИ. Ключи связок/direction уже посчитаны
+    # выше и сохраняются. event_type скелета остаётся лишь подсказкой для ИИ (skeleton_guess).
+    if getattr(settings, "ai_only", False):
+        state = "needs_review"
+        needs_ai = True
+        ready_for_export = False
     case_data = {
         "buyer_code": buyer_code,
         "buyer_name": buyer_name,

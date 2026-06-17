@@ -620,8 +620,9 @@ _AI_LIVE_LOG: list[dict[str, Any]] = []
 
 def _ai_log_push(entry: dict[str, Any]) -> None:
     try:
-        from datetime import datetime, timezone
-        entry["at"] = datetime.now(timezone.utc).replace(microsecond=0).isoformat()
+        from datetime import datetime, timezone, timedelta
+        # Москва (UTC+3) — чтобы в ИИ-логе было местное время, а не «раннее утро» UTC.
+        entry["at"] = datetime.now(timezone(timedelta(hours=3))).replace(microsecond=0).isoformat()
     except Exception:
         entry["at"] = ""
     _AI_LIVE_LOG.append(entry)

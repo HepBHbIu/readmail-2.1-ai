@@ -50,10 +50,13 @@ def test_shortage_link_only_has_dedicated_event_type():
         },
         buyer_rules=[],
     )
+    # event_type-подсказка скелета сохраняется (для prompt skeleton_guess)…
     assert case["event_type"] == "shortage_link_event"
-    assert case["state"] == "needs_link"
+    # …но в v2.1 ai_only скелет НЕ маршрутизирует: всё «ожидает ИИ» (needs_review+needs_ai),
+    # финальный маршрут ставит ИИ. Это и есть «обезврежен скелет».
+    assert case["state"] == "needs_review"
     assert case["ready_for_export"] is False
-    assert case["needs_ai"] is False
+    assert case["needs_ai"] is True
 
 
 def test_ai_prompts_share_full_event_contract():
