@@ -2107,7 +2107,7 @@ function renderOnecTable(items) {
     if (item) showOnecJson(id, item);
   };
   if (!items.length) {
-    tbody.innerHTML = `<tr><td colspan="11" style="text-align:center;padding:20px;color:var(--text-muted)">Нет данных</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="12" style="text-align:center;padding:20px;color:var(--text-muted)">Нет данных</td></tr>`;
     return;
   }
   tbody.innerHTML = items.map(item => {
@@ -2151,6 +2151,9 @@ function renderOnecTable(items) {
       <td style="font-size:12px">${fv(vName)}</td>
       <td style="font-size:12px">${fv(vBrand)}</td>
       <td>${fv(vReason)}</td>
+      <td>${item.status === "sent"
+            ? `<span class="field-ok" title="${esc(item.sent_at || "")}">✅ да</span>`
+            : `<span class="field-empty">— нет</span>`}</td>
       <td>${badge(item.status || "?", statusColor)}</td>
     </tr>`;
   }).join("");

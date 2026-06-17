@@ -121,6 +121,14 @@ def main() -> None:
     with connect() as con:
         q = M.queue_control_events(con, limit=1000)
     print("Очередь outbox:", q, flush=True)
+    # ВЫГРУЗКА В 1С (как автопилот): пишем JSON-файлы + ставим status=sent.
+    try:
+        from app.db import deliver_outbox_events
+        with connect() as con:
+            d = deliver_outbox_events(con, limit=2000, channel="file")
+        print("Выгрузка в 1С:", {k: d.get(k) for k in ("ok", "delivered", "sent", "errors") if k in d}, flush=True)
+    except Exception as exc:
+        print("Выгрузка в 1С: ошибка", exc, flush=True)
 
 
 if __name__ == "__main__":
