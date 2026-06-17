@@ -311,9 +311,7 @@ async function loadReview() {
         option.selected = key === currentFolder;
       });
     }
-    // Badge on tab
-    const tabBadge = $("badge-review");
-    if (tabBadge) { tabBadge.textContent = res.total > 0 ? res.total : ""; }
+    // Бейдж вкладки НЕ трогаем здесь — единый источник counters = опрос updateTabBadges (воронка).
 
     // Populate buyer filter
     const bSel = $("review-buyer");
@@ -4231,7 +4229,7 @@ async function loadProcessedHidden() {
     const s = await api("/api/processed-hidden/summary");
     if (!s || !s.ok) { $("processed-banner").textContent = "Ошибка загрузки"; return; }
     _processedSummary = s;
-    const badge = $("badge-processed"); if (badge) badge.textContent = s.hidden_from_operator || 0;
+    // Бейдж НЕ трогаем — единый источник = опрос (воронка).
     // accounting banner
     const ok = s.accounted_ok;
     $("processed-banner").style.background = ok ? "rgba(40,160,80,.15)" : "rgba(200,60,60,.15)";
@@ -4335,11 +4333,8 @@ async function openProcessedTrace(target, id) {
 
 /* фоновое число для вкладки «Обработанные» (cached endpoint, не блокирует UI) */
 async function refreshProcessedBadge() {
-  try {
-    const s = await api("/api/processed-hidden/summary");
-    const b = $("badge-processed");
-    if (b && s && s.ok) { const n = s.hidden_from_operator || 0; b.textContent = n > 0 ? n : ""; b.style.display = n > 0 ? "inline-block" : "none"; }
-  } catch (e) { /* ignore */ }
+  // Бейдж «Архив» ставит только опрос updateTabBadges (единый источник). Здесь — ничего.
+  return;
 }
 
 /* ── Pipeline (единый canonical-вид: все письма по route) ── */
