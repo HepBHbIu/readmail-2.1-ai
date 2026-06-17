@@ -1763,3 +1763,19 @@ html, body { max-width: 100%; overflow-x: hidden; }
 .gs-type { color: #94a3b8; }
 .gs-empty { padding: 12px; font-size: 13px; color: #64748b; }
 @media (max-width: 760px) { .global-search { flex-basis: 180px; } }
+
+/* Воронка обработки (операторская витрина) */
+.funnel-list{display:flex;flex-direction:column;gap:4px;margin:10px 0}
+.funnel-row{display:flex;align-items:center;gap:8px;cursor:pointer;padding:3px 6px;border-radius:6px}
+.funnel-row:hover{background:var(--bg-hover,#1c2230)}
+.funnel-label{flex:0 0 230px;font-size:13px}
+.funnel-bar-wrap{flex:1;height:16px;background:var(--bg-soft,#222);border-radius:4px;overflow:hidden}
+.funnel-bar{height:100%;border-radius:4px;min-width:2px}
+.funnel-num{flex:0 0 44px;text-align:right;font-weight:600}
+.funnel-items{margin-top:12px;display:flex;flex-direction:column;gap:6px}
+.funnel-items-head{font-size:12px;color:var(--text-muted);margin-bottom:4px}
+.funnel-item{border:1px solid var(--border,#333);border-radius:8px;padding:8px 10px;background:var(--bg-soft,#1a1f2b)}
+.funnel-item-top{display:flex;justify-content:space-between;gap:8px;align-items:center}
+.funnel-item-meta{display:flex;flex-wrap:wrap;gap:10px;font-size:11px;color:var(--text-muted);margin:4px 0}
+.funnel-item-why,.funnel-item-do{font-size:12px;margin-top:2px}
+.funnel-item-do{color:var(--green,#3c9)}

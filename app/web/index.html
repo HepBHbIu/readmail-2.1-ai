@@ -26,7 +26,8 @@
         <div class="nav-group">
           <button class="nav-group-head" type="button">Обработка <span class="nav-group-dot" id="navdot-process"></span> <span class="nav-caret">▾</span></button>
           <div class="nav-group-menu">
-            <button class="tab" data-tab="review">Сверка <span class="tab-badge" id="badge-review"></span></button>
+            <button class="tab" data-tab="funnel">🗂 Воронка</button>
+            <button class="tab" data-tab="review">Проверка перед 1С <span class="tab-badge" id="badge-review"></span></button>
             <button class="tab" data-tab="ai_review">AI-разбор</button>
             <button class="tab" data-tab="unprocessed">✋ Ручной разбор <span class="tab-badge" id="badge-unprocessed"></span></button>
             <button class="tab" data-tab="problem_notice">⚠️ Уведомления о проблеме <span class="tab-badge" id="badge-problem_notice"></span></button>
@@ -255,7 +256,15 @@
       <div class="pagination" id="emails-pagination"></div>
     </section>
 
-    <!-- СВЕРКА -->
+    <!-- ВОРОНКА ОБРАБОТКИ (операторская витрина) -->
+    <section id="tab-funnel" class="tab-content">
+      <div class="panel-header"><h2>🗂 Воронка обработки</h2>
+        <span class="hint-text">Где письмо в бизнес-процессе. Клик по этапу — список писем с пояснениями.</span></div>
+      <div id="funnel-body" class="funnel-body">Загрузка…</div>
+      <div id="funnel-items" class="funnel-items"></div>
+    </section>
+
+    <!-- ПРОВЕРКА ПЕРЕД 1С -->
     <section id="tab-review" class="tab-content">
       <div class="split-page">
         <div class="split-list-col" id="review-list-col">

@@ -255,6 +255,12 @@ def audit_classifications(con: Any) -> dict[str, Any]:
                     missing_required.append(field)
             if case and case.get("state") == "ready_to_1c" and missing_required:
                 warnings.append("ready_to_1c_without_required_fields")
+            # ТЗ разд.10: брак «готов к 1С», но документы брака не проверены/неполные.
+            if (case and str(case.get("claim_kind") or "") == "defect"
+                    and case.get("state") == "ready_to_1c"):
+                _ds = str((payload.get("defect_doc_flag") or {}).get("defect_documents_status") or "")
+                if _ds in ("", "unknown_not_read", "metadata_only", "missing", "incomplete"):
+                    warnings.append("defect_ready_without_documents")
         weak_evidence = [
             key for key, status in field_statuses.items()
             if str(status) in {"weak_found", "not_found", "missing_processed"}

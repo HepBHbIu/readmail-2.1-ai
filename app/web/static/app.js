@@ -189,6 +189,7 @@ function onTabActivated(tab) {
     else if (tab === "offtopic") openReviewAs("information", "offtopic");
     else if (tab === "problem_notice") openReviewAs("problem_notice", "problem_notice");
     else if (tab === "processed") loadProcessedHidden();
+    else if (tab === "funnel") loadFunnel();
     else if (tab === "pipeline") loadPipeline();
     else if (tab === "unprocessed") openReviewAs("manual", "unprocessed");
     else if (tab === "clients") loadClients();
@@ -4159,6 +4160,68 @@ document.addEventListener("DOMContentLoaded", () => {
 
 /* ── Обработанные / не требуют действия (Hidden Processed Mail) ── */
 let _processedSummary = null, _processedGroup = null, _processedSub = null, _processedPage = 1;
+
+// ── ВОРОНКА ОБРАБОТКИ (операторская витрина, ТЗ) ──
+let _funnelData = null;
+const _FUNNEL_KIND_COLOR = {
+  total: "#888", wait: "#b08", ai: "#08a", manual: "#d80", defect: "#c33",
+  observe: "#a60", linked: "#06a", ready: "#0a5", service: "#557", archive: "#999", error: "#c00",
+};
+async function loadFunnel() {
+  const body = $("funnel-body"); if (!body) return;
+  body.innerHTML = "Загрузка…";
+  let res;
+  try { res = await api("/api/folder-accounting?items=true"); } catch (e) { body.innerHTML = "Ошибка загрузки"; return; }
+  if (!res || !res.ok) { body.innerHTML = "Ошибка"; return; }
+  _funnelData = res;
+  const max = Math.max(1, ...(res.funnel || []).map(s => s.count));
+  const bars = (res.funnel || []).map(s => {
+    const w = Math.round(100 * s.count / max);
+    const col = _FUNNEL_KIND_COLOR[s.kind] || "#789";
+    return `<div class="funnel-row" onclick="selectFunnelStage('${s.kind}')" title="Показать письма">
+      <div class="funnel-label">${esc(s.stage)}</div>
+      <div class="funnel-bar-wrap"><div class="funnel-bar" style="width:${w}%;background:${col}"></div></div>
+      <div class="funnel-num">${s.count}</div></div>`;
+  }).join("");
+  body.innerHTML = `<div class="funnel-list">${bars}</div>`;
+  $("funnel-items").innerHTML = "";
+}
+// какие папки входят в этап воронки
+const _STAGE_FOLDERS = {
+  wait: ["Не создан кейс"], ai: ["Проверяется AI"], manual: ["Ручной разбор", "AI не смог классифицировать"],
+  defect: ["Брак: документы не проверены", "Брак: не хватает документов"],
+  observe: ["Возможная будущая проблема"], linked: ["Диалоги: требуют привязки", "Диалоги: уже привязаны"],
+  ready: ["Готово к 1С"],
+  service: ["Служебное: маркировка / ТНВЭД", "Служебное: корректировки / ЭДО", "Недовоз / ссылка АвтоТО",
+            "Служебное: замена номера/бренда", "Отказы до поставки", "Возврат готов к выдаче", "Служебные прочие"],
+  archive: ["Прайсы / отчёты / остатки", "Не по теме / авторассылки", "Дубли"], error: ["Ошибки обработки"],
+};
+function selectFunnelStage(kind) {
+  const el = $("funnel-items"); if (!el || !_funnelData) return;
+  if (kind === "total") { el.innerHTML = ""; return; }
+  const folders = _STAGE_FOLDERS[kind] || [];
+  const items = (_funnelData.items || []).filter(it => folders.includes(it.folder_name));
+  if (!items.length) { el.innerHTML = `<div class="hint-text">Нет писем в этапе</div>`; return; }
+  const ev = { strong: "🟢 сильные", medium: "🟡 средние", weak: "🟠 слабые", none: "⚪ нет" };
+  el.innerHTML = `<div class="funnel-items-head">${items.length} писем · этап «${esc(folders[0])}»…</div>` +
+    items.slice(0, 200).map(it => `
+    <div class="funnel-item">
+      <div class="funnel-item-top"><b>${esc((it.subject || "—").slice(0, 70))}</b>
+        <span class="badge badge-gray">${esc(it.folder_name)}</span></div>
+      <div class="funnel-item-meta">
+        <span>raw#${it.raw_email_id}${it.case_id ? " · case#" + it.case_id : ""}</span>
+        <span>${esc(it.buyer_code || "")}</span>
+        <span>ИИ: ${it.ai_checked ? "да" : "нет"}</span>
+        <span>evidence: ${ev[it.evidence] || it.evidence || "—"}</span>
+        ${(it.missing_fields || []).length ? `<span style="color:var(--amber)">нет: ${esc((it.missing_fields || []).join(", "))}</span>` : ""}
+        ${it.has_attachments ? "<span>📎</span>" : ""}
+        ${it.has_defect_docs ? "<span>📄 док.брака</span>" : ""}
+        ${it.linked_to_parent ? "<span>🔗 привязано</span>" : ""}
+      </div>
+      <div class="funnel-item-why"><b>Почему:</b> ${esc(it.folder_reason || "—")}</div>
+      <div class="funnel-item-do"><b>Действие:</b> ${esc(it.next_action || "—")}</div>
+    </div>`).join("");
+}
 
 async function loadProcessedHidden() {
   try {

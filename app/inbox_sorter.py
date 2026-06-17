@@ -7,8 +7,8 @@ from typing import Any
 
 
 REPORT_RE = re.compile(
-    r"(?i)\b(ежедневн\w*\s+отч[её]т|отч[её]т|реестр|остатк\w*|прайс(?:-лист)?|"
-    r"price[\s-]*list|наличи\w*|stock|выгрузк\w*|сводк\w*|sales report|stock report)\b"
+    r"(?i)(\b(ежедневн\w*\s+отч[её]т|отч[её]т|реестр|остатк\w*|прайс(?:-лист)?|"
+    r"price[\s-]*list|наличи\w*|stock|выгрузк\w*|сводк\w*|sales report|stock report)\b|x4[\s-]*прайс|\bx4\b)"
 )
 RETURN_RE = re.compile(
     r"(?i)\b(возврат\w*|претензи\w*|рекламаци\w*|отказ\w*|брак\w*|дефект\w*|"
