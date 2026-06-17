@@ -4776,14 +4776,16 @@ def export_outbox(limit: int = Query(default=100, ge=1, le=1000), status: str | 
     offset = (page - 1) * limit
     with connect() as con:
         total = con.execute(f"SELECT COUNT(*) c FROM outbox {where}", params).fetchone()["c"]
+        _ob_where = where.replace("status=?", "o.status=?") if where else ""
         rows = [row_to_dict(r) for r in con.execute(
             f"""
-            SELECT id, case_id, payload_json, status, event_type, channel, business_priority,
-                   attempt_count, last_attempt_at, next_attempt_at, last_error, file_path,
-                   delivery_response_json, created_at, sent_at, resolved_at, resolution_note
-            FROM outbox
-            {where}
-            ORDER BY id DESC
+            SELECT o.id, o.case_id, o.payload_json, o.status, o.event_type, o.channel, o.business_priority,
+                   o.attempt_count, o.last_attempt_at, o.next_attempt_at, o.last_error, o.file_path,
+                   o.delivery_response_json, o.created_at, o.sent_at, o.resolved_at, o.resolution_note,
+                   c.event_type AS case_event_type, c.claim_kind AS case_claim_kind
+            FROM outbox o LEFT JOIN cases c ON c.id=o.case_id
+            {_ob_where}
+            ORDER BY o.id DESC
             LIMIT ? OFFSET ?
             """,
             params + [limit, offset],

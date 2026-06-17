@@ -2138,8 +2138,11 @@ function renderOnecTable(items) {
       return `<span class="field-ok">${esc(s)}</span>`;
     };
 
-    return `<tr data-onec-id="${item.id || item.case_id || 0}" style="cursor:pointer">
-      <td>${item.status === "error" ? "!" : item.status === "sent" ? "✓" : "·"}</td>
+    // ТЗ: «отказ до поставки» подсвечиваем зелёным (особый поток — без документа реализации).
+    const isPreDelivery = item.case_event_type === "pre_delivery_refusal";
+    const rowStyle = isPreDelivery ? "cursor:pointer;background:rgba(40,160,80,.14)" : "cursor:pointer";
+    return `<tr data-onec-id="${item.id || item.case_id || 0}" style="${rowStyle}" title="${isPreDelivery ? "Отказ до поставки" : ""}">
+      <td>${isPreDelivery ? "🟢" : item.status === "error" ? "!" : item.status === "sent" ? "✓" : "·"}</td>
       <td style="font-size:12px"><b>${esc(buyer)}</b></td>
       <td>${fv(vDocNum)}</td>
       <td style="font-size:11px">${fv(vDocDate)}</td>
