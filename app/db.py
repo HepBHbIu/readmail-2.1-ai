@@ -2081,29 +2081,61 @@ def queue_case_event(
     items: list[dict[str, Any]] = []
     event_type_final = payload["event"]["type"]
     fingerprint = payload["event"].get("fingerprint") or _event_hash(payload)
+
+    # Мультипозиция: один документ с N позициями → N ОТДЕЛЬНЫХ заявок в 1С, каждая со
+    # своей строкой (артикул/бренд/кол-во), но все с ОДНИМ case_id/raw_email — привязка
+    # к 1 почте. Шапка документа (номер/дата) общая.
+    _positions = [p for p in ((payload.get("export_data") or {}).get("items") or [])
+                  if p.get("part_number") or p.get("product_name")]
+    if len(_positions) > 1:
+        variants: list[tuple[str, dict[str, Any]]] = []
+        for idx, pos in enumerate(_positions):
+            ret = dict(payload.get("return") or {})
+            ret["part_number"] = pos.get("part_number") or pos.get("received_part_number")
+            ret["brand"] = pos.get("brand")
+            ret["product_name"] = pos.get("product_name")
+            ret["quantity"] = pos.get("quantity")
+            ret["price"] = pos.get("price")
+            if pos.get("reason"):
+                ret["comment"] = pos.get("reason")
+            ret["position_index"] = idx
+            ret["positions_total"] = len(_positions)
+            variants.append((f":pos{idx}", {**payload, "return": ret}))
+    else:
+        variants = [("", payload)]
+
     for channel in channels:
         channel = str(channel or "file").lower()
-        event_key = f"v1.10:{channel}:case:{case_id}:{event_type_final}:{fingerprint}"
-        existing = con.execute("SELECT id, status FROM outbox WHERE event_key=?", (event_key,)).fetchone()
-        if existing and not force:
-            skipped += 1
-            items.append({"channel": channel, "queued": False, "already_exists": True, "outbox_id": int(existing["id"]), "status": existing["status"]})
-            continue
-        if existing and force:
-            con.execute("UPDATE outbox SET status='new', attempt_count=0, last_error=NULL, sent_at=NULL, payload_json=?, created_at=? WHERE id=?", (dumps(payload), utcnow(), int(existing["id"])))
+        if len(variants) > 1:
+            # Кейс разбит на позиции — убрать ВСЕ старые не-разбитые заявки этого кейса
+            # (event_key без ':pos', любой fingerprint), пока не отправлены, иначе дубль
+            # по первой позиции.
+            con.execute(
+                "DELETE FROM outbox WHERE case_id=? AND channel=? AND status='new' AND event_key NOT LIKE '%:pos%'",
+                (case_id, channel),
+            )
+        for suffix, pl in variants:
+            event_key = f"v1.10:{channel}:case:{case_id}:{event_type_final}:{fingerprint}{suffix}"
+            existing = con.execute("SELECT id, status FROM outbox WHERE event_key=?", (event_key,)).fetchone()
+            if existing and not force:
+                skipped += 1
+                items.append({"channel": channel, "queued": False, "already_exists": True, "outbox_id": int(existing["id"]), "status": existing["status"]})
+                continue
+            if existing and force:
+                con.execute("UPDATE outbox SET status='new', attempt_count=0, last_error=NULL, sent_at=NULL, payload_json=?, created_at=? WHERE id=?", (dumps(pl), utcnow(), int(existing["id"])))
+                queued += 1
+                items.append({"channel": channel, "queued": True, "outbox_id": int(existing["id"]), "forced": True})
+                continue
+            cur = con.execute(
+                """
+                INSERT INTO outbox(case_id, payload_json, status, created_at, event_type, event_key, channel, business_priority)
+                VALUES (?, ?, 'new', ?, ?, ?, ?, ?)
+                """,
+                (case_id, dumps(pl), utcnow(), event_type_final, event_key, channel, payload["event"].get("priority")),
+            )
             queued += 1
-            items.append({"channel": channel, "queued": True, "outbox_id": int(existing["id"]), "forced": True})
-            continue
-        cur = con.execute(
-            """
-            INSERT INTO outbox(case_id, payload_json, status, created_at, event_type, event_key, channel, business_priority)
-            VALUES (?, ?, 'new', ?, ?, ?, ?, ?)
-            """,
-            (case_id, dumps(payload), utcnow(), event_type_final, event_key, channel, payload["event"].get("priority")),
-        )
-        queued += 1
-        items.append({"channel": channel, "queued": True, "outbox_id": int(cur.lastrowid)})
-    return {"ok": True, "case_id": case_id, "event_type": event_type_final, "queued": queued, "skipped": skipped, "items": items}
+            items.append({"channel": channel, "queued": True, "outbox_id": int(cur.lastrowid)})
+    return {"ok": True, "case_id": case_id, "event_type": event_type_final, "queued": queued, "skipped": skipped, "items": items, "positions": len(variants)}
 
 
 def queue_case_export(con: sqlite3.Connection, case_id: int) -> dict[str, Any]:
