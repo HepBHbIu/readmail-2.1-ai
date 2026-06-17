@@ -1,0 +1,52 @@
+{
+  "schema": "readmail-1c-v2",
+  "payload_profile": "standard",
+  "generated_at": "2026-06-17T16:17:50+00:00",
+  "event": "return_ready",
+  "case_id": 3661,
+  "buyer": {
+    "code": "avtoformula",
+    "name": "Автоформула"
+  },
+  "claim": {
+    "kind": "quality_refusal",
+    "kind_label": "Отказ клиента",
+    "number": null
+  },
+  "document": {
+    "number": "82400",
+    "date": "26.05.2026",
+    "type": "УПД"
+  },
+  "items": [
+    {
+      "part_number": "KDC45301",
+      "brand": "NTN",
+      "product_name": "Ремкомплект ГРМ",
+      "quantity": 1
+    }
+  ],
+  "comment": "отказ конечного покупателя",
+  "flags": {
+    "has_photo": false,
+    "has_document": false,
+    "attachments_count": 0
+  },
+  "status": {
+    "state": "ready_to_1c",
+    "control_status": "ready_to_1c",
+    "priority": "medium",
+    "ready_for_export": true,
+    "needs_review": false
+  },
+  "text": {
+    "subject": "АО \"Автоформула\": Запрос на возврат товара надлежащего качества №А-260616-00095",
+    "body": "Добрый день! Согласно действующим договоренностям между нашими компаниями мы хотим вернуть товар надлежащего качества по причине отказа конечного покупателя KDC45301 NTN / SNR Ремкомплект ГРМ [цепь,натяжитель,3 звездочки,3 успокоителя, крепеж] в количестве 1 по документу №82400 от 26.05.26 Спасибо за понимание! С уважением, менеджер отдела рекламаций. эл.почта: bobokhyan_a@avtoformula.ru"
+  },
+  "attachments": [],
+  "source": {
+    "raw_email_id": 4010,
+    "message_id": "<4gfdhL65CbzgkLX@mail.corp.avtoformula.ru>",
+    "received_at": "2026-06-16T07:21:22+00:00"
+  }
+}

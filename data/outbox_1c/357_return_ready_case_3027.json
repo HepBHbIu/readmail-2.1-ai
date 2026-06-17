@@ -1,0 +1,52 @@
+{
+  "schema": "readmail-1c-v2",
+  "payload_profile": "standard",
+  "generated_at": "2026-06-17T13:40:12+00:00",
+  "event": "return_ready",
+  "case_id": 3027,
+  "buyer": {
+    "code": "autoeuro_ru",
+    "name": "Авто-Евро"
+  },
+  "claim": {
+    "kind": "quality_refusal",
+    "kind_label": "Отказ клиента",
+    "number": null
+  },
+  "document": {
+    "number": "83973",
+    "date": "16.06.2026",
+    "type": "УПД"
+  },
+  "items": [
+    {
+      "part_number": "E110092",
+      "brand": "MILES",
+      "product_name": "Колодки тормозные",
+      "quantity": 1
+    }
+  ],
+  "comment": "Товар не отгружался клиенту",
+  "flags": {
+    "has_photo": false,
+    "has_document": false,
+    "attachments_count": 0
+  },
+  "status": {
+    "state": "ready_to_1c",
+    "control_status": "ready_to_1c",
+    "priority": "medium",
+    "ready_for_export": true,
+    "needs_review": false
+  },
+  "text": {
+    "subject": "АО «Авто-Евро»: Запрос на возврат. Клиент отказался. Док. №83973",
+    "body": "Уведомление Здравствуйте! Мы получили отказ от клиента на заказанный у вас товар. Бренд: | MILES Артикул: | E110092 Товар: | Колодки тормозные SKODA OCTAVIA 04-/SUPERB 08-/VW CADDY/TOURAN 10- задние Кол-во: | 1 Комментарий: | УПД №83973 от 2026-06-16 Приходная накладная №0006882088 Товар не отгружался клиенту. Просьба рассмотреть возможность возврата. С уважением, компания Авто-Евро 51930174"
+  },
+  "attachments": [],
+  "source": {
+    "raw_email_id": 3751,
+    "message_id": "<686e9b952ac0d7f74b1ffd82b054457f@autoeuro.ru>",
+    "received_at": "2026-06-16T19:50:04+00:00"
+  }
+}

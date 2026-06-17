@@ -1,0 +1,52 @@
+{
+  "schema": "readmail-1c-v2",
+  "payload_profile": "standard",
+  "generated_at": "2026-06-17T15:07:38+00:00",
+  "event": "return_ready",
+  "case_id": 3679,
+  "buyer": {
+    "code": "autoeuro_ru",
+    "name": "Авто-Евро"
+  },
+  "claim": {
+    "kind": "quality_refusal",
+    "kind_label": "Отказ клиента",
+    "number": null
+  },
+  "document": {
+    "number": "83654",
+    "date": "11.06.2026",
+    "type": "УПД"
+  },
+  "items": [
+    {
+      "part_number": "SD3048",
+      "brand": "SANGSIN",
+      "product_name": "Барабан тормозной",
+      "quantity": 2
+    }
+  ],
+  "comment": "Отказ клиента",
+  "flags": {
+    "has_photo": true,
+    "has_document": true,
+    "attachments_count": 0
+  },
+  "status": {
+    "state": "ready_to_1c",
+    "control_status": "ready_to_1c",
+    "priority": "medium",
+    "ready_for_export": true,
+    "needs_review": false
+  },
+  "text": {
+    "subject": "Авто-Евро #2980472. Запрос на возврат товара: SANGSIN^SD3048",
+    "body": "Здравствуйте. Поступил запрос от клиента на возврат товара: Приходный документ: №83654 от 11.06.26 (АО \"Авто-Евро\") Товар: SANGSIN / SD3048 / Барабан торм. CHEVROLET AVEO 11-> Количество: 2 Тип рекламации: Новый товар надлежащего качества Причина: Отказ конечного покупателя Комментарий: Отказ клиента Ссылки на прикрепленные файлы: https://minio.dev-k8s.autoeuro.ru/pub/reclamation-photos/RVm7YKyU9bt24T7irX9aeo060ahmhHs8V7wGB0qC.jpg https://minio.dev-k8s.autoeuro.ru/pub/reclamation-photos/JfTA7OLKZHasFnhhjSLf2nQDB0RfoJEfDXbztA8b.jpg https://minio.dev-k8s.autoeuro.ru/pub/reclamation-photos/01Fjj7rNYYxeORg9xqTLcNdLqcV85iKCT1s4YWLN.jpg Просьба согласовать данный запрос. -- С Уважением, Отдел рекламаций компании Авто-Евро Тел.: +7(495)120-02-64 www.autoeuro.ru"
+  },
+  "attachments": [],
+  "source": {
+    "raw_email_id": 4028,
+    "message_id": "<A5BF452C1D3040519F40556CF0F50BB2@autoeuro.local>",
+    "received_at": "2026-06-17T10:23:12+00:00"
+  }
+}

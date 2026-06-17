@@ -1,0 +1,106 @@
+{
+  "schema": "readmail-1c-v2",
+  "payload_profile": "standard",
+  "generated_at": "2026-06-17T15:11:08+00:00",
+  "event": "return_ready",
+  "case_id": 3374,
+  "buyer": {
+    "code": "berg_ru",
+    "name": "Berg"
+  },
+  "claim": {
+    "kind": "defect",
+    "kind_label": "Брак",
+    "number": null
+  },
+  "document": {
+    "number": "83904",
+    "date": "15.06.2026",
+    "type": "УПД"
+  },
+  "items": [
+    {
+      "part_number": "BM10046AR",
+      "product_name": "Крыло переднее правое без отв",
+      "quantity": 1
+    }
+  ],
+  "comment": null,
+  "flags": {
+    "defect_documents": {
+      "state": "present_unverified",
+      "complete": false,
+      "install_order": false,
+      "removal_order": false,
+      "service_act": false,
+      "n_present": null,
+      "source": null
+    },
+    "has_photo": true,
+    "has_document": false,
+    "attachments_count": 9
+  },
+  "status": {
+    "state": "ready_to_1c",
+    "control_status": "ready_to_1c",
+    "priority": "medium",
+    "ready_for_export": true,
+    "needs_review": false
+  },
+  "text": {
+    "subject": "Возврат Тринити-Партс ООО(Белгород)/ Арт. BM10046AR, шт. 1 №Э00022168",
+    "body": "Добрый день. Просим принять на возврат:арт. BM10046AR BM14-402-2FR Крыло передн. правое без отв.Тайвань Количество:1Брак (выявлено при приемке) товар принят с дефектами до клиента (Тычки)УПД №83904 от 15 июня 2026 г. С Уважением, оптоваякомпания \"Trinity-Parts\"тел. +7(4722)40-20-40 www.trinity-parts.ru"
+  },
+  "attachments": [
+    {
+      "filename": "Э0002216820260617_1.jpg",
+      "type": "image/jpeg",
+      "size": 2316499
+    },
+    {
+      "filename": "Э0002216820260617_2.jpg",
+      "type": "image/jpeg",
+      "size": 2210145
+    },
+    {
+      "filename": "Э0002216820260617_3.jpg",
+      "type": "image/jpeg",
+      "size": 2225008
+    },
+    {
+      "filename": "Э0002216820260617_4.jpg",
+      "type": "image/jpeg",
+      "size": 2190726
+    },
+    {
+      "filename": "Э0002216820260617_5.jpg",
+      "type": "image/jpeg",
+      "size": 2080626
+    },
+    {
+      "filename": "Э0002216820260617_6.jpg",
+      "type": "image/jpeg",
+      "size": 3418281
+    },
+    {
+      "filename": "Э0002216820260617_7.jpg",
+      "type": "image/jpeg",
+      "size": 872727
+    },
+    {
+      "filename": "Э0002216820260617_8.jpg",
+      "type": "image/jpeg",
+      "size": 3185584
+    },
+    {
+      "filename": "Э0002216820260617_9.jpg",
+      "type": "image/jpeg",
+      "size": 3183446
+    }
+  ],
+  "source": {
+    "raw_email_id": 3723,
+    "message_id": "<9d273aea-7535-476e-89eb-7b35e1c76e01@trinity-parts.ru>",
+    "received_at": "2026-06-17T05:42:43+00:00"
+  }
+}

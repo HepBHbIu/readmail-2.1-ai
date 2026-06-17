@@ -1,0 +1,61 @@
+{
+  "schema": "readmail-1c-v2",
+  "payload_profile": "standard",
+  "generated_at": "2026-06-17T13:40:17+00:00",
+  "event": "return_ready",
+  "case_id": 3201,
+  "buyer": {
+    "code": "parterra_ru",
+    "name": "Партерра"
+  },
+  "claim": {
+    "kind": "nonconforming",
+    "kind_label": "Некондиция",
+    "number": null
+  },
+  "document": {
+    "number": "83825",
+    "date": "15.06.2026",
+    "type": "УПД"
+  },
+  "items": [
+    {
+      "part_number": "C4T-58402H",
+      "brand": "OBK",
+      "product_name": "Пружина ходовой части усиленная",
+      "quantity": 1
+    }
+  ],
+  "comment": "нетоварный вид упаковки",
+  "flags": {
+    "defect_documents": {
+      "state": "absent",
+      "complete": false,
+      "install_order": false,
+      "removal_order": false,
+      "service_act": false,
+      "n_present": null,
+      "source": null
+    },
+    "has_photo": true,
+    "has_document": true,
+    "attachments_count": 0
+  },
+  "status": {
+    "state": "ready_to_1c",
+    "control_status": "ready_to_1c",
+    "priority": "normal",
+    "ready_for_export": true,
+    "needs_review": false
+  },
+  "text": {
+    "subject": "НЕТОВАРНЫЙ ВИД УПАКОВКИ (Отмена при приемке) УПД  Москва ЦКД",
+    "body": "Добрый день! В УПД 83825 от 15.06.2026 была выписана позиция: C4T-58402H Пружина ходовой части усиленная | зад прав/лев | OBK в количестве 1 шт. Товар будет автоматически сформирован (далее отгружен) на возврат по причине НЕТОВАРНЫЙ ВИД УПАКОВКИ (Отмена при приемке), так как не соответствует стандартам Приемки и нашим договоренностям о поставке. Ниже фото товара (по ссылке): https://claim-transfer.parterra.ru/6d125b41-695f-11f1-8160-005056879a3e/Img_16062026_154342.jpg https://claim-transfer.parterra.ru/6d125b41-695f-11f1-8160-005056879a3e/Img_16062026_154356.jpg С уважением, команда Гринлайт Тел.: 8 (495) 909-12-51"
+  },
+  "attachments": [],
+  "source": {
+    "raw_email_id": 3925,
+    "message_id": "<7d6c6d9b-43b7-4a3b-a492-aa1ba3cbe222@yandex.ru>",
+    "received_at": "2026-06-16T08:44:47+00:00"
+  }
+}

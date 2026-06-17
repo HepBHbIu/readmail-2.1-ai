@@ -1,0 +1,63 @@
+{
+  "schema": "readmail-1c-v2",
+  "payload_profile": "standard",
+  "generated_at": "2026-06-17T13:40:13+00:00",
+  "event": "return_ready",
+  "case_id": 3063,
+  "buyer": {
+    "code": "avtoto_ru",
+    "name": "АВТОТО"
+  },
+  "claim": {
+    "kind": "quality_refusal",
+    "kind_label": "Отказ клиента",
+    "number": "1706717"
+  },
+  "document": {
+    "number": "83173",
+    "date": "04.06.2026",
+    "type": "УПД"
+  },
+  "items": [
+    {
+      "part_number": "EXEED0W201",
+      "brand": "Exeed",
+      "product_name": "Масло моторное",
+      "quantity": 1
+    }
+  ],
+  "comment": "отказ клиента",
+  "flags": {
+    "has_photo": true,
+    "has_document": true,
+    "attachments_count": 2
+  },
+  "status": {
+    "state": "ready_to_1c",
+    "control_status": "ready_to_1c",
+    "priority": "medium",
+    "ready_for_export": true,
+    "needs_review": false
+  },
+  "text": {
+    "subject": "Новое сообщение по рекламации 1706717",
+    "body": "От Вас по накладной 83173 от 04.06.2026 получен заказ EXEED0W201, Масло моторное Exeed 0W-20 API SP, ILSAC GF-6A, нк. 1 л в количестве 1, от которого клиент отказался. Подтвердите готовность принять возврат по данной позиции. Ознакомиться с рекламацией Вы можете, перейдя по ссылке — https://www.avtoto.ru/personnel_claim/1706717/208066560690385/"
+  },
+  "attachments": [
+    {
+      "filename": "avtoto_3787_0.jpg",
+      "type": "image/jpeg",
+      "size": 179470
+    },
+    {
+      "filename": "avtoto_3787_1.jpg",
+      "type": "image/jpeg",
+      "size": 185227
+    }
+  ],
+  "source": {
+    "raw_email_id": 3787,
+    "message_id": "<202606160930.65G9UxUn009202@prod---managers-avtoto-ru.novalocal>",
+    "received_at": "2026-06-16T09:30:59+00:00"
+  }
+}

@@ -1,0 +1,56 @@
+{
+  "schema": "readmail-1c-v2",
+  "payload_profile": "standard",
+  "generated_at": "2026-06-17T13:40:13+00:00",
+  "event": "return_ready",
+  "case_id": 3038,
+  "buyer": {
+    "code": "autoeuro_ru",
+    "name": "Авто-Евро"
+  },
+  "claim": {
+    "kind": "quality_refusal",
+    "kind_label": "Отказ до поставки",
+    "number": "2961390"
+  },
+  "document": {
+    "number": null,
+    "date": null,
+    "type": null
+  },
+  "items": [
+    {
+      "part_number": "KHF048",
+      "brand": "KORTEX",
+      "product_name": "Мотор отопителя",
+      "quantity": 1
+    }
+  ],
+  "comment": "отказ конечного покупателя",
+  "flags": {
+    "has_photo": false,
+    "has_document": false,
+    "attachments_count": 0
+  },
+  "status": {
+    "state": "ready_to_1c",
+    "control_status": "ready_to_1c",
+    "priority": "high",
+    "ready_for_export": true,
+    "needs_review": false
+  },
+  "text": {
+    "subject": "Авто-Евро #2961390. Запрос на возврат товара: KORTEX^KHF048",
+    "body": "Здравствуйте. Поступил запрос от клиента на возврат товара: Приходный документ: №82700 от 01.06.26 (АО \"Авто-Евро\") Товар: KORTEX / KHF048 / Мотор отопителя MITSUBISHI LANCER X 07-/OUTLANDER XL 07-/ASX 10-/PEUGEOT 4007/4008 Количество: 1 Тип рекламации: Новый товар надлежащего качества Причина: Отказ конечного покупателя Комментарий: Просьба согласовать данный запрос. -- С Уважением, Отдел рекламаций компании Авто-Евро Тел.: +7(495)120-02-64 www.autoeuro.ru"
+  },
+  "attachments": [],
+  "source": {
+    "raw_email_id": 3762,
+    "message_id": "<AECEEDD7C1994EB686B50EAD1F564A80@autoeuro.local>",
+    "received_at": "2026-06-15T05:26:10+00:00"
+  },
+  "pre_delivery_refusal": true,
+  "document_required": false,
+  "reason": "Отказ клиента до поставки",
+  "operator_attention": true
+}

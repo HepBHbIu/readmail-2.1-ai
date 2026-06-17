@@ -1,0 +1,58 @@
+{
+  "schema": "readmail-1c-v2",
+  "payload_profile": "standard",
+  "generated_at": "2026-06-17T13:40:11+00:00",
+  "event": "return_ready",
+  "case_id": 2983,
+  "buyer": {
+    "code": "ixora_auto_ru",
+    "name": "Ixora Auto"
+  },
+  "claim": {
+    "kind": "quality_refusal",
+    "kind_label": "Отказ клиента",
+    "number": "1363260"
+  },
+  "document": {
+    "number": "83475",
+    "date": "09.06.2026",
+    "type": "УПД"
+  },
+  "items": [
+    {
+      "part_number": "C6526",
+      "brand": "SAKURA",
+      "product_name": "ФИЛЬТР МАСЛЯНЫЙ",
+      "quantity": 1
+    }
+  ],
+  "comment": "Для возврата Поставщику",
+  "flags": {
+    "has_photo": true,
+    "has_document": false,
+    "attachments_count": 1
+  },
+  "status": {
+    "state": "ready_to_1c",
+    "control_status": "ready_to_1c",
+    "priority": "medium",
+    "ready_for_export": true,
+    "needs_review": false
+  },
+  "text": {
+    "subject": "Запрос на возврат 1363260/98610127",
+    "body": "Добрый день! Прошу согласовать возврат детали SAKURA C6526 ФИЛЬТР МАСЛЯНЫЙ. Причина возврата: Для возврата Поставщику. Дата с/ф: 09.06.2026, Номер с/ф: 83475. Комментарий клиента: Менеджер претензионного отдела: Зальцман Наталья Александровна. TicketID:1363260. [cid:logo.jpg]"
+  },
+  "attachments": [
+    {
+      "filename": "logo.jpg",
+      "type": "image/jpeg",
+      "size": 10995
+    }
+  ],
+  "source": {
+    "raw_email_id": 3707,
+    "message_id": "<207CC496D9B9214BBFAFA9B616EF9D1501539A83DD@exchangeserver.auto-iksora.ru>",
+    "received_at": "2026-06-17T08:38:22+00:00"
+  }
+}

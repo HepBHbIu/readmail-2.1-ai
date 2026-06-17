@@ -1,0 +1,86 @@
+{
+  "schema": "readmail-1c-v2",
+  "payload_profile": "standard",
+  "generated_at": "2026-06-17T13:40:13+00:00",
+  "event": "return_ready",
+  "case_id": 3055,
+  "buyer": {
+    "code": "avtoto_ru",
+    "name": "АВТОТО"
+  },
+  "claim": {
+    "kind": "defect",
+    "kind_label": "Брак",
+    "number": "1707023"
+  },
+  "document": {
+    "number": "83813",
+    "date": "15.06.2026",
+    "type": "УПД"
+  },
+  "items": [
+    {
+      "part_number": "P70VG052A",
+      "product_name": "Капот VW JETTA 11-13",
+      "quantity": 1
+    }
+  ],
+  "comment": null,
+  "flags": {
+    "defect_documents": {
+      "state": "absent",
+      "complete": false,
+      "install_order": false,
+      "removal_order": false,
+      "service_act": false,
+      "n_present": 0,
+      "source": "ai"
+    },
+    "has_photo": true,
+    "has_document": true,
+    "attachments_count": 5
+  },
+  "status": {
+    "state": "ready_to_1c",
+    "control_status": "ready_to_1c",
+    "priority": "normal",
+    "ready_for_export": true,
+    "needs_review": false
+  },
+  "text": {
+    "subject": "Новое сообщение по рекламации 1707023",
+    "body": "При оприходовании товара по накладной 83813 от 15.06.2026 установлены расхождения по заказу детали P70VG052A, Капот VW JETTA 11-13 в количестве 1. Причина обращения Дефект. Заказ отправлен до клиента, при отказе просьба подтвердить готовность принять возврат по данной позиции. Ознакомиться с рекламацией Вы можете, перейдя по ссылке — https://www.avtoto.ru/personnel_claim/1707023/208534782746389/"
+  },
+  "attachments": [
+    {
+      "filename": "avtoto_3779_0.jpg",
+      "type": "image/jpeg",
+      "size": 255275
+    },
+    {
+      "filename": "avtoto_3779_1.jpg",
+      "type": "image/jpeg",
+      "size": 178486
+    },
+    {
+      "filename": "avtoto_3779_2.jpg",
+      "type": "image/jpeg",
+      "size": 171915
+    },
+    {
+      "filename": "avtoto_3779_3.jpg",
+      "type": "image/jpeg",
+      "size": 663446
+    },
+    {
+      "filename": "avtoto_3779_4.jpg",
+      "type": "image/jpeg",
+      "size": 307705
+    }
+  ],
+  "source": {
+    "raw_email_id": 3779,
+    "message_id": "<202606161317.65GDHxIo003704@prod---managers-avtoto-ru.novalocal>",
+    "received_at": "2026-06-16T13:17:59+00:00"
+  }
+}

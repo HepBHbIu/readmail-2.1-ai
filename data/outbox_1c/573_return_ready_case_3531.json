@@ -1,0 +1,57 @@
+{
+  "schema": "readmail-1c-v2",
+  "payload_profile": "standard",
+  "generated_at": "2026-06-17T15:14:57+00:00",
+  "event": "return_ready",
+  "case_id": 3531,
+  "buyer": {
+    "code": "ixora_auto_ru",
+    "name": "Ixora Auto"
+  },
+  "claim": {
+    "kind": "quality_refusal",
+    "kind_label": "Отказ клиента",
+    "number": null
+  },
+  "document": {
+    "number": "83064",
+    "date": "03.06.2026",
+    "type": "УПД"
+  },
+  "items": [
+    {
+      "part_number": "PGL009",
+      "brand": "PATRON",
+      "quantity": 12
+    }
+  ],
+  "comment": "отказ от детали",
+  "flags": {
+    "has_photo": true,
+    "has_document": false,
+    "attachments_count": 1
+  },
+  "status": {
+    "state": "ready_to_1c",
+    "control_status": "ready_to_1c",
+    "priority": "high",
+    "ready_for_export": true,
+    "needs_review": false
+  },
+  "text": {
+    "subject": "Возврат товара 1360900/98480677",
+    "body": "Добрый день! Информируем Вас о возникшей необходимости вернуть ранее приобретенный товар: Бренд: PATRON Номер детали: PGL009 Количество: 12 Цена: 297,00 Номер документа: 83064 Дата документа 03.06.2026 0:00:00 Товар отправлен в филиал закупки для выдачи на возврат в Ваш адрес. Спасибо! TicketID: 1360900 [cid:logo.jpg]"
+  },
+  "attachments": [
+    {
+      "filename": "logo.jpg",
+      "type": "image/jpeg",
+      "size": 10995
+    }
+  ],
+  "source": {
+    "raw_email_id": 3880,
+    "message_id": "<207CC496D9B9214BBFAFA9B616EF9D150153999E83@exchangeserver.auto-iksora.ru>",
+    "received_at": "2026-06-15T05:36:18+00:00"
+  }
+}

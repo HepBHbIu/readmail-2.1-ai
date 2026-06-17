@@ -1,0 +1,64 @@
+{
+  "schema": "readmail-1c-v2",
+  "payload_profile": "standard",
+  "generated_at": "2026-06-17T13:40:12+00:00",
+  "event": "return_ready",
+  "case_id": 3022,
+  "buyer": {
+    "code": "auto_sputnik",
+    "name": "Авто-Спутник"
+  },
+  "claim": {
+    "kind": "quality_refusal",
+    "kind_label": "Отказ клиента",
+    "number": "00000232203"
+  },
+  "document": {
+    "number": "83281",
+    "date": "08.06.2026",
+    "type": "УПД"
+  },
+  "items": [
+    {
+      "part_number": "R24951NW",
+      "brand": "Motorherz",
+      "product_name": "Рулевая рейка с тягами гидравлическая (FORD S-Max 2006-, FORD Galaxy I",
+      "quantity": 1,
+      "price": 23829.0
+    }
+  ],
+  "comment": "Отказ клиента",
+  "flags": {
+    "has_photo": true,
+    "has_document": false,
+    "attachments_count": 2
+  },
+  "status": {
+    "state": "ready_to_1c",
+    "control_status": "ready_to_1c",
+    "priority": "high",
+    "ready_for_export": true,
+    "needs_review": false
+  },
+  "text": {
+    "subject": "Претензия №00000232203 от 15.06.2026 поставщику ООО \"ПИТСТОП\" КД МОСКВА по документу №83281 от 08.06.2026 0:00:00",
+    "body": "Уважаемый поставщик! При приёмке поступления по документу №83281 от 08.06.2026 0:00:00 создана претензия №00000232203 от 15.06.2026 № Артикул Производитель Номенклатура Количество заказано Цена заказано Количество инвойс Цена инвойс Количество Претензия Цена претензия Сумма претензия Причина претензии 1R24951NWMotorherzРулевая рейка с тягами гидравлическая (FORD S-Max 2006-, FORD Galaxy I123 829123 829123 82923 829Отказ клиента При ответе на это письмо оставляйте тему письма без изменения! При ответе на это письмо используйте кнопку 'ответить всем'! отдел закупок ООО \"Авто-Спутник импорт\" ОП Ростов-на-Дону Адрес: г. Ростов-на-Дону, ул. Доватора 146 Т tel.: +7 863 308 88 96 email:"
+  },
+  "attachments": [
+    {
+      "filename": "1_15062026120614.jpg",
+      "type": "image/jpeg",
+      "size": 42515
+    },
+    {
+      "filename": "2_15062026120615.jpg",
+      "type": "image/jpeg",
+      "size": 48862
+    }
+  ],
+  "source": {
+    "raw_email_id": 3746,
+    "message_id": "<0d73bf66-6259-4cf3-9d83-cc8be28208d3@auto-sputnik.ru>",
+    "received_at": "2026-06-15T09:21:01+00:00"
+  }
+}

@@ -1,0 +1,74 @@
+{
+  "schema": "readmail-1c-v2",
+  "payload_profile": "standard",
+  "generated_at": "2026-06-17T14:49:51+00:00",
+  "event": "return_ready",
+  "case_id": 3699,
+  "buyer": {
+    "code": "auto_sputnik",
+    "name": "Авто-Спутник"
+  },
+  "claim": {
+    "kind": "quality_refusal",
+    "kind_label": "Отказ клиента",
+    "number": "00000233000"
+  },
+  "document": {
+    "number": "83124",
+    "date": "04.06.2026",
+    "type": "УПД"
+  },
+  "items": [
+    {
+      "part_number": "AFV9338DD",
+      "brand": "Krauf",
+      "product_name": "Статор генератора",
+      "quantity": 1,
+      "price": 3684.0
+    }
+  ],
+  "comment": "Отказ клиента",
+  "flags": {
+    "has_photo": true,
+    "has_document": false,
+    "attachments_count": 4
+  },
+  "status": {
+    "state": "ready_to_1c",
+    "control_status": "ready_to_1c",
+    "priority": "medium",
+    "ready_for_export": true,
+    "needs_review": false
+  },
+  "text": {
+    "subject": "Претензия №00000233000 от 17.06.2026 поставщику ООО \"ПИТСТОП\" КД МОСКВА по документу №83124 от 04.06.2026 0:00:00",
+    "body": "Уважаемый поставщик! При приёмке поступления по документу №83124 от 04.06.2026 0:00:00 создана претензия №00000233000 от 17.06.2026 № Артикул Производитель Номенклатура Количество заказано Цена заказано Количество инвойс Цена инвойс Количество Претензия Цена претензия Сумма претензия Причина претензии 1AFV9338DDKraufСтатор генератора13 68413 68413 6843 684Отказ клиента При ответе на это письмо оставляйте тему письма без изменения! При ответе на это письмо используйте кнопку 'ответить всем'! отдел закупок ООО \"Авто-Спутник импорт\" ОП Ростов-на-Дону Адрес: г. Ростов-на-Дону, ул. Доватора 146 Т tel.: +7 863 308 88 96 email:"
+  },
+  "attachments": [
+    {
+      "filename": "1_17062026150642.jpg",
+      "type": "image/jpeg",
+      "size": 79077
+    },
+    {
+      "filename": "2_17062026150642.jpg",
+      "type": "image/jpeg",
+      "size": 50769
+    },
+    {
+      "filename": "3_17062026150642.jpg",
+      "type": "image/jpeg",
+      "size": 62576
+    },
+    {
+      "filename": "4_17062026150642.jpg",
+      "type": "image/jpeg",
+      "size": 50769
+    }
+  ],
+  "source": {
+    "raw_email_id": 4048,
+    "message_id": "<b3e916cf-9d28-4ceb-928e-2cd2a77c32f2@auto-sputnik.ru>",
+    "received_at": "2026-06-17T12:38:43+00:00"
+  }
+}

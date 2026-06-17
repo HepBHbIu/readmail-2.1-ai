@@ -1,0 +1,92 @@
+{
+  "schema": "readmail-1c-v2",
+  "payload_profile": "standard",
+  "generated_at": "2026-06-17T14:37:46+00:00",
+  "event": "return_ready",
+  "case_id": 3293,
+  "buyer": {
+    "code": "avtoformula",
+    "name": "Автоформула"
+  },
+  "claim": {
+    "kind": "defect",
+    "kind_label": "Брак",
+    "number": null
+  },
+  "document": {
+    "number": "80900",
+    "date": "11.05.2026",
+    "type": "УПД"
+  },
+  "items": [
+    {
+      "part_number": "EVC1291NF",
+      "brand": "KRAUF",
+      "product_name": "Крышка клапанная",
+      "quantity": 1
+    }
+  ],
+  "comment": "заводской брак",
+  "flags": {
+    "defect_documents": {
+      "state": "present_unverified",
+      "complete": false,
+      "install_order": false,
+      "removal_order": false,
+      "service_act": false,
+      "n_present": null,
+      "source": null
+    },
+    "has_photo": true,
+    "has_document": false,
+    "attachments_count": 6
+  },
+  "status": {
+    "state": "ready_to_1c",
+    "control_status": "ready_to_1c",
+    "priority": "medium",
+    "ready_for_export": true,
+    "needs_review": false
+  },
+  "text": {
+    "subject": "Запрос на возврат 1шт EVC1291NF ",
+    "body": "-- Добрый день По документу №80900 от 11.05.26. Описание: Заводской брак EVC1291NF KRAUF Крышка клапанная ref = 37087644"
+  },
+  "attachments": [
+    {
+      "filename": "image1 (3).jpeg",
+      "type": "image/jpeg",
+      "size": 99925
+    },
+    {
+      "filename": "image2 (1) (1).jpeg",
+      "type": "image/jpeg",
+      "size": 109829
+    },
+    {
+      "filename": "image3 (2).jpeg",
+      "type": "image/jpeg",
+      "size": 113013
+    },
+    {
+      "filename": "image4 (3).jpeg",
+      "type": "image/jpeg",
+      "size": 81333
+    },
+    {
+      "filename": "image5 (1).jpeg",
+      "type": "image/jpeg",
+      "size": 75015
+    },
+    {
+      "filename": "image6 (1).jpeg",
+      "type": "image/jpeg",
+      "size": 77211
+    }
+  ],
+  "source": {
+    "raw_email_id": 4017,
+    "message_id": "<595941781525410@mail.360.yandex.ru>",
+    "received_at": "2026-06-15T12:10:40+00:00"
+  }
+}

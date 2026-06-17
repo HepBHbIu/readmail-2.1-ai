@@ -1,0 +1,66 @@
+{
+  "schema": "readmail-1c-v2",
+  "payload_profile": "standard",
+  "generated_at": "2026-06-17T14:58:21+00:00",
+  "event": "return_ready",
+  "case_id": 3445,
+  "buyer": {
+    "code": "avtoto_ru",
+    "name": "АВТОТО"
+  },
+  "claim": {
+    "kind": "quality_refusal",
+    "kind_label": "Отказ клиента",
+    "number": "1467683"
+  },
+  "document": {
+    "number": "83173",
+    "date": "04.06.2026",
+    "type": "УПД"
+  },
+  "items": [
+    {
+      "part_number": "T38454",
+      "quantity": 1
+    }
+  ],
+  "comment": "отказ клиента",
+  "flags": {
+    "has_photo": true,
+    "has_document": false,
+    "attachments_count": 3
+  },
+  "status": {
+    "state": "ready_to_1c",
+    "control_status": "ready_to_1c",
+    "priority": "high",
+    "ready_for_export": true,
+    "needs_review": false
+  },
+  "text": {
+    "subject": "ДТА Запрос на возврат 1467683",
+    "body": "Добрый день! Просьба принять на возврат деталь Артикул *T38454* Накладная 83173 от *04.06.2026* Кол-во 1 шт. 3349.00 р Причина возврата — отказ клиента В случае возникновения вопросов после поступления данной детали к Вам на склад — Вам необходимо обратиться на почту vozvrat1@avtoto.ru ( http://e.mail.ru/compose/?mailto=mailto%3avozvrat1@avtoto.ru ), в теме письма указав номер запроса на возврат. -------------------------------------------------- С уважением, Сотрудник отдела рекламаций Оператор № 544 АвтоТО | www.avtoto.ru ( http://www.avtoto.ru ) Тел.: +7(495)374-88-88, доб. №544 E-mail: k-rekl@avtoto.ru ( http://e.mail.ru/compose/?mailto=mailto%3ak%2drekl@avtoto.ru )"
+  },
+  "attachments": [
+    {
+      "filename": "Aw1Q-W9HDIjUnwELZCIj_0-RHBZns74A4cHkRrIzFNrJfLS304OsWV6AbPOtYP1g2Dt_Tqr19bEXLFy75w0E_K1x.jpg",
+      "type": "image/jpeg",
+      "size": 698485
+    },
+    {
+      "filename": "ZK3YzrwGRUshBNg_MP5z0yezot-gbMsNDC7udI4wF3W5p9VP-DRja3u2c6RgTzVhOw4lW_HIgCZKftyJNbc_LPUy.jpg",
+      "type": "image/jpeg",
+      "size": 552094
+    },
+    {
+      "filename": "qU_1IOmlT9aep1l99czsKsGhPFNyYyviBpU5K5JglugeGYY-eYbp0wtVXSRjLIWWUrFwp_JzwzJlcbtnabDFPHm6.jpg",
+      "type": "image/jpeg",
+      "size": 587343
+    }
+  ],
+  "source": {
+    "raw_email_id": 3794,
+    "message_id": "<1781533021.710643777@f179.i.mail.ru>",
+    "received_at": "2026-06-15T14:17:01+00:00"
+  }
+}

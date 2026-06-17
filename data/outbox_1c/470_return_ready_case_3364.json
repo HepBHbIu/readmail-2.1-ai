@@ -1,0 +1,61 @@
+{
+  "schema": "readmail-1c-v2",
+  "payload_profile": "standard",
+  "generated_at": "2026-06-17T14:44:53+00:00",
+  "event": "return_ready",
+  "case_id": 3364,
+  "buyer": {
+    "code": "parterra_ru",
+    "name": "Партерра"
+  },
+  "claim": {
+    "kind": "nonconforming",
+    "kind_label": "Некондиция",
+    "number": null
+  },
+  "document": {
+    "number": "83976",
+    "date": "16.06.2026",
+    "type": "УПД"
+  },
+  "items": [
+    {
+      "part_number": "D-GD014",
+      "brand": "DASHI",
+      "product_name": "Рейка рулевая",
+      "quantity": 1
+    }
+  ],
+  "comment": "нетоварный вид упаковки",
+  "flags": {
+    "defect_documents": {
+      "state": "absent",
+      "complete": false,
+      "install_order": false,
+      "removal_order": false,
+      "service_act": false,
+      "n_present": null,
+      "source": null
+    },
+    "has_photo": true,
+    "has_document": true,
+    "attachments_count": 0
+  },
+  "status": {
+    "state": "ready_to_1c",
+    "control_status": "ready_to_1c",
+    "priority": "normal",
+    "ready_for_export": true,
+    "needs_review": false
+  },
+  "text": {
+    "subject": "НЕТОВАРНЫЙ ВИД УПАКОВКИ (Отмена при приемке) УПД  Москва ЦКД",
+    "body": "Добрый день! В УПД 83976 от 16.06.2026 была выписана позиция: D-GD014 Рейка рулевая SSANGYONG KORANDO C(C200) 4650034003 DASHI (восстан. деталь) DASHI в количестве 1 шт. Рваная упаковка Товар будет автоматически сформирован (далее отгружен) на возврат по причине НЕТОВАРНЫЙ ВИД УПАКОВКИ (Отмена при приемке), так как не соответствует стандартам Приемки и нашим договоренностям о поставке. Ниже фото товара (по ссылке): https://claim-transfer.parterra.ru/817fbbb8-6a0a-11f1-8160-005056879a3e/Img_17062026_123647.jpg https://claim-transfer.parterra.ru/817fbbb8-6a0a-11f1-8160-005056879a3e/Img_17062026_123702.jpg https://claim-transfer.parterra.ru/817fbbb8-6a0a-11f1-8160-005056879a3e/Img_17062026_123722.jpg С уважением, команда Гринлайт Тел.: 8 (495) 909-12-51"
+  },
+  "attachments": [],
+  "source": {
+    "raw_email_id": 3713,
+    "message_id": "<26a8c35b-2dc4-40b8-a87c-757dbc79793d@yandex.ru>",
+    "received_at": "2026-06-17T05:38:51+00:00"
+  }
+}

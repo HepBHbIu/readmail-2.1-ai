@@ -1,0 +1,56 @@
+{
+  "schema": "readmail-1c-v2",
+  "payload_profile": "standard",
+  "generated_at": "2026-06-17T14:49:21+00:00",
+  "event": "return_ready",
+  "case_id": 3709,
+  "buyer": {
+    "code": "autoeuro_ru",
+    "name": "Авто-Евро"
+  },
+  "claim": {
+    "kind": "quality_refusal",
+    "kind_label": "Отказ до поставки",
+    "number": "2978778"
+  },
+  "document": {
+    "number": null,
+    "date": null,
+    "type": null
+  },
+  "items": [
+    {
+      "part_number": "KSA909STD",
+      "brand": "KORTEX",
+      "product_name": "Амортизатор",
+      "quantity": 2
+    }
+  ],
+  "comment": "отказ конечного покупателя",
+  "flags": {
+    "has_photo": false,
+    "has_document": false,
+    "attachments_count": 0
+  },
+  "status": {
+    "state": "ready_to_1c",
+    "control_status": "ready_to_1c",
+    "priority": "medium",
+    "ready_for_export": true,
+    "needs_review": false
+  },
+  "text": {
+    "subject": "Авто-Евро #2978778. Запрос на возврат товара: KORTEX^KSA909STD",
+    "body": "Здравствуйте. Поступил запрос от клиента на возврат товара: Приходный документ: №82700 от 01.06.26 (АО \"Авто-Евро\") Товар: KORTEX / KSA909STD / Амортизатор HYUNDAI SOLARIS/KIA RIO 17- зад..газ. Количество: 2 Тип рекламации: Новый товар надлежащего качества Причина: Отказ конечного покупателя Комментарий: Просьба согласовать данный запрос. -- С Уважением, Отдел рекламаций компании Авто-Евро Тел.: +7(495)120-02-64 www.autoeuro.ru"
+  },
+  "attachments": [],
+  "source": {
+    "raw_email_id": 4058,
+    "message_id": "<86C3EE2A35924762A63E18CC6C6D130F@autoeuro.local>",
+    "received_at": "2026-06-17T13:04:46+00:00"
+  },
+  "pre_delivery_refusal": true,
+  "document_required": false,
+  "reason": "Отказ клиента до поставки",
+  "operator_attention": true
+}

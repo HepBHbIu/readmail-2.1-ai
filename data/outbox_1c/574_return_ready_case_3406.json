@@ -1,0 +1,52 @@
+{
+  "schema": "readmail-1c-v2",
+  "payload_profile": "standard",
+  "generated_at": "2026-06-17T15:19:49+00:00",
+  "event": "return_ready",
+  "case_id": 3406,
+  "buyer": {
+    "code": "autoeuro_ru",
+    "name": "Авто-Евро"
+  },
+  "claim": {
+    "kind": "quality_refusal",
+    "kind_label": "Отказ клиента",
+    "number": null
+  },
+  "document": {
+    "number": "83274",
+    "date": "08.06.2026",
+    "type": "УПД"
+  },
+  "items": [
+    {
+      "part_number": "RN27002",
+      "brand": "JIKIU",
+      "product_name": "Рычаг задний поперечный",
+      "quantity": 2
+    }
+  ],
+  "comment": "отказ клиента",
+  "flags": {
+    "has_photo": true,
+    "has_document": true,
+    "attachments_count": 0
+  },
+  "status": {
+    "state": "ready_to_1c",
+    "control_status": "ready_to_1c",
+    "priority": "critical",
+    "ready_for_export": true,
+    "needs_review": false
+  },
+  "text": {
+    "subject": "Авто-Евро #2977199. Запрос на возврат товара: Jikiu^RN27002",
+    "body": "Здравствуйте. Поступил запрос от клиента на возврат товара: Приходный документ: №83274 от 08.06.26 (АО \"Авто-Евро\") Товар: JIKIU / RN27002 / Рычаг задний поперечный Количество: 2 Тип рекламации: Новый товар надлежащего качества Причина: Отказ конечного покупателя Комментарий: отказ клиента Ссылки на прикрепленные файлы: https://minio.dev-k8s.autoeuro.ru/pub/reclamation-photos/cS9jtbVJ5nAGo9XPp9chcgNZCvLW4iopBCItvyDH.jpg https://minio.dev-k8s.autoeuro.ru/pub/reclamation-photos/qHOQmsQCWFP3Eko7mmmqwdOkQttrirY9RU1ADLAx.jpg https://minio.dev-k8s.autoeuro.ru/pub/reclamation-photos/cti9SyGw5de31eZGajyvicxXmCrewRoZlszjSAqd.jpg Просьба согласовать данный запрос. -- С Уважением, Отдел рекламаций компании Авто-Евро Тел.: +7(495)120-02-64 www.autoeuro.ru"
+  },
+  "attachments": [],
+  "source": {
+    "raw_email_id": 3755,
+    "message_id": "<712177DC804A4ACF9207C8968377DA90@autoeuro.local>",
+    "received_at": "2026-06-16T08:03:55+00:00"
+  }
+}

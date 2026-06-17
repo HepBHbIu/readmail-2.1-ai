@@ -1,0 +1,103 @@
+{
+  "schema": "readmail-1c-v2",
+  "payload_profile": "standard",
+  "generated_at": "2026-06-17T15:09:51+00:00",
+  "event": "return_ready",
+  "case_id": 3657,
+  "buyer": {
+    "code": "avtoformula",
+    "name": "Автоформула"
+  },
+  "claim": {
+    "kind": "defect",
+    "kind_label": "Брак",
+    "number": null
+  },
+  "document": {
+    "number": "79145",
+    "date": "20.04.2026",
+    "type": "УПД"
+  },
+  "items": [
+    {
+      "part_number": "RV3530B",
+      "brand": "UTM",
+      "product_name": "Регулятор генератора",
+      "quantity": 1
+    }
+  ],
+  "comment": "нет тока на генератор",
+  "flags": {
+    "has_photo": true,
+    "has_document": false,
+    "attachments_count": 10
+  },
+  "status": {
+    "state": "ready_to_1c",
+    "control_status": "ready_to_1c",
+    "priority": "normal",
+    "ready_for_export": true,
+    "needs_review": false
+  },
+  "text": {
+    "subject": "Запрос на возврат 1шт RV3530B ",
+    "body": "-- Добрый день По документу 79145 от 20.04.26. Описание: После установки на генератор регулятора, нет тока на генератор. RV3530B UTM Регулятор генератора ref = 36753718"
+  },
+  "attachments": [
+    {
+      "filename": "PHOTO-2026-06-16-14-25-21 (1) (1).jpg",
+      "type": "image/jpeg",
+      "size": 219308
+    },
+    {
+      "filename": "PHOTO-2026-06-16-14-25-21 (4).jpg",
+      "type": "image/jpeg",
+      "size": 191694
+    },
+    {
+      "filename": "PHOTO-2026-06-16-14-25-21 (5) (1).jpg",
+      "type": "image/jpeg",
+      "size": 201040
+    },
+    {
+      "filename": "PHOTO-2026-06-16-14-25-21 (3) (1).jpg",
+      "type": "image/jpeg",
+      "size": 199848
+    },
+    {
+      "filename": "PHOTO-2026-06-16-14-25-21 (2) (1).jpg",
+      "type": "image/jpeg",
+      "size": 240696
+    },
+    {
+      "filename": "PHOTO-2026-06-16-14-25-21 (5).jpg",
+      "type": "image/jpeg",
+      "size": 201040
+    },
+    {
+      "filename": "PHOTO-2026-06-16-14-25-21.jpg",
+      "type": "image/jpeg",
+      "size": 191694
+    },
+    {
+      "filename": "PHOTO-2026-06-16-14-25-21 (1).jpg",
+      "type": "image/jpeg",
+      "size": 219308
+    },
+    {
+      "filename": "PHOTO-2026-06-16-14-25-21 (3).jpg",
+      "type": "image/jpeg",
+      "size": 199848
+    },
+    {
+      "filename": "PHOTO-2026-06-16-14-25-21 (2).jpg",
+      "type": "image/jpeg",
+      "size": 240696
+    }
+  ],
+  "source": {
+    "raw_email_id": 4006,
+    "message_id": "<19361781614805@mail.360.yandex.ru>",
+    "received_at": "2026-06-16T13:01:25+00:00"
+  }
+}

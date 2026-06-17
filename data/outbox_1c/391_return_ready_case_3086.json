@@ -1,0 +1,66 @@
+{
+  "schema": "readmail-1c-v2",
+  "payload_profile": "standard",
+  "generated_at": "2026-06-17T13:40:14+00:00",
+  "event": "return_ready",
+  "case_id": 3086,
+  "buyer": {
+    "code": "avtoto_ru",
+    "name": "АВТОТО"
+  },
+  "claim": {
+    "kind": "quality_refusal",
+    "kind_label": "Отказ клиента",
+    "number": null
+  },
+  "document": {
+    "number": "82689",
+    "date": "01.06.2026",
+    "type": "УПД"
+  },
+  "items": [
+    {
+      "part_number": "KA04024BA",
+      "quantity": 1
+    }
+  ],
+  "comment": "отказ клиента",
+  "flags": {
+    "has_photo": true,
+    "has_document": false,
+    "attachments_count": 3
+  },
+  "status": {
+    "state": "ready_to_1c",
+    "control_status": "ready_to_1c",
+    "priority": "high",
+    "ready_for_export": true,
+    "needs_review": false
+  },
+  "text": {
+    "subject": "ТМС  Запрос на возврат 1467109",
+    "body": "Добрый день! Просьба принять на возврат деталь Артикул *KA04024BA* Накладная 82689 от 01.06.2026 Кол-во 1 шт Причина возврата — отказ клиента В случае возникновения вопросов после поступления данной детали к Вам на склад — Вам необходимо обратиться на почту vozvrat1@avtoto.ru ( http://e.mail.ru/compose/?mailto=mailto%3avozvrat1@avtoto.ru ), в теме письма указав номер запроса на возврат. -------------------------------------------------- С уважением, Сотрудник отдела рекламаций Оператор № 704 АвтоТО | www.avtoto.ru ( http://www.avtoto.ru ) Тел.: +7(495)374-88-88, доб. №704 E-mail: k-rekl@avtoto.ru ( http://e.mail.ru/compose/?mailto=mailto%3ak%2drekl@avtoto.ru )"
+  },
+  "attachments": [
+    {
+      "filename": "3(1).jpg",
+      "type": "image/jpeg",
+      "size": 275889
+    },
+    {
+      "filename": "2(1).jpg",
+      "type": "image/jpeg",
+      "size": 326181
+    },
+    {
+      "filename": "1(1).jpg",
+      "type": "image/jpeg",
+      "size": 315817
+    }
+  ],
+  "source": {
+    "raw_email_id": 3810,
+    "message_id": "<1781512441.936554484@f532.i.mail.ru>",
+    "received_at": "2026-06-15T08:34:01+00:00"
+  }
+}

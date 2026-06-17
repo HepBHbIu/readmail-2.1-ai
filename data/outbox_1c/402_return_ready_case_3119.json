@@ -1,0 +1,78 @@
+{
+  "schema": "readmail-1c-v2",
+  "payload_profile": "standard",
+  "generated_at": "2026-06-17T13:40:14+00:00",
+  "event": "return_ready",
+  "case_id": 3119,
+  "buyer": {
+    "code": "ixora_auto_ru",
+    "name": "Ixora Auto"
+  },
+  "claim": {
+    "kind": "quality_refusal",
+    "kind_label": "Отказ клиента",
+    "number": "98694226"
+  },
+  "document": {
+    "number": "83927",
+    "date": "15.06.2026",
+    "type": "УПД"
+  },
+  "items": [
+    {
+      "part_number": "2211FBATLH",
+      "brand": "FEBEST",
+      "product_name": "Шрус приводной",
+      "quantity": 1
+    }
+  ],
+  "comment": "отказ от детали в товарном виде",
+  "flags": {
+    "has_photo": true,
+    "has_document": false,
+    "attachments_count": 5
+  },
+  "status": {
+    "state": "ready_to_1c",
+    "control_status": "ready_to_1c",
+    "priority": "medium",
+    "ready_for_export": true,
+    "needs_review": false
+  },
+  "text": {
+    "subject": "запрос на возврат 98694226 ",
+    "body": "Добрый день! отказ от детали в товарном виде, прошу согласовать. 98694226<javascript:%20PositionHistory('98694226');> FEBEST 2211FBATLH<javascript:NewDetailSearch('2211FBATLH');> шрус приводной 15/06 - ориентировоч... Покупателя Оферты № ОФ-1 от 01.06.2025 ООО \"ИКСОРА-ТРЕЙД\" (БЕЗНАЛ) (RUR) PITSTOP AVT PITSTOP 1 15.06.2026 Номер счета- фактуры: 83927 С уважением,Зальцман Наталья Менеджер претензионного отдела Компания IXORA тел.: +7 (831) 4-290-290 доб.459 e-mail: nazaltsman@ixora-auto.ru<mailto:nazaltsman@ixora-auto.ru> web: ixora-auto.ru<https://ixora-auto.ru/> [1] [0] [4]<https://vk.com/ixora_company> [5] <https://t.me/ixoraauto> [6] <https://vk.com/iberisrus?from=search>"
+  },
+  "attachments": [
+    {
+      "filename": "image002.png",
+      "type": "image/png",
+      "size": 7460
+    },
+    {
+      "filename": "image004.png",
+      "type": "image/png",
+      "size": 4034
+    },
+    {
+      "filename": "image006.png",
+      "type": "image/png",
+      "size": 1536
+    },
+    {
+      "filename": "image008.png",
+      "type": "image/png",
+      "size": 1418
+    },
+    {
+      "filename": "image010.png",
+      "type": "image/png",
+      "size": 1677
+    }
+  ],
+  "source": {
+    "raw_email_id": 3843,
+    "message_id": "<EC024212127726418947598ED72607C00153CC90BC@exchangeserver.auto-iksora.ru>",
+    "received_at": "2026-06-16T10:11:37+00:00"
+  }
+}

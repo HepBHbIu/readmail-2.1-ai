@@ -1,0 +1,52 @@
+{
+  "schema": "readmail-1c-v2",
+  "payload_profile": "standard",
+  "generated_at": "2026-06-17T13:40:14+00:00",
+  "event": "return_ready",
+  "case_id": 3093,
+  "buyer": {
+    "code": "favorit_parts_ru",
+    "name": "Фаворит Parts"
+  },
+  "claim": {
+    "kind": "quality_refusal",
+    "kind_label": "Отказ клиента",
+    "number": "10180121"
+  },
+  "document": {
+    "number": "81873",
+    "date": "21.05.2026",
+    "type": "УПД"
+  },
+  "items": [
+    {
+      "part_number": "TT-P4094",
+      "brand": "PILENGA",
+      "product_name": "Термостат",
+      "quantity": 1
+    }
+  ],
+  "comment": "отказ",
+  "flags": {
+    "has_photo": false,
+    "has_document": false,
+    "attachments_count": 0
+  },
+  "status": {
+    "state": "ready_to_1c",
+    "control_status": "ready_to_1c",
+    "priority": "medium",
+    "ready_for_export": true,
+    "needs_review": false
+  },
+  "text": {
+    "subject": "(15 ДМД) Заявка на возврат поставщику № 10180121 от 15 июня 2026",
+    "body": "Добрый День! Заявка на возврат поставщику 10180121 от 15.06.2026 17:16:33 на общую сумму 1 281 р.: 1. 81873 от 21 мая 2026 Отказ PILENGA TT-P4094 Термостат Количество - 1 шт. Примите у нас данный возврат. Жду от Вас ответ в ближайшее время. Спасибо."
+  },
+  "attachments": [],
+  "source": {
+    "raw_email_id": 3817,
+    "message_id": "<c55e2dda-6dd2-44ba-ae6c-871ed46fb416@favorit-parts.ru>",
+    "received_at": "2026-06-15T14:35:37+00:00"
+  }
+}

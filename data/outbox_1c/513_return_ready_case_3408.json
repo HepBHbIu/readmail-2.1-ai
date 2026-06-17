@@ -1,0 +1,73 @@
+{
+  "schema": "readmail-1c-v2",
+  "payload_profile": "standard",
+  "generated_at": "2026-06-17T14:54:20+00:00",
+  "event": "return_ready",
+  "case_id": 3408,
+  "buyer": {
+    "code": "autoeuro_ru",
+    "name": "Авто-Евро"
+  },
+  "claim": {
+    "kind": "defect",
+    "kind_label": "Брак",
+    "number": null
+  },
+  "document": {
+    "number": "0006877422",
+    "date": "15.06.2026",
+    "type": "УПД"
+  },
+  "items": [
+    {
+      "part_number": "9976358250",
+      "brand": "DENSO",
+      "product_name": "Масло Компрессорное DENSO ND-Oil 8 0.25л",
+      "quantity": 1
+    },
+    {
+      "part_number": "1987479201",
+      "brand": "BOSCH",
+      "product_name": "Тормозная жидкость env4 0.5 l",
+      "quantity": 10
+    },
+    {
+      "part_number": "213756",
+      "brand": "TOTAL",
+      "product_name": "Масло Гидравлическое TOTAL Fluide DA Синтетическое 1л",
+      "quantity": 3
+    }
+  ],
+  "comment": "Брак. Расхождение по дате",
+  "flags": {
+    "defect_documents": {
+      "state": "absent",
+      "complete": false,
+      "install_order": false,
+      "removal_order": false,
+      "service_act": false,
+      "n_present": null,
+      "source": null
+    },
+    "has_photo": false,
+    "has_document": false,
+    "attachments_count": 0
+  },
+  "status": {
+    "state": "ready_to_1c",
+    "control_status": "ready_to_1c",
+    "priority": "normal",
+    "ready_for_export": true,
+    "needs_review": false
+  },
+  "text": {
+    "subject": "АО «Авто-Евро»: УПД 0006877422. Возврат поставки",
+    "body": "Уведомление Здравствуйте! При приемке товара по документу №83816 от 2026-06-15 нами были выявлены следующие нарушения: Бренд: | DENSO Артикул: | 9976358250 Товар: | Масло Компрессорное DENSO ND-Oil 8 0.25л. Кол-во: | 1 Комментарий: | Брак. Не смогли расшифровать дату . Расхождение по дате. Фото: | Бренд: | BOSCH Артикул: | 1987479201 Товар: | Тормозная жидкость env4 0.5 l Кол-во: | 10 Комментарий: | Брак. Расхождение по дате с ЧЗ Фото: | Бренд: | TOTAL Артикул: | 213756 Товар: | Масло Гидравлическое TOTAL Fluide DA Синтетическое 1л. Кол-во: | 3 Комментарий: | Брак. Расхождение по дате с ЧЗ, Расхождения по дате сЧЗ Фото: | Приходная накладная №0006877422 Детали с указанными дефектами забракованы при приемке. Необходимо забрать товар с ближайшей поставкой. Если у вас возникнут вопросы, пожалуйста, свяжитесь с нами. С уважением, компания Авто-Евро 51905623"
+  },
+  "attachments": [],
+  "source": {
+    "raw_email_id": 3757,
+    "message_id": "<acbc671835f1c08a38d1916e0a681467@autoeuro.ru>",
+    "received_at": "2026-06-15T18:40:03+00:00"
+  }
+}

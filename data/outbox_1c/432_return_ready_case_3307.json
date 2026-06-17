@@ -1,0 +1,60 @@
+{
+  "schema": "readmail-1c-v2",
+  "payload_profile": "standard",
+  "generated_at": "2026-06-17T13:40:23+00:00",
+  "event": "return_ready",
+  "case_id": 3307,
+  "buyer": {
+    "code": "avtoto_ru",
+    "name": "АВТОТО"
+  },
+  "claim": {
+    "kind": "defect",
+    "kind_label": "Брак",
+    "number": "1707302"
+  },
+  "document": {
+    "number": "83813",
+    "date": "15.06.2026",
+    "type": "УПД"
+  },
+  "items": [
+    {
+      "part_number": "P71VG043AL",
+      "product_name": "Крыло кузова передн лев VW PASSAT B6 06-10",
+      "quantity": 1
+    }
+  ],
+  "comment": null,
+  "flags": {
+    "defect_documents": {
+      "state": "absent",
+      "complete": false,
+      "install_order": false,
+      "removal_order": false,
+      "service_act": false,
+      "n_present": null,
+      "source": null
+    },
+    "has_photo": false,
+    "has_document": true,
+    "attachments_count": 0
+  },
+  "status": {
+    "state": "ready_to_1c",
+    "control_status": "ready_to_1c",
+    "priority": "normal",
+    "ready_for_export": true,
+    "needs_review": false
+  },
+  "text": {
+    "subject": "Новое сообщение по рекламации 1707302",
+    "body": "При оприходовании товара по накладной 83813 от 15.06.2026 установлены расхождения по заказу детали P71VG043AL, Крыло кузова передн лев VW PASSAT B6 06-10 в количестве 1. Причина обращения Дефект. Заказ отправлен до клиента, при отказе просьба подтвердить готовность принять возврат по данной позиции. Ознакомиться с рекламацией Вы можете, перейдя по ссылке — https://www.avtoto.ru/personnel_claim/1707302/208585418472476/"
+  },
+  "attachments": [],
+  "source": {
+    "raw_email_id": 4031,
+    "message_id": "<202606171200.65HC0RTG001536@prod---managers-avtoto-ru.novalocal>",
+    "received_at": "2026-06-17T12:00:27+00:00"
+  }
+}

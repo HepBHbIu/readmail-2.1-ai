@@ -1,0 +1,60 @@
+{
+  "schema": "readmail-1c-v2",
+  "payload_profile": "standard",
+  "generated_at": "2026-06-17T13:40:23+00:00",
+  "event": "return_ready",
+  "case_id": 3306,
+  "buyer": {
+    "code": "avtoto_ru",
+    "name": "АВТОТО"
+  },
+  "claim": {
+    "kind": "defect",
+    "kind_label": "Брак",
+    "number": "1707285"
+  },
+  "document": {
+    "number": "83813",
+    "date": "15.06.2026",
+    "type": "УПД"
+  },
+  "items": [
+    {
+      "part_number": "5052582",
+      "product_name": "Арка крыла задн прав",
+      "quantity": 1
+    }
+  ],
+  "comment": null,
+  "flags": {
+    "defect_documents": {
+      "state": "absent",
+      "complete": false,
+      "install_order": false,
+      "removal_order": false,
+      "service_act": false,
+      "n_present": null,
+      "source": null
+    },
+    "has_photo": false,
+    "has_document": true,
+    "attachments_count": 0
+  },
+  "status": {
+    "state": "ready_to_1c",
+    "control_status": "ready_to_1c",
+    "priority": "normal",
+    "ready_for_export": true,
+    "needs_review": false
+  },
+  "text": {
+    "subject": "Новое сообщение по рекламации 1707285",
+    "body": "При оприходовании товара по накладной 83813 от 15.06.2026 установлены расхождения по заказу детали 5052582, Арка крыла задн прав Opel - Astra H 03.04-09 5дв в количестве 1. Причина обращения Дефект. Заказ отправлен до клиента, при отказе просьба подтвердить готовность принять возврат по данной позиции. Ознакомиться с рекламацией Вы можете, перейдя по ссылке — https://www.avtoto.ru/personnel_claim/1707285/208575754364790/"
+  },
+  "attachments": [],
+  "source": {
+    "raw_email_id": 4030,
+    "message_id": "<202606171209.65HC9F13003451@prod---managers-avtoto-ru.novalocal>",
+    "received_at": "2026-06-17T12:09:15+00:00"
+  }
+}

@@ -1,0 +1,52 @@
+{
+  "schema": "readmail-1c-v2",
+  "payload_profile": "standard",
+  "generated_at": "2026-06-17T14:52:46+00:00",
+  "event": "return_ready",
+  "case_id": 3403,
+  "buyer": {
+    "code": "autoeuro_ru",
+    "name": "Авто-Евро"
+  },
+  "claim": {
+    "kind": "quality_refusal",
+    "kind_label": "Отказ клиента",
+    "number": null
+  },
+  "document": {
+    "number": "83973",
+    "date": "16.06.2026",
+    "type": "УПД"
+  },
+  "items": [
+    {
+      "part_number": "GC00071",
+      "brand": "MILES",
+      "product_name": "Приводной вал",
+      "quantity": 1
+    }
+  ],
+  "comment": "клиент отказался",
+  "flags": {
+    "has_photo": false,
+    "has_document": false,
+    "attachments_count": 0
+  },
+  "status": {
+    "state": "ready_to_1c",
+    "control_status": "ready_to_1c",
+    "priority": "medium",
+    "ready_for_export": true,
+    "needs_review": false
+  },
+  "text": {
+    "subject": "АО «Авто-Евро»: Запрос на возврат. Клиент отказался. Док. №83973",
+    "body": "Уведомление Здравствуйте! Мы получили отказ от клиента на заказанный у вас товар. Бренд: | MILES Артикул: | GC00071 Товар: | Приводной вал Кол-во: | 1 Комментарий: | УПД №83973 от 2026-06-16 Приходная накладная №0006882088 Товар не отгружался клиенту. Просьба рассмотреть возможность возврата. С уважением, компания Авто-Евро 51930170"
+  },
+  "attachments": [],
+  "source": {
+    "raw_email_id": 3752,
+    "message_id": "<25740420f87447c0afbcd75d0a7d8472@autoeuro.ru>",
+    "received_at": "2026-06-16T19:50:03+00:00"
+  }
+}

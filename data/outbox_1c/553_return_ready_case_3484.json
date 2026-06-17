@@ -1,0 +1,68 @@
+{
+  "schema": "readmail-1c-v2",
+  "payload_profile": "standard",
+  "generated_at": "2026-06-17T15:05:59+00:00",
+  "event": "return_ready",
+  "case_id": 3484,
+  "buyer": {
+    "code": "ixora_auto_ru",
+    "name": "Ixora Auto"
+  },
+  "claim": {
+    "kind": "quality_refusal",
+    "kind_label": "Отказ клиента",
+    "number": null
+  },
+  "document": {
+    "number": "82560",
+    "date": "28.05.2026",
+    "type": "УПД"
+  },
+  "items": [
+    {
+      "part_number": "PH4204",
+      "brand": "PATRON",
+      "product_name": "патрубок воздуховода",
+      "quantity": 1
+    }
+  ],
+  "comment": "отказ клиента",
+  "flags": {
+    "has_photo": true,
+    "has_document": false,
+    "attachments_count": 3
+  },
+  "status": {
+    "state": "ready_to_1c",
+    "control_status": "ready_to_1c",
+    "priority": "medium",
+    "ready_for_export": true,
+    "needs_review": false
+  },
+  "text": {
+    "subject": "запрос в ПИТСТОП",
+    "body": "Добрый день Просим возврат Отказ клиента Заказ №PITSTOP-683 от 27.05.2026 PITSTOP (340975) отгрузка через офис \"IXORA \"К.Маркса\"\" 98333920<javascript:%20PositionHistory('98333920');> PATRON PH4204<javascript:NewDetailSearch('PH4204');> патрубок воздуховода Покупателя Оферты № 2 от 01.06.2025 ООО \"ИКСОРА-ТРЕЙД\" (НАЛ) (RUR) PITSTOP AVT PITSTOP 1 К ВЫДАЧЕ (IXORA \"К.Маркса\")<javascript:> 31.05.2026 29.05.2026 1 1 1 0 770,00 Дата счета- фактуры: 28.05.2026 Номер счета- фактуры: 82560 [cid:image001.png@01D433B2.3E164870] С уважением, Маслова Ольга Менеджер претензионного отдела Компания IXORA тел.: +7 (831) 4-290-290 доб. 463 web: www.ixora-auto.ru<http://www.ixora-auto.ru/> [cid:image002.gif@01D433B2.3E164870]<https://vk.com/ixora_company> [cid:image006.gif@01D433B2.3E164870] <https://www.youtube.com/channel/UChbMLbCY3CmppcP2m36lNBw>"
+  },
+  "attachments": [
+    {
+      "filename": "image001.png",
+      "type": "image/png",
+      "size": 29376
+    },
+    {
+      "filename": "image002.gif",
+      "type": "image/gif",
+      "size": 1354
+    },
+    {
+      "filename": "image003.gif",
+      "type": "image/gif",
+      "size": 1754
+    }
+  ],
+  "source": {
+    "raw_email_id": 3833,
+    "message_id": "<F539917639F58040B1AAD4EC2EFD02DA020680A2DA@exchangeserver.auto-iksora.ru>",
+    "received_at": "2026-06-16T15:15:27+00:00"
+  }
+}

@@ -1,0 +1,16 @@
+=== ГРАБЕР avtoto: 90с, страниц к захвату: 12. ВЫКЛЮЧАЙ VPN! ===
+[00s] попытка 1: HTTP 403 (ждём выключения VPN…)
+[03s] ✅ Окно открылось! Хватаю 12 страниц…
+  • письмо 3813: поля={'part_number': 'KPH1174YU', 'document_number': '83068', 'document_date': '03.06.2026', 'quantity': '1', 'comment': 'Некондиция'} | фото на стр=15 | привязано=15
+  • письмо 3808: поля={'part_number': 'SP2933', 'document_number': '82831', 'document_date': '01.06.2026', 'quantity': '1'} | фото на стр=0 | привязано=0
+  • письмо 3801: поля={'part_number': 'P70MZ060A', 'document_number': '83759', 'document_date': '11.06.2026', 'quantity': '1', 'comment': 'Дефект'} | фото на стр=6 | привязано=6
+  • письмо 3800: поля={'part_number': 'AD10008BL', 'document_number': '83759', 'document_date': '11.06.2026', 'quantity': '1', 'comment': 'Дефект'} | фото на стр=4 | привязано=4
+  • письмо 3798: поля={'part_number': 'CL0618', 'document_number': '82689', 'document_date': '01.06.2026', 'quantity': '2'} | фото на стр=4 | привязано=4
+  • письмо 3787: поля={'part_number': 'EXEED0W201', 'document_number': '83173', 'document_date': '04.06.2026', 'quantity': '1'} | фото на стр=2 | привязано=2
+  • письмо 3786: поля={'part_number': 'RRB0017PG', 'document_number': '83173', 'document_date': '04.06.2026', 'quantity': '1'} | фото на стр=0 | привязано=0
+  • письмо 3784: поля={'part_number': 'TY20157A', 'document_number': '83813', 'document_date': '15.06.2026', 'quantity': '1', 'comment': 'Некондиция'} | фото на стр=5 | привязано=5
+  • письмо 3781: поля={'part_number': 'P722885AL', 'document_number': '83813', 'document_date': '15.06.2026', 'quantity': '1', 'comment': 'Дефект'} | фото на стр=4 | привязано=4
+  • письмо 3779: поля={'part_number': 'P70VG052A', 'document_number': '83813', 'document_date': '15.06.2026', 'quantity': '1', 'comment': 'Дефект'} | фото на стр=5 | привязано=5
+  • письмо 3778: поля={'part_number': 'AZ0204A', 'document_number': '83759', 'document_date': '11.06.2026', 'quantity': '1'} | фото на стр=3 | привязано=3
+  • письмо 3777: поля={'part_number': 'P70VG052A', 'document_number': '83813', 'document_date': '15.06.2026', 'quantity': '1', 'comment': 'Дефект'} | фото на стр=5 | привязано=5
+=== ГОТОВО: страниц 12/12, фото привязано 53. ВКЛЮЧАЙ VPN! ===

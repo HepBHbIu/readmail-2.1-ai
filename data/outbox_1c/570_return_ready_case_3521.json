@@ -1,0 +1,57 @@
+{
+  "schema": "readmail-1c-v2",
+  "payload_profile": "standard",
+  "generated_at": "2026-06-17T15:13:25+00:00",
+  "event": "return_ready",
+  "case_id": 3521,
+  "buyer": {
+    "code": "ixora_auto_ru",
+    "name": "Ixora Auto"
+  },
+  "claim": {
+    "kind": "quality_refusal",
+    "kind_label": "Отказ клиента",
+    "number": null
+  },
+  "document": {
+    "number": "83790",
+    "date": "12.06.2026",
+    "type": "УПД"
+  },
+  "items": [
+    {
+      "part_number": "PH2549",
+      "brand": "PATRON",
+      "quantity": 1
+    }
+  ],
+  "comment": "отказ от детали",
+  "flags": {
+    "has_photo": true,
+    "has_document": false,
+    "attachments_count": 1
+  },
+  "status": {
+    "state": "ready_to_1c",
+    "control_status": "ready_to_1c",
+    "priority": "high",
+    "ready_for_export": true,
+    "needs_review": false
+  },
+  "text": {
+    "subject": "Возврат товара 1361061/98704680",
+    "body": "Добрый день! Информируем Вас о возникшей необходимости вернуть ранее приобретенный товар: Бренд: PATRON Номер детали: PH2549 Количество: 1 Цена: 2614,00 Номер документа: 83790 Дата документа 12.06.2026 0:00:00 Товар отправлен в филиал закупки для выдачи на возврат в Ваш адрес. Спасибо! TicketID: 1361061 [cid:logo.jpg]"
+  },
+  "attachments": [
+    {
+      "filename": "logo.jpg",
+      "type": "image/jpeg",
+      "size": 10995
+    }
+  ],
+  "source": {
+    "raw_email_id": 3870,
+    "message_id": "<207CC496D9B9214BBFAFA9B616EF9D15015399B015@exchangeserver.auto-iksora.ru>",
+    "received_at": "2026-06-15T07:15:08+00:00"
+  }
+}

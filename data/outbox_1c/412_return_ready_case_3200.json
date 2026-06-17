@@ -1,0 +1,61 @@
+{
+  "schema": "readmail-1c-v2",
+  "payload_profile": "standard",
+  "generated_at": "2026-06-17T13:40:17+00:00",
+  "event": "return_ready",
+  "case_id": 3200,
+  "buyer": {
+    "code": "parterra_ru",
+    "name": "Партерра"
+  },
+  "claim": {
+    "kind": "nonconforming",
+    "kind_label": "Некондиция",
+    "number": null
+  },
+  "document": {
+    "number": "83825",
+    "date": "15.06.2026",
+    "type": "УПД"
+  },
+  "items": [
+    {
+      "part_number": "4414004LLDUE",
+      "brand": "Depo",
+      "product_name": "Фонарь задний в бампер левый",
+      "quantity": 1
+    }
+  ],
+  "comment": "механические повреждения",
+  "flags": {
+    "defect_documents": {
+      "state": "absent",
+      "complete": false,
+      "install_order": false,
+      "removal_order": false,
+      "service_act": false,
+      "n_present": null,
+      "source": null
+    },
+    "has_photo": true,
+    "has_document": true,
+    "attachments_count": 0
+  },
+  "status": {
+    "state": "ready_to_1c",
+    "control_status": "ready_to_1c",
+    "priority": "normal",
+    "ready_for_export": true,
+    "needs_review": false
+  },
+  "text": {
+    "subject": " НЕКОНДИЦИЯ (Отмена при приемке) УПД  Москва ЦКД",
+    "body": "Добрый день! В УПД 83825 от 15.06.2026 была выписана позиция с механическими повреждениями: 4414004LLDUE TOUAREG 11- ФОНАРЬ ЗАДН В БАМПЕР ЛЕВ () Depo в количестве 1 шт. Товар будет автоматически сформирован (далее отгружен) на возврат по причине НЕКОНДИЦИЯ (Отмена при приемке), так как не соответствует стандартам Приемки и нашим договоренностям о поставке. Ниже фото товара (по ссылке): https://claim-transfer.parterra.ru/51b1fa99-6961-11f1-8160-005056879a3e/Img_16062026_155712.jpg https://claim-transfer.parterra.ru/51b1fa99-6961-11f1-8160-005056879a3e/Img_16062026_155727.jpg С уважением, команда Гринлайт Тел.: 8 (383) 359-61-73"
+  },
+  "attachments": [],
+  "source": {
+    "raw_email_id": 3924,
+    "message_id": "<87752eeb-8e3e-4f0b-9f73-5882e4ac48bc@yandex.ru>",
+    "received_at": "2026-06-16T08:57:48+00:00"
+  }
+}

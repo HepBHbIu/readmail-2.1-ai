@@ -1,0 +1,86 @@
+{
+  "schema": "readmail-1c-v2",
+  "payload_profile": "standard",
+  "generated_at": "2026-06-17T13:40:13+00:00",
+  "event": "return_ready",
+  "case_id": 3060,
+  "buyer": {
+    "code": "avtoto_ru",
+    "name": "АВТОТО"
+  },
+  "claim": {
+    "kind": "nonconforming",
+    "kind_label": "Некондиция",
+    "number": "1706927"
+  },
+  "document": {
+    "number": "83813",
+    "date": "15.06.2026",
+    "type": "УПД"
+  },
+  "items": [
+    {
+      "part_number": "TY20157A",
+      "product_name": "Капот",
+      "quantity": 1
+    }
+  ],
+  "comment": null,
+  "flags": {
+    "defect_documents": {
+      "state": "partial",
+      "complete": false,
+      "install_order": true,
+      "removal_order": false,
+      "service_act": false,
+      "n_present": 1,
+      "source": "ai"
+    },
+    "has_photo": true,
+    "has_document": true,
+    "attachments_count": 5
+  },
+  "status": {
+    "state": "ready_to_1c",
+    "control_status": "ready_to_1c",
+    "priority": "normal",
+    "ready_for_export": true,
+    "needs_review": false
+  },
+  "text": {
+    "subject": "Новое сообщение по рекламации 1706927",
+    "body": "При оприходовании товара по накладной 83813 от 15.06.2026 установлены расхождения по заказу детали TY20157A, Капот TOYOTA AURIS 07-10 в количестве 1. Причина обращения Некондиция. Подтвердите готовность принять возврат по данной позиции. Ознакомиться с рекламацией Вы можете, перейдя по ссылке — https://www.avtoto.ru/personnel_claim/1706927/208547909677508/"
+  },
+  "attachments": [
+    {
+      "filename": "avtoto_3784_0.jpg",
+      "type": "image/jpeg",
+      "size": 150298
+    },
+    {
+      "filename": "avtoto_3784_1.jpg",
+      "type": "image/jpeg",
+      "size": 135900
+    },
+    {
+      "filename": "avtoto_3784_2.jpg",
+      "type": "image/jpeg",
+      "size": 203324
+    },
+    {
+      "filename": "avtoto_3784_3.jpg",
+      "type": "image/jpeg",
+      "size": 231839
+    },
+    {
+      "filename": "avtoto_3784_4.jpg",
+      "type": "image/jpeg",
+      "size": 218941
+    }
+  ],
+  "source": {
+    "raw_email_id": 3784,
+    "message_id": "<202606161131.65GBV4Zx007529@prod---managers-avtoto-ru.novalocal>",
+    "received_at": "2026-06-16T11:31:04+00:00"
+  }
+}

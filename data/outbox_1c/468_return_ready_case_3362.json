@@ -1,0 +1,92 @@
+{
+  "schema": "readmail-1c-v2",
+  "payload_profile": "standard",
+  "generated_at": "2026-06-17T14:42:55+00:00",
+  "event": "return_ready",
+  "case_id": 3362,
+  "buyer": {
+    "code": "parterra_ru",
+    "name": "Партерра"
+  },
+  "claim": {
+    "kind": "defect",
+    "kind_label": "Брак",
+    "number": null
+  },
+  "document": {
+    "number": "58663",
+    "date": "22.08.2025",
+    "type": "УПД"
+  },
+  "items": [
+    {
+      "part_number": "GP0024E",
+      "brand": "UTM",
+      "product_name": "Насос высокого давления бензиновый",
+      "quantity": 1
+    }
+  ],
+  "comment": null,
+  "flags": {
+    "defect_documents": {
+      "state": "present_unverified",
+      "complete": false,
+      "install_order": false,
+      "removal_order": false,
+      "service_act": false,
+      "n_present": null,
+      "source": null
+    },
+    "has_photo": true,
+    "has_document": false,
+    "attachments_count": 6
+  },
+  "status": {
+    "state": "ready_to_1c",
+    "control_status": "ready_to_1c",
+    "priority": "normal",
+    "ready_for_export": true,
+    "needs_review": false
+  },
+  "text": {
+    "subject": "Возврат РОССКО (ROSSKO)",
+    "body": "Добрый день! Причина возврата – брак Покупали: GP0024E Насос высокого давления бензиновый UTM По счёт-фактуре № 58663 от 22.08.2025 Кол-во: 1 шт Просьба согласовать возврат товара. Фото во вложении. Ведерникова Наталья Валерьевна Отдел электронной коммерции РОССКО (ROSSKO) Специалист отдела рекламаций г. Новосибирск, ул. Ватутина, д. 38Д тел. 8-495-909-12-51 доб. 40489 с 09:00 до 18:00 по НСК Email: Natalya.Vedernikova@rossko.ru<mailto:Natalya.Vedernikova@rossko.ru> VK Teams: natalya.vedernikova@rchat.me<mailto:natalya.vedernikova@rchat.me>"
+  },
+  "attachments": [
+    {
+      "filename": "image002.jpg",
+      "type": "image/jpeg",
+      "size": 3132
+    },
+    {
+      "filename": "ba9c8548-9a26-4ff5-8e2b-b0e7987f3a0b_DSCN7773.JPG",
+      "type": "image/jpeg",
+      "size": 280870
+    },
+    {
+      "filename": "bf38448e-48b4-412f-8e6e-38ed33412c4a_DSCN7772.JPG",
+      "type": "image/jpeg",
+      "size": 286098
+    },
+    {
+      "filename": "e6124f98-c9dd-4c05-964f-2ea9d1d4ee32_DSCN7776.JPG",
+      "type": "image/jpeg",
+      "size": 273204
+    },
+    {
+      "filename": "64029f7f-ad4a-461b-8b2f-74b6062e1b52_DSCN7775.JPG",
+      "type": "image/jpeg",
+      "size": 284352
+    },
+    {
+      "filename": "100200d7-4f52-4742-90d2-37592b60f0b0_DSCN7774.JPG",
+      "type": "image/jpeg",
+      "size": 279871
+    }
+  ],
+  "source": {
+    "raw_email_id": 3711,
+    "message_id": "<eacc3218beb247e5967ddc82e2d9ee84@parterra.ru>",
+    "received_at": "2026-06-17T08:10:05+00:00"
+  }
+}

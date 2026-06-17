@@ -1,0 +1,77 @@
+{
+  "schema": "readmail-1c-v2",
+  "payload_profile": "standard",
+  "generated_at": "2026-06-17T14:19:00+00:00",
+  "event": "return_ready",
+  "case_id": 3340,
+  "buyer": {
+    "code": "avtoto_ru",
+    "name": "АВТОТО"
+  },
+  "claim": {
+    "kind": "quality_refusal",
+    "kind_label": "Отказ клиента",
+    "number": null
+  },
+  "document": {
+    "number": "83759",
+    "date": "11.06.2026",
+    "type": "УПД"
+  },
+  "items": [
+    {
+      "part_number": "MZ04081BB",
+      "product_name": "Бампер передний",
+      "quantity": 1
+    }
+  ],
+  "comment": null,
+  "flags": {
+    "has_photo": true,
+    "has_document": false,
+    "attachments_count": 5
+  },
+  "status": {
+    "state": "ready_to_1c",
+    "control_status": "ready_to_1c",
+    "priority": "medium",
+    "ready_for_export": true,
+    "needs_review": false
+  },
+  "text": {
+    "subject": "ФЕД Запрос на возврат 1468536",
+    "body": "Добрый день! Просьба принять на возврат деталь: Артикул — *MZ04081BB* Бампер передний Бампер передний Цена закупки — 2838.00 Накладная — 83759 от 11.06.2026 Кол-во 1 шт Причина возврата — Нужен бампер на автомобиль с вин-номером Jmzgy19f671425903 , каталожный номер оригинальный gr1a-50-031daa , в tecdoc перевелся на этот Tyg,а по факту у человека рестайлинг,а Tyg дорест В случае возникновения вопросов после поступления данной детали к Вам на склад — Вам необходимо обратиться на почту vozvrat1@avtoto.ru ( http://e.mail.ru/compose/?mailto=mailto%3avozvrat1@avtoto.ru ), в теме письма указав номер запроса на возврат. -------------------------------------------------- С уважением, Сотрудник отдела рекламаций Оператор АвтоТО | www.avtoto.ru ( http://www.avtoto.ru ) Тел.: +7(495)374-88-88, доб. E-mail: k-rekl@avtoto.ru ( http://e.mail.ru/compose/?mailto=mailto%3ak%2drekl@avtoto.ru )"
+  },
+  "attachments": [
+    {
+      "filename": "IMG_20260617_112514(1).jpg",
+      "type": "image/jpeg",
+      "size": 620100
+    },
+    {
+      "filename": "IMG_20260617_112508.jpg",
+      "type": "image/jpeg",
+      "size": 524630
+    },
+    {
+      "filename": "IMG_20260617_112523.jpg",
+      "type": "image/jpeg",
+      "size": 520336
+    },
+    {
+      "filename": "IMG_20260617_112458.jpg",
+      "type": "image/jpeg",
+      "size": 797845
+    },
+    {
+      "filename": "IMG_20260617_112514.jpg",
+      "type": "image/jpeg",
+      "size": 620100
+    }
+  ],
+  "source": {
+    "raw_email_id": 4064,
+    "message_id": "<1781705068.748344449@f517.i.mail.ru>",
+    "received_at": "2026-06-17T14:04:28+00:00"
+  }
+}

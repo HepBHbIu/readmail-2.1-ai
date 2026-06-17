@@ -1,0 +1,81 @@
+{
+  "schema": "readmail-1c-v2",
+  "payload_profile": "standard",
+  "generated_at": "2026-06-17T14:58:11+00:00",
+  "event": "duplicate_or_repeat_ready",
+  "case_id": 3695,
+  "buyer": {
+    "code": "avtoto_ru",
+    "name": "АВТОТО"
+  },
+  "claim": {
+    "kind": "defect",
+    "kind_label": "Брак",
+    "number": null
+  },
+  "document": {
+    "number": "82689",
+    "date": "01.06.2026",
+    "type": "УПД"
+  },
+  "items": [
+    {
+      "part_number": "HZX0265ZJ",
+      "quantity": 1
+    }
+  ],
+  "comment": "отсутствуют пины для подключения обогрева руля",
+  "flags": {
+    "has_photo": true,
+    "has_document": false,
+    "attachments_count": 6
+  },
+  "status": {
+    "state": "ready_to_1c",
+    "control_status": "ready_to_1c",
+    "priority": "normal",
+    "ready_for_export": true,
+    "needs_review": false
+  },
+  "text": {
+    "subject": "СТА  Запрос на возврат 1468752",
+    "body": "Добрый день! Просьба принять на возврат деталь Артикул *HZX0265ZJ* 2980.00 Накладная 82689 от 01.06.2026 Кол-во 1 шт Причина возврата — на данном шлейфе отсутствует пины для подключения обогрева руля, деталь не ставилась В случае возникновения вопросов после поступления данной детали к Вам на склад — Вам необходимо обратиться на почту vozvrat1@avtoto.ru ( http://e.mail.ru/compose/?mailto=mailto%3avozvrat1@avtoto.ru ), в теме письма указав номер запроса на возврат. -------------------------------------------------- С уважением, Сотрудник отдела рекламаций Оператор № 530 АвтоТО | www.avtoto.ru ( http://www.avtoto.ru ) Тел.: +7(495)374-88-88, доб. №437 E-mail: k-rekl@avtoto.ru ( http://e.mail.ru/compose/?mailto=mailto%3ak%2drekl@avtoto.ru )"
+  },
+  "attachments": [
+    {
+      "filename": "IMG_20260617_150504.jpg",
+      "type": "image/jpeg",
+      "size": 510634
+    },
+    {
+      "filename": "IMG_20260617_150519.jpg",
+      "type": "image/jpeg",
+      "size": 976200
+    },
+    {
+      "filename": "IMG_20260617_150538.jpg",
+      "type": "image/jpeg",
+      "size": 479154
+    },
+    {
+      "filename": "IMG_20260617_150551.jpg",
+      "type": "image/jpeg",
+      "size": 670860
+    },
+    {
+      "filename": "IMG_20260617_150613.jpg",
+      "type": "image/jpeg",
+      "size": 465181
+    },
+    {
+      "filename": "IMG_20260617_150635.jpg",
+      "type": "image/jpeg",
+      "size": 500847
+    }
+  ],
+  "source": {
+    "raw_email_id": 4044,
+    "message_id": "<1781698472.419953964@f741.i.mail.ru>",
+    "received_at": "2026-06-17T12:14:32+00:00"
+  }
+}

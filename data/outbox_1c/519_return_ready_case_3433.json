@@ -1,0 +1,66 @@
+{
+  "schema": "readmail-1c-v2",
+  "payload_profile": "standard",
+  "generated_at": "2026-06-17T14:57:25+00:00",
+  "event": "return_ready",
+  "case_id": 3433,
+  "buyer": {
+    "code": "avtoto_ru",
+    "name": "АВТОТО"
+  },
+  "claim": {
+    "kind": "quality_refusal",
+    "kind_label": "Отказ клиента",
+    "number": null
+  },
+  "document": {
+    "number": "83346",
+    "date": "08.06.2026",
+    "type": "УПД"
+  },
+  "items": [
+    {
+      "part_number": "KPN1016FZ",
+      "quantity": 1
+    }
+  ],
+  "comment": "отказ клиента",
+  "flags": {
+    "has_photo": true,
+    "has_document": false,
+    "attachments_count": 3
+  },
+  "status": {
+    "state": "ready_to_1c",
+    "control_status": "ready_to_1c",
+    "priority": "medium",
+    "ready_for_export": true,
+    "needs_review": false
+  },
+  "text": {
+    "subject": "СОЮ Запрос на возврат    1467728",
+    "body": "Добрый день! Просьба принять на возврат деталь Артикул *KPN1016FZ* Накладная 83346 от 08.06.2026 Кол-во 1 шт Причина возврата — отказ клиента В случае возникновения вопросов после поступления данной детали к Вам на склад — Вам необходимо обратиться на почту vozvrat1@avtoto.ru ( http://e.mail.ru/compose/?mailto=mailto%3avozvrat1@avtoto.ru ), в теме письма указав номер запроса на возврат. -------------------------------------------------- С уважением, Сотрудник отдела рекламаций Оператор №86 АвтоТО | www.avtoto.ru ( http://www.avtoto.ru ) Тел.: +7(495)374-88-88, доб. № 673 E-mail: k-rekl@avtoto.ru ( http://e.mail.ru/compose/?mailto=mailto%3ak%2drekl@avtoto.ru )"
+  },
+  "attachments": [
+    {
+      "filename": "IMG_20260615_165003.jpg",
+      "type": "image/jpeg",
+      "size": 153059
+    },
+    {
+      "filename": "IMG_20260615_164958.jpg",
+      "type": "image/jpeg",
+      "size": 148137
+    },
+    {
+      "filename": "IMG_20260615_164952.jpg",
+      "type": "image/jpeg",
+      "size": 186660
+    }
+  ],
+  "source": {
+    "raw_email_id": 3782,
+    "message_id": "<1781611727.596319411@f525.i.mail.ru>",
+    "received_at": "2026-06-16T12:08:47+00:00"
+  }
+}

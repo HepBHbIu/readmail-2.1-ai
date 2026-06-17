@@ -1,0 +1,54 @@
+{
+  "schema": "readmail-1c-v2",
+  "payload_profile": "standard",
+  "generated_at": "2026-06-17T13:40:24+00:00",
+  "event": "return_ready",
+  "case_id": 3318,
+  "buyer": {
+    "code": "avtoto_ru",
+    "name": "АВТОТО"
+  },
+  "claim": {
+    "kind": "quality_refusal",
+    "kind_label": "Отказ до поставки",
+    "number": "1707603"
+  },
+  "document": {
+    "number": null,
+    "date": null,
+    "type": null
+  },
+  "items": [
+    {
+      "part_number": "GA2922A",
+      "quantity": 1
+    }
+  ],
+  "comment": "отказ клиента до получения заказа",
+  "flags": {
+    "has_photo": false,
+    "has_document": false,
+    "attachments_count": 0
+  },
+  "status": {
+    "state": "ready_to_1c",
+    "control_status": "ready_to_1c",
+    "priority": "medium",
+    "ready_for_export": true,
+    "needs_review": false
+  },
+  "text": {
+    "subject": "А. ВОЗВРАТ_Рекламация №  1707603 ",
+    "body": "Добрый день! Вами по накладной № 83813 от 15.06.2026 выписана позиция *GA2922A* в количестве 1 шт. К сожалению, клиент прислал отказ до получения заказа. Просьба одобрить возврат данной позиции. _________________________________ С уважением, Сотрудник отдела закупок Екатерина Оператор №155 Компания АвтоТо | www.avtoto.ru ( http://www.avtoto.ru ) Тел.: +7(495)374-88-88, доб. № 144 E-mail: order@avtoto.ru ( http://e.mail.ru/compose/?mailto=mailto%3aorder@avtoto.ru )"
+  },
+  "attachments": [],
+  "source": {
+    "raw_email_id": 4042,
+    "message_id": "<1781698919.663767519@f463.i.mail.ru>",
+    "received_at": "2026-06-17T12:21:59+00:00"
+  },
+  "pre_delivery_refusal": true,
+  "document_required": false,
+  "reason": "Отказ клиента до поставки",
+  "operator_attention": true
+}

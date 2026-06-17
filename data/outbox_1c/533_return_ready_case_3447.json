@@ -1,0 +1,66 @@
+{
+  "schema": "readmail-1c-v2",
+  "payload_profile": "standard",
+  "generated_at": "2026-06-17T14:58:39+00:00",
+  "event": "return_ready",
+  "case_id": 3447,
+  "buyer": {
+    "code": "avtoto_ru",
+    "name": "АВТОТО"
+  },
+  "claim": {
+    "kind": "quality_refusal",
+    "kind_label": "Отказ клиента",
+    "number": null
+  },
+  "document": {
+    "number": "83068",
+    "date": "03.06.2026",
+    "type": "УПД"
+  },
+  "items": [
+    {
+      "part_number": "TDAV250F",
+      "quantity": 1
+    }
+  ],
+  "comment": "отказ клиента",
+  "flags": {
+    "has_photo": true,
+    "has_document": false,
+    "attachments_count": 3
+  },
+  "status": {
+    "state": "ready_to_1c",
+    "control_status": "ready_to_1c",
+    "priority": "high",
+    "ready_for_export": true,
+    "needs_review": false
+  },
+  "text": {
+    "subject": "ГЕП       Запрос на возврат 1467688",
+    "body": "Добрый день! Прошу Вас рассмотреть возврат детали *TDAV250F* Количество 1 шт по накладной 83068 от 03.06.2026 цена 397.00 Причина возврата :отказ клиента В случае возникновения вопросов после поступления данной детали к Вам на склад — Вам нео бходимо обратиться на почту vozvrat1@avtoto.ru, в теме письма указав номер запроса на возврат. -------------------------------------------------- С уважением, Сотрудник отдела рекламаций Оператор 961 АвтоТО | www.avtoto.ru ( http://www.avtoto.ru/ ) Тел.: +7(495)374-88-88, доб. 960 E-mail: k-rekl@avtoto.ru ( http://e.mail.ru/compose/?mailto=mailto%3ak%2drekl@avtoto.ru )"
+  },
+  "attachments": [
+    {
+      "filename": "20260615_160746.jpg",
+      "type": "image/jpeg",
+      "size": 114599
+    },
+    {
+      "filename": "20260615_160738.jpg",
+      "type": "image/jpeg",
+      "size": 101210
+    },
+    {
+      "filename": "20260615_160727.jpg",
+      "type": "image/jpeg",
+      "size": 160773
+    }
+  ],
+  "source": {
+    "raw_email_id": 3796,
+    "message_id": "<1781529390.7156498@f330.i.mail.ru>",
+    "received_at": "2026-06-15T13:16:30+00:00"
+  }
+}

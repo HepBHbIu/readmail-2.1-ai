@@ -1,0 +1,73 @@
+{
+  "schema": "readmail-1c-v2",
+  "payload_profile": "standard",
+  "generated_at": "2026-06-17T14:43:00+00:00",
+  "event": "return_ready",
+  "case_id": 3363,
+  "buyer": {
+    "code": "parterra_ru",
+    "name": "Партерра"
+  },
+  "claim": {
+    "kind": "defect",
+    "kind_label": "Брак",
+    "number": null
+  },
+  "document": {
+    "number": "82969",
+    "date": "03.06.2026",
+    "type": "УПД"
+  },
+  "items": [
+    {
+      "part_number": "PT-P 2018",
+      "brand": "Pilenga",
+      "product_name": "Натяжитель ремня приводного в сборе",
+      "quantity": 1
+    }
+  ],
+  "comment": "механическое повреждение",
+  "flags": {
+    "has_photo": true,
+    "has_document": false,
+    "attachments_count": 4
+  },
+  "status": {
+    "state": "ready_to_1c",
+    "control_status": "ready_to_1c",
+    "priority": "normal",
+    "ready_for_export": true,
+    "needs_review": false
+  },
+  "text": {
+    "subject": "Возврат РОССКО",
+    "body": "Добрый день! По счёт-фактуре 82969 от 03.06.2026 Покупали: PT-P 2018 Натяжитель ремня приводного в сборе Pilenga Кол-во: 1 шт. Просьба согласовать возврат товара Причина возврата – механическое повреждение Фото во вложении. С уважением,Гартман Милена Отдел электронной коммерции РОССКО (ROSSKO) Специалист отдела рекламаций Новосибирск, Ватутина, 38Д Тел 8-962-826-61-73 доб. 40821 с 9:00 до 18:00 по НСК Email: gartman.m.a@rossko.ru VK Teams: gartman.m.a@rchat.me"
+  },
+  "attachments": [
+    {
+      "filename": "image001.jpg",
+      "type": "image/jpeg",
+      "size": 3132
+    },
+    {
+      "filename": "IMG_20260608_102823.jpg",
+      "type": "image/jpeg",
+      "size": 271318
+    },
+    {
+      "filename": "IMG_20260608_102827.jpg",
+      "type": "image/jpeg",
+      "size": 232603
+    },
+    {
+      "filename": "IMG-20260608-WA0020.jpg",
+      "type": "image/jpeg",
+      "size": 135548
+    }
+  ],
+  "source": {
+    "raw_email_id": 3712,
+    "message_id": "<015d34808f194525ac3e950ce954f35b@parterra.ru>",
+    "received_at": "2026-06-17T07:38:48+00:00"
+  }
+}

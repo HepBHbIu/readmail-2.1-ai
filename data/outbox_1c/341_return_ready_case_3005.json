@@ -1,0 +1,84 @@
+{
+  "schema": "readmail-1c-v2",
+  "payload_profile": "standard",
+  "generated_at": "2026-06-17T13:40:12+00:00",
+  "event": "return_ready",
+  "case_id": 3005,
+  "buyer": {
+    "code": "auto_sputnik",
+    "name": "Авто-Спутник"
+  },
+  "claim": {
+    "kind": "quality_refusal",
+    "kind_label": "Отказ клиента",
+    "number": "00000232653"
+  },
+  "document": {
+    "number": "83281",
+    "date": "08.06.2026",
+    "type": "УПД"
+  },
+  "items": [
+    {
+      "part_number": "KCD9336YU",
+      "brand": "Krauf",
+      "product_name": "Компрессор кондиционера",
+      "quantity": 1,
+      "price": 17466.0
+    }
+  ],
+  "comment": "Отказ клиента",
+  "flags": {
+    "has_photo": true,
+    "has_document": false,
+    "attachments_count": 6
+  },
+  "status": {
+    "state": "ready_to_1c",
+    "control_status": "ready_to_1c",
+    "priority": "medium",
+    "ready_for_export": true,
+    "needs_review": false
+  },
+  "text": {
+    "subject": "Претензия №00000232653 от 16.06.2026 поставщику ООО \"ПИТСТОП\" КД МОСКВА по документу №83281 от 08.06.2026 0:00:00",
+    "body": "Уважаемый поставщик! При приёмке поступления по документу №83281 от 08.06.2026 0:00:00 создана претензия №00000232653 от 16.06.2026 № Артикул Производитель Номенклатура Количество заказано Цена заказано Количество инвойс Цена инвойс Количество Претензия Цена претензия Сумма претензия Причина претензии 1KCD9336YUKraufКомпрессор кондиционера117 466117 466117 46617 466Отказ клиента При ответе на это письмо оставляйте тему письма без изменения! При ответе на это письмо используйте кнопку 'ответить всем'! отдел закупок ООО \"Авто-Спутник импорт\" ОП Ростов-на-Дону Адрес: г. Ростов-на-Дону, ул. Доватора 146 Т tel.: +7 863 308 88 96 email:"
+  },
+  "attachments": [
+    {
+      "filename": "1_16062026140633.jpg",
+      "type": "image/jpeg",
+      "size": 83378
+    },
+    {
+      "filename": "2_16062026140633.jpg",
+      "type": "image/jpeg",
+      "size": 47449
+    },
+    {
+      "filename": "3_16062026140633.jpg",
+      "type": "image/jpeg",
+      "size": 39651
+    },
+    {
+      "filename": "4_16062026140634.jpg",
+      "type": "image/jpeg",
+      "size": 49897
+    },
+    {
+      "filename": "5_16062026140634.jpg",
+      "type": "image/jpeg",
+      "size": 81613
+    },
+    {
+      "filename": "6_16062026140634.jpg",
+      "type": "image/jpeg",
+      "size": 83378
+    }
+  ],
+  "source": {
+    "raw_email_id": 3729,
+    "message_id": "<e8d316fb-d9f7-4c02-8f34-e0e73aed96b5@auto-sputnik.ru>",
+    "received_at": "2026-06-16T11:42:35+00:00"
+  }
+}

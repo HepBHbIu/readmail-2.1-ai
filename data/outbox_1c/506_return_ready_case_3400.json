@@ -1,0 +1,69 @@
+{
+  "schema": "readmail-1c-v2",
+  "payload_profile": "standard",
+  "generated_at": "2026-06-17T14:52:22+00:00",
+  "event": "return_ready",
+  "case_id": 3400,
+  "buyer": {
+    "code": "auto_sputnik",
+    "name": "Авто-Спутник"
+  },
+  "claim": {
+    "kind": "quality_refusal",
+    "kind_label": "Отказ клиента",
+    "number": "00000232155"
+  },
+  "document": {
+    "number": "82509",
+    "date": "28.05.2026",
+    "type": "УПД"
+  },
+  "items": [
+    {
+      "part_number": "PBLT129",
+      "brand": "Patron",
+      "product_name": "Болт-эксцентрик комплект CHEVROLET CAPTIVA, SUBURBAN 1500 / OPEL ANTAR",
+      "quantity": 1,
+      "price": 242.0
+    }
+  ],
+  "comment": "Отказ клиента",
+  "flags": {
+    "has_photo": true,
+    "has_document": false,
+    "attachments_count": 3
+  },
+  "status": {
+    "state": "ready_to_1c",
+    "control_status": "ready_to_1c",
+    "priority": "high",
+    "ready_for_export": true,
+    "needs_review": false
+  },
+  "text": {
+    "subject": "Претензия №00000232155 от 15.06.2026 поставщику ООО \"ПИТСТОП\" КД МОСКВА по документу №82509 от 28.05.2026 0:00:00",
+    "body": "Уважаемый поставщик! При приёмке поступления по документу №82509 от 28.05.2026 0:00:00 создана претензия №00000232155 от 15.06.2026 № Артикул Производитель Номенклатура Количество заказано Цена заказано Количество инвойс Цена инвойс Количество Претензия Цена претензия Сумма претензия Причина претензии 1PBLT129PatronБолт-эксцентрик комплект CHEVROLET CAPTIVA, SUBURBAN 1500 / OPEL ANTAR624262421242242Отказ клиента При ответе на это письмо оставляйте тему письма без изменения! При ответе на это письмо используйте кнопку 'ответить всем'! Указанная информация предназначена исключительно для прочтения адресатом. Отдел рекламаций ООО \"Авто-Спутник импорт\" Бизнес центр \"Green Point\" Г. Химки, ул. Панфилова, 19/1 tel.: +7 (499) 284-02-36 доб. 502, 479, 494 email:"
+  },
+  "attachments": [
+    {
+      "filename": "1_15062026100607.jpg",
+      "type": "image/jpeg",
+      "size": 114477
+    },
+    {
+      "filename": "2_15062026100607.jpg",
+      "type": "image/jpeg",
+      "size": 76802
+    },
+    {
+      "filename": "3_15062026100607.jpg",
+      "type": "image/jpeg",
+      "size": 76802
+    }
+  ],
+  "source": {
+    "raw_email_id": 3749,
+    "message_id": "<b0eea1f6-1d44-4a62-957b-ec82a9110858@auto-sputnik.ru>",
+    "received_at": "2026-06-15T07:06:08+00:00"
+  }
+}

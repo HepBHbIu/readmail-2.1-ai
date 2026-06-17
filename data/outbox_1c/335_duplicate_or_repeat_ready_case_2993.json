@@ -1,0 +1,93 @@
+{
+  "schema": "readmail-1c-v2",
+  "payload_profile": "standard",
+  "generated_at": "2026-06-17T13:40:11+00:00",
+  "event": "duplicate_or_repeat_ready",
+  "case_id": 2993,
+  "buyer": {
+    "code": "profit_liga_ru",
+    "name": "Профит-Лига / PR-LG"
+  },
+  "claim": {
+    "kind": "quality_refusal",
+    "kind_label": "Отказ клиента",
+    "number": "ПЛ000227383"
+  },
+  "document": {
+    "number": "82874",
+    "date": "02.06.2026",
+    "type": "УПД"
+  },
+  "items": [
+    {
+      "part_number": "ETZ1107MR",
+      "brand": "KRAUF",
+      "product_name": "Дроссельная заслонка",
+      "quantity": 1
+    }
+  ],
+  "comment": "Отказ покупателя",
+  "flags": {
+    "has_photo": true,
+    "has_document": false,
+    "attachments_count": 8
+  },
+  "status": {
+    "state": "ready_to_1c",
+    "control_status": "ready_to_1c",
+    "priority": "medium",
+    "ready_for_export": true,
+    "needs_review": false
+  },
+  "text": {
+    "subject": "Заявка ПЛ000227383 Отказ покупателя",
+    "body": "Добрый день, уважаемые Партнеры! Просим согласовать заявку на возврат от нашего клиента. в местах крепления заслонки имеются оттиски. Заявка на возврат: ПЛ000227383 Документ: 82874 от 2 июня 2026 г. Товар: @!! ETZ1107MR KRAUF Дроссельная заслонка CITROEN BERLINGO,1 шт. Причина возврата: Надлежащее качество / Отказ покупателя Ответ просьба прислать в письме на адрес vozvrat@pr-lg.ru"
+  },
+  "attachments": [
+    {
+      "filename": "IMG_20260615_173359.jpg",
+      "type": "image/jpeg",
+      "size": 1287800
+    },
+    {
+      "filename": "IMG_20260615_173416.jpg",
+      "type": "image/jpeg",
+      "size": 2025732
+    },
+    {
+      "filename": "IMG_20260615_173433.jpg",
+      "type": "image/jpeg",
+      "size": 2404892
+    },
+    {
+      "filename": "IMG_20260615_173452.jpg",
+      "type": "image/jpeg",
+      "size": 2268334
+    },
+    {
+      "filename": "recl_20260609121251_6a27d913a6ec4.jpeg",
+      "type": "image/jpeg",
+      "size": 2214814
+    },
+    {
+      "filename": "recl_20260609121301_6a27d91d0e2d4.jpeg",
+      "type": "image/jpeg",
+      "size": 1665599
+    },
+    {
+      "filename": "recl_20260609121313_6a27d929d9da9.jpeg",
+      "type": "image/jpeg",
+      "size": 1665599
+    },
+    {
+      "filename": "recl_20260609121320_6a27d9309bf7e.jpeg",
+      "type": "image/jpeg",
+      "size": 2214814
+    }
+  ],
+  "source": {
+    "raw_email_id": 3717,
+    "message_id": "<c09e4741-4bd0-4669-91bc-80ec94b0c967@pr-lg.ru>",
+    "received_at": "2026-06-17T05:54:27+00:00"
+  }
+}
