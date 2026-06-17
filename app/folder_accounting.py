@@ -268,8 +268,12 @@ def _compute_folder_accounting(con: Any) -> dict[str, Any]:
                 "subject": raw.get("subject"),
                 "buyer_code": case.get("buyer_code") if case else None,
                 "visible_bucket": visible["visible_bucket"],
-                # объяснение оператору
-                "ai_checked": bool(case and case.get("has_ai_suggestion")),
+                # объяснение оператору (ТЗ разд.10)
+                "processing_source": str(_pl.get("processing_source") or ("static_skeleton" if case else "raw_import")),
+                "ai_checked": bool(_pl.get("ai_checked") or (case and case.get("has_ai_suggestion"))),
+                "ai_applied": bool(_pl.get("ai_applied")),
+                "static_hint": (_pl.get("static_hint") or {}),
+                "final_claim_kind": _pl.get("final_claim_kind") or (case.get("claim_kind") if case else None),
                 "evidence": _strength,  # strong / medium / weak / none
                 "missing_fields": _missing,
                 "has_attachments": int(_ev.get("attachments_count") or 0) > 0,

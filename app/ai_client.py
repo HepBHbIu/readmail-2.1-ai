@@ -228,9 +228,11 @@ def _chat_payload(email_data: dict[str, Any], case_data: dict[str, Any], purpose
     # промт пух вдвое). Тут только: подсказка скелета, само письмо, reply-флаги, схема.
     prompt = {
         "purpose": purpose,
-        "skeleton_guess": {  # черновик детерминированного сортера (можно переопределить)
-            "event_type": case_data.get("event_type"),
-            "claim_kind": case_data.get("claim_kind"),
+        "skeleton_guess": {  # черновик статики (static_hint) — ПОДСКАЗКА, AI решает сам
+            "event_type": (((case_data.get("payload") or {}).get("static_hint") or {}).get("draft_event_type")
+                           or case_data.get("event_type")),
+            "claim_kind": (((case_data.get("payload") or {}).get("static_hint") or {}).get("draft_claim_kind")
+                           or case_data.get("claim_kind")),
             "buyer_code": case_data.get("buyer_code"),
             "buyer_name": case_data.get("buyer_name"),
             "fields": case_data.get("fields") or {},

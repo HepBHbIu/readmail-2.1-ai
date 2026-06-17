@@ -4163,6 +4163,9 @@ document.addEventListener("DOMContentLoaded", () => {
 let _processedSummary = null, _processedGroup = null, _processedSub = null, _processedPage = 1;
 
 // ── ВОРОНКА ОБРАБОТКИ (операторская витрина, ТЗ) ──
+const _SRC_LABEL = {
+  raw_import: "📥 принято", static_skeleton: "📝 черновик", ai: "🤖 AI", operator: "✋ оператор",
+};
 let _funnelData = null;
 const _FUNNEL_KIND_COLOR = {
   total: "#888", wait: "#b08", ai: "#08a", manual: "#d80", defect: "#c33",
@@ -4212,8 +4215,11 @@ function selectFunnelStage(kind) {
       <div class="funnel-item-meta">
         <span>raw#${it.raw_email_id}${it.case_id ? " · case#" + it.case_id : ""}</span>
         <span>${esc(it.buyer_code || "")}</span>
-        <span>ИИ: ${it.ai_checked ? "да" : "нет"}</span>
+        <span>${_SRC_LABEL[it.processing_source] || it.processing_source || ""}</span>
+        <span>ИИ: ${it.ai_checked ? (it.ai_applied ? "применён" : "проверен") : "ожидает"}</span>
         <span>evidence: ${ev[it.evidence] || it.evidence || "—"}</span>
+        ${(it.static_hint && (it.static_hint.draft_claim_kind || it.static_hint.draft_event_type))
+          ? `<span title="догадка статики до AI">черновик: ${esc(it.static_hint.draft_claim_kind || it.static_hint.draft_event_type)}</span>` : ""}
         ${(it.missing_fields || []).length ? `<span style="color:var(--amber)">нет: ${esc((it.missing_fields || []).join(", "))}</span>` : ""}
         ${it.has_attachments ? "<span>📎</span>" : ""}
         ${it.has_defect_docs ? "<span>📄 док.брака</span>" : ""}

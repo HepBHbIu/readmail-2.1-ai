@@ -144,9 +144,9 @@ class Settings(BaseSettings):
     # --- AI автоматика ---
     auto_ai_unknown_buyer: bool = False
     auto_ai_first_unknown_customer: bool = True
-    auto_apply_ai_on_first_unknown_customer: bool = True
+    auto_apply_ai_on_first_unknown_customer: bool = False  # ТЗ разд.9: AI решает, не автоприменяем вслепую
     ai_first_unknown_requires_claim_words: bool = True
-    auto_apply_ai_validated: bool = True
+    auto_apply_ai_validated: bool = False  # ТЗ разд.9: на время отладки — false
     auto_learn_buyer_domains: bool = True
     auto_learn_unknown_buyers: bool = True
     auto_promote_unknown_buyer_after: int = 3

@@ -2374,6 +2374,17 @@ def classify_email(
     # event_type/claim_kind/маршрут ставит ТОЛЬКО ИИ. Ключи связок/direction уже посчитаны
     # выше и сохраняются. event_type скелета остаётся лишь подсказкой для ИИ (skeleton_guess).
     if getattr(settings, "ai_only", False):
+        # ТЗ: ДО AI не назначаем бизнес-claim. Догадку скелета храним отдельно (static_hint),
+        # финальные event_type/claim_kind = pending/null. Бизнес-статус ставит ТОЛЬКО AI.
+        payload["static_hint"] = {
+            "draft_event_type": event_type,
+            "draft_claim_kind": claim_kind,
+        }
+        payload["processing_source"] = "static_skeleton"
+        payload["ai_checked"] = False
+        payload["ai_applied"] = False
+        event_type = "unknown"   # отображаемый статус «Проверяется AI», не бизнес-причина
+        claim_kind = None
         state = "needs_review"
         needs_ai = True
         ready_for_export = False
@@ -2586,6 +2597,10 @@ def apply_ai_overlay(email_data: dict[str, Any], case_data: dict[str, Any], ai_r
     }
     payload["classifier"] = "deterministic_v1.9_plus_ai_overlay"
     payload["processing_source"] = "ai"
+    payload["ai_checked"] = True
+    payload["ai_applied"] = True
+    # final_claim_kind = что принято после AI (для карточки/аудита). static_hint остаётся как был.
+    payload["final_claim_kind"] = claim_kind
     payload["processing_mode"] = payload.get("processing_mode") or "auto"
     payload["evidence"] = evidence
     payload["evidence_requirements"] = required_evidence_for(claim_kind)
