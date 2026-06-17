@@ -137,8 +137,8 @@ def _token_stats_lines(period: str = "today") -> list[str]:
     label = "сегодня" if period == "today" else "всего"
     lines = [
         f"💰 <b>Токены/деньги ({label})</b>: писем {t['emails']} · итого <b>{t['total_rub']}₽</b>",
-        f"  ↑ ВЫХОД (наш запрос): {_fmt_n(t['out_tokens'])} ток · {t['out_rub']}₽",
-        f"  ↓ ВХОД (ответ сервера): {_fmt_n(t['in_tokens'])} ток · {t['in_rub']}₽",
+        f"  ↑ Входящие (prompt, наш запрос): {_fmt_n(t['out_tokens'])} ток · {t['out_rub']}₽",
+        f"  ↓ Исходящие (completion, ответ): {_fmt_n(t['in_tokens'])} ток · {t['in_rub']}₽",
     ]
     for key, ic, nm in (("text", "✍️", "текст"), ("vision", "🖼", "визуал")):
         b = bk.get(key)

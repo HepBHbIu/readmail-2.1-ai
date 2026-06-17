@@ -3042,8 +3042,8 @@ async function loadTokenReport() {
   if (!res || !res.ok) return;
   const f = (n) => (Number(n) || 0).toLocaleString("ru");
   const rub = (n) => (Number(n) || 0).toLocaleString("ru", { maximumFractionDigits: 2 }) + "₽";
-  // o.out = ВЫХОД (наш запрос/prompt) ↑, o.in = ВХОД (ответ сервера/completion) ↓
-  const io = (o) => `${f(o.out)}<span class="muted">↑</span> / ${f(o.in)}<span class="muted">↓</span>`;
+  // RouterAI: o.out = Входящие (prompt/наш запрос) ↑, o.in = Исходящие (completion/ответ) ↓
+  const io = (o) => `${f(o.out)}<span class="muted">↑вх</span> / ${f(o.in)}<span class="muted">↓исх</span>`;
   const row = (label, b, cls) => {
     const t = b.text || {}, v = b.vision || {}, tot = b.total || {};
     const visZero = !(v.in || v.out);
@@ -3060,9 +3060,9 @@ async function loadTokenReport() {
   };
   const rows = row("ИИ (всего)", res.total, "token-report-total");
   el.innerHTML = `<table class="token-report-table">
-    <thead><tr><th>Режим</th><th>Текст</th><th>Визуал</th><th>Итого ↑вых/↓вх</th><th>₽ итого</th><th>Писем</th><th>⌀ ток/письмо</th><th>₽/письмо</th></tr></thead>
+    <thead><tr><th>Режим</th><th>Текст</th><th>Визуал</th><th>Итого ↑вх/↓исх</th><th>₽ итого</th><th>Писем</th><th>⌀ ток/письмо</th><th>₽/письмо</th></tr></thead>
     <tbody>${rows}</tbody></table>
-    <div class="group-desc">↑ ВЫХОД = наш запрос (prompt) · ↓ ВХОД = ответ сервера (completion). ₽ по тарифам модели. Письмо = уникальный кейс.</div>`;
+    <div class="group-desc">Терминология RouterAI: ↑ Входящие = prompt (наш запрос, дёшево) · ↓ Исходящие = completion (ответ модели, дороже). ₽ по тарифам модели.</div>`;
 }
 
 function setInner(id, val) { const el = $(id); if (el) el.textContent = val; }
